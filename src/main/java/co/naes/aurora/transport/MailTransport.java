@@ -1,6 +1,7 @@
 package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.LocalDB;
 import co.naes.aurora.msg.AuroraInKeyMessage;
 import co.naes.aurora.msg.AuroraInMessage;
 import co.naes.aurora.msg.AuroraOutKeyMessage;
@@ -11,7 +12,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 
 public class MailTransport implements AuroraTransport {
 
@@ -19,40 +19,33 @@ public class MailTransport implements AuroraTransport {
     private final String HEADER_KEY = "Key";
     private final String HEADER_MESSAGE = "Message";
 
-    private Properties props;
+    private LocalDB db;
 
     private AuroraIncomingMessageHandler messageHandler;
 
-    public MailTransport() {
+    public MailTransport(LocalDB db) {
 
-        props = new Properties();
-
-        props.setProperty("mail.store.protocol", "imap");
-        props.setProperty("mail.imap.host", "imap.mail.eu-west-1.awsapps.com");
-        props.setProperty("mail.imap.port", "993");
-        props.setProperty("mail.imap.ssl.enable", "true");
-        props.setProperty("mail.imap.starttls.enable", "false");
-
-        props.setProperty("mail.smtp.host", "smtp.mail.eu-west-1.awsapps.com");
-        props.setProperty("mail.smtp.port", "465");
-        props.setProperty("mail.smtp.auth", "true");
-        props.setProperty("mail.smtp.ssl.enable", "true");
-        props.setProperty("mail.smtp.starttls.enable", "false");
-        props.setProperty("mail.smtp.from", "service@naes.co");
-//        props.setProperty("mail.smtp.localaddress", "127.0.0.1");
+        this.db = db;
     }
 
-    private Session getSession() {
+    private Session getSession(boolean incoming) {
 
         Authenticator auth = new Authenticator() {
 
-            //override the getPasswordAuthentication method
             protected PasswordAuthentication getPasswordAuthentication() {
 
-                return new PasswordAuthentication("service@naes.co", "22U3jA/PRr2I|2jzadsY");
+                if (incoming)
+                    return new PasswordAuthentication(
+                            db.getProperties().getProperty(LocalDB.MAIL_INCOMING_USERNAME),
+                            db.getProperties().getProperty(LocalDB.MAIL_INCOMING_PASSWORD));
+
+                else
+                    return new PasswordAuthentication(
+                            db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_USERNAME),
+                            db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_PASSWORD));
             }
         };
-        Session session = Session.getInstance(props, auth);
+        Session session = Session.getInstance(db.getMailProperties(), auth);
         session.setDebug(false);
 
         return session;
@@ -74,7 +67,7 @@ public class MailTransport implements AuroraTransport {
         try {
 
             // Create message
-            message = new MimeMessage(getSession());
+            message = new MimeMessage(getSession(false));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
             message.setSubject("Aurora key");
             message.setHeader(HEADER, HEADER_KEY);
@@ -113,9 +106,9 @@ public class MailTransport implements AuroraTransport {
         try {
 
             // Create message
-            message = new MimeMessage(getSession());
+            message = new MimeMessage(getSession(false));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(msg.getRecipient().getIdentifier()));
+                    InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject("Aurora message");
             message.setHeader(HEADER, HEADER_MESSAGE);
 
@@ -169,7 +162,7 @@ public class MailTransport implements AuroraTransport {
     @Override
     public void checkForMessages() throws AuroraException {
 
-        try (Store store = getSession().getStore()) {
+        try (Store store = getSession(true).getStore()) {
 
             // Connect to the server
             store.connect();

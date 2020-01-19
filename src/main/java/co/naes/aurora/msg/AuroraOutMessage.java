@@ -2,6 +2,7 @@ package co.naes.aurora.msg;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.PublicKeys;
 import net.nharyes.libsaltpack.*;
 
 import java.io.ByteArrayOutputStream;
@@ -44,7 +45,7 @@ public class AuroraOutMessage extends AuroraMessage {
             }
 
             MessageWriter enc = new MessageWriter(op, session.getSecretKey(), recipients);
-            enc.addBlock(packMessage(data), true);
+            enc.addBlock(packMessage(data), true); // TODO: check size and split blocks
 
             out.flush();
             enc.destroy();

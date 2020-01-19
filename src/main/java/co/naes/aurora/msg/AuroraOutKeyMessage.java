@@ -30,7 +30,7 @@ public class AuroraOutKeyMessage extends AuroraKeyMessage {
 
             // pack key
             MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-            packer.packString(session.getIdentifier())
+            packer.packString(session.getEmailAddress())
                     .packBinaryHeader(session.getPublicKey().length)
                     .writePayload(session.getPublicKey());
             packer.close();

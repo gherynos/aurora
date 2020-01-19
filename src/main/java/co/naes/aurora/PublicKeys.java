@@ -1,4 +1,4 @@
-package co.naes.aurora.msg;
+package co.naes.aurora;
 
 public class PublicKeys {
 
@@ -6,19 +6,19 @@ public class PublicKeys {
 
     private byte[] publicSignKey;
 
-    private String identifier;
+    private String emailAddress;
 
-    public PublicKeys(byte[] publicKey, String identifier) {
+    public PublicKeys(byte[] publicKey, String emailAddress) {
 
         this.publicKey = publicKey;
-        this.identifier = identifier;
+        this.emailAddress = emailAddress;
     }
 
-    public PublicKeys(byte[] publicKey, byte[] publicSignKey, String identifier) {
+    public PublicKeys(byte[] publicKey, byte[] publicSignKey, String emailAddress) {
 
         this.publicKey = publicKey;
         this.publicSignKey = publicSignKey;
-        this.identifier = identifier;
+        this.emailAddress = emailAddress;
     }
 
     public byte[] getPublicKey() {
@@ -31,8 +31,8 @@ public class PublicKeys {
         return publicSignKey;
     }
 
-    public String getIdentifier() {
+    public String getEmailAddress() {
 
-        return identifier;
+        return emailAddress;
     }
 }

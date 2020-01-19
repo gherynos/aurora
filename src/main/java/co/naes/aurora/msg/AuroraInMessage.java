@@ -2,6 +2,7 @@ package co.naes.aurora.msg;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.PublicKeys;
 import net.nharyes.libsaltpack.*;
 
 import java.io.ByteArrayInputStream;
