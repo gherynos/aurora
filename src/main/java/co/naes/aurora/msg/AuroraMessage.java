@@ -17,6 +17,7 @@ abstract class AuroraMessage extends CiphertextMessage {
     protected short messageType;
     protected Integer sequenceNumber;
     protected Integer total;
+    protected Long size;
 
     protected byte[] packMessage(Object data) throws AuroraException {
 
@@ -28,6 +29,9 @@ abstract class AuroraMessage extends CiphertextMessage {
 
         if (total == null)
             throw new AuroraException("Please provide total");
+
+        if (size == null)
+            throw new AuroraException("Please provide size");
 
         if (data instanceof String)
             messageType = TYPE_TEXT;
@@ -42,7 +46,8 @@ abstract class AuroraMessage extends CiphertextMessage {
             packer.packString(messageId)
                     .packShort(messageType)
                     .packInt(sequenceNumber)
-                    .packInt(total);
+                    .packInt(total)
+                    .packLong(size);
 
             // pack data
             if (messageType == TYPE_TEXT) {
@@ -78,6 +83,7 @@ abstract class AuroraMessage extends CiphertextMessage {
             messageType = unpacker.unpackShort();
             sequenceNumber = unpacker.unpackInt();
             total = unpacker.unpackInt();
+            size = unpacker.unpackLong();
 
             if (messageType == TYPE_TEXT) {
 

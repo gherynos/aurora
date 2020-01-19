@@ -72,7 +72,7 @@ public class AuroraSession {
         return secretSignKey;
     }
 
-    public byte[] getSignPublicKey() {
+    public byte[] getPublicSignKey() {
 
         return publicSignKey;
     }

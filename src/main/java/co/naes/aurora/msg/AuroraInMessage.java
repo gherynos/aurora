@@ -89,6 +89,14 @@ public class AuroraInMessage extends AuroraMessage {
         return total;
     }
 
+    public long getSize() throws AuroraException {
+
+        if (!decrypted)
+            throw new AuroraException("Decrypt message first.");
+
+        return size;
+    }
+
     public String getText() throws AuroraException {
 
         if (!decrypted)

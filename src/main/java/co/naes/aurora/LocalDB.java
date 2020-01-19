@@ -1,9 +1,15 @@
 package co.naes.aurora;
 
+import net.nharyes.libsaltpack.Constants;
+import net.nharyes.libsaltpack.SaltpackException;
+import net.nharyes.libsaltpack.Utils;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class LocalDB {
@@ -37,6 +43,7 @@ public class LocalDB {
                 // create tables
                 st.execute("CREATE TABLE PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
+                st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
 
             } else {
 
@@ -99,5 +106,62 @@ public class LocalDB {
     public Properties getMailProperties() {
 
         return properties;
+    }
+
+    public void storePublicKeys(PublicKeys keys) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            st.execute(String.format("MERGE INTO PUBLIC_KEYS KEY(EMAIL) VALUES('%s', '%s', '%s')",
+                    keys.getEmailAddress(),
+                    Utils.baseXencode(keys.getPublicKey(), Constants.ALPHABET_BASE62),
+                    Utils.baseXencode(keys.getPublicSignKey(), Constants.ALPHABET_BASE62)
+            ));
+
+        } catch (SQLException | SaltpackException ex) {
+
+            throw new AuroraException("Error while storing keys to the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public PublicKeys getPublicKeys(String emailAddress) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            var res = st.executeQuery(String.format("SELECT * FROM PUBLIC_KEYS WHERE EMAIL = '%s'", emailAddress));
+            if (!res.next())
+                throw new AuroraException(String.format("Key for '%s' not found.", emailAddress));
+
+            String id = res.getString(1);
+            String encryption = res.getString(2);
+            String signature = res.getString(3);
+
+            return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
+                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), id);
+
+        } catch (SQLException | SaltpackException ex) {
+
+            throw new AuroraException("Error while loading keys from the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<String> listPublicKeysAddresses() throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            List<String> out = new ArrayList<>();
+            var res = st.executeQuery("SELECT EMAIL FROM PUBLIC_KEYS");
+            while (res.next())
+                out.add(res.getString(1));
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
+        }
     }
 }

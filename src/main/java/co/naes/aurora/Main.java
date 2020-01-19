@@ -31,11 +31,19 @@ public class Main {
                     System.out.println(message.getSequenceNumber());
                     System.out.println(message.getTotal());
 
-                    if (message.isText())
-                        System.out.println(message.getText());
+                    if (message.isText()) {
 
-                    if (message.isBinary())
+                        System.out.println(message.getText());
+                        System.out.println(message.getSize());
+                        System.out.println(message.getText().length());
+                    }
+
+                    if (message.isBinary()) {
+
                         System.out.println(new String(message.getBinaryData(), StandardCharsets.UTF_8));
+                        System.out.println(message.getSize());
+                        System.out.println(message.getBinaryData().length);
+                    }
 
                     System.out.println(Arrays.toString(session.getPublicKey()));
                     System.out.println(Arrays.toString(message.getSender().getPublicKey()));
@@ -62,6 +70,8 @@ public class Main {
 
                     System.out.println(Arrays.toString(keys.getPublicSignKey()));
 
+                    db.storePublicKeys(keys);
+
                 } catch (Exception ex) {
 
                     ex.printStackTrace();
@@ -69,16 +79,17 @@ public class Main {
             }
         });
 
-        PublicKeys r = new PublicKeys(session.getPublicKey(), session.getEmailAddress());
-
-//        AuroraOutMessage am = new AuroraOutMessage(session, r, "MID001", 0, 1, "A text message", true);
-//        transport.sendMessage(am);
-//
-//        AuroraOutMessage am2 = new AuroraOutMessage(session, r, "MID002", 0, 1, "A binary message".getBytes(), true);
-//        transport.sendMessage(am2);
-
 //        AuroraOutKeyMessage keyMessage = new AuroraOutKeyMessage(session, "service@naes.co", true);
 //        transport.sendKeyMessage(keyMessage);
+
+//        PublicKeys self = db.getPublicKeys("service@naes.co");
+
+//        AuroraOutMessage am = new AuroraOutMessage(session, self, "MID001", "A text message", true);
+//        transport.sendMessage(am);
+
+//        byte[] data = "A test binary message".getBytes();
+//        AuroraOutMessage am2 = new AuroraOutMessage(session, self, "MID002", 0, 1, data.length, data, true);
+//        transport.sendMessage(am2);
 
         transport.checkForMessages();
     }

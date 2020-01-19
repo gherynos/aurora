@@ -12,22 +12,23 @@ public class AuroraOutMessage extends AuroraMessage {
 
     private PublicKeys recipient;
 
-    public AuroraOutMessage(AuroraSession session, PublicKeys recipient, String messageId, int sequenceNumber, int total, String data, boolean armored) throws AuroraException {
+    public AuroraOutMessage(AuroraSession session, PublicKeys recipient, String messageId, String data, boolean armored) throws AuroraException {
 
-        construct(session, recipient, messageId, sequenceNumber, total, data, armored);
+        construct(session, recipient, messageId, 0, 1, data.length(), data, armored);
     }
 
-    public AuroraOutMessage(AuroraSession session, PublicKeys recipient, String messageId, int sequenceNumber, int total, byte[] data, boolean armored) throws AuroraException {
+    public AuroraOutMessage(AuroraSession session, PublicKeys recipient, String messageId, int sequenceNumber, int total, long size, byte[] data, boolean armored) throws AuroraException {
 
-        construct(session, recipient, messageId, sequenceNumber, total, data, armored);
+        construct(session, recipient, messageId, sequenceNumber, total, size, data, armored);
     }
 
-    private void construct(AuroraSession session, PublicKeys recipient, String messageId, int sequenceNumber, int total, Object data, boolean armored) throws AuroraException {
+    private void construct(AuroraSession session, PublicKeys recipient, String messageId, int sequenceNumber, int total, long size, Object data, boolean armored) throws AuroraException {
 
         this.recipient = recipient;
         this.messageId = messageId;
         this.sequenceNumber = sequenceNumber;
         this.total = total;
+        this.size = size;
 
         // Encrypt message
         ByteArrayOutputStream out = new ByteArrayOutputStream();
