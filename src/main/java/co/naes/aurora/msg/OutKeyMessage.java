@@ -9,13 +9,13 @@ import org.msgpack.core.MessagePack;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class AuroraOutKeyMessage extends AuroraKeyMessage {
+public class OutKeyMessage extends KeyMessage {
 
     private String recipientIdentifier;
 
     private char[] password;
 
-    public AuroraOutKeyMessage(AuroraSession session, String recipientIdentifier, boolean armored) throws AuroraException {
+    public OutKeyMessage(AuroraSession session, String recipientIdentifier, boolean armored) throws AuroraException {
 
         try {
 

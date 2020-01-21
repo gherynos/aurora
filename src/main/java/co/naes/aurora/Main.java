@@ -1,17 +1,18 @@
 package co.naes.aurora;
 
-import co.naes.aurora.msg.AuroraInKeyMessage;
-import co.naes.aurora.msg.AuroraInMessage;
-import co.naes.aurora.msg.AuroraOutKeyMessage;
-import co.naes.aurora.msg.AuroraOutMessage;
+import co.naes.aurora.msg.*;
+import co.naes.aurora.parts.Part;
 import co.naes.aurora.transport.AuroraIncomingMessageHandler;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Main {
+
+    public static String CONF_FOLDER = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
 
     Main() throws Exception {
 
@@ -22,27 +23,20 @@ public class Main {
         transport.setIncomingMessageHandler(new AuroraIncomingMessageHandler() {
 
             @Override
-            public void messageReceived(AuroraInMessage message) {
+            public void messageReceived(InMessage<?> message) {
 
                 try {
 
                     message.decrypt(session);
-                    System.out.println(message.getMessageId());
-                    System.out.println(message.getSequenceNumber());
-                    System.out.println(message.getTotal());
 
-                    if (message.isText()) {
+                    if (message instanceof StringInMessage) {
 
-                        System.out.println(message.getText());
-                        System.out.println(message.getSize());
-                        System.out.println(message.getText().length());
+                        System.out.println(((StringInMessage) message).getData());
                     }
 
-                    if (message.isBinary()) {
+                    if (message instanceof PartInMessage) {
 
-                        System.out.println(new String(message.getBinaryData(), StandardCharsets.UTF_8));
-                        System.out.println(message.getSize());
-                        System.out.println(message.getBinaryData().length);
+                        Part p = ((PartInMessage) message).getData();
                     }
 
                     System.out.println(Arrays.toString(session.getPublicKey()));
@@ -55,7 +49,7 @@ public class Main {
             }
 
             @Override
-            public void keyMessageReceived(AuroraInKeyMessage keyMessage) {
+            public void keyMessageReceived(InKeyMessage keyMessage) {
 
                 try {
 
@@ -79,17 +73,13 @@ public class Main {
             }
         });
 
-//        AuroraOutKeyMessage keyMessage = new AuroraOutKeyMessage(session, "service@naes.co", true);
+//        OutKeyMessage keyMessage = new OutKeyMessage(session, "service@naes.co", true);
 //        transport.sendKeyMessage(keyMessage);
-
+//
 //        PublicKeys self = db.getPublicKeys("service@naes.co");
-
-//        AuroraOutMessage am = new AuroraOutMessage(session, self, "MID001", "A text message", true);
+//
+//        StringOutMessage am = new StringOutMessage(session, self, "A text message", true);
 //        transport.sendMessage(am);
-
-//        byte[] data = "A test binary message".getBytes();
-//        AuroraOutMessage am2 = new AuroraOutMessage(session, self, "MID002", 0, 1, data.length, data, true);
-//        transport.sendMessage(am2);
 
         transport.checkForMessages();
     }

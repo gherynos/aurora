@@ -2,10 +2,7 @@ package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.LocalDB;
-import co.naes.aurora.msg.AuroraInKeyMessage;
-import co.naes.aurora.msg.AuroraInMessage;
-import co.naes.aurora.msg.AuroraOutKeyMessage;
-import co.naes.aurora.msg.AuroraOutMessage;
+import co.naes.aurora.msg.*;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -17,7 +14,8 @@ public class MailTransport implements AuroraTransport {
 
     private final String HEADER = "X-Aurora";
     private final String HEADER_KEY = "Key";
-    private final String HEADER_MESSAGE = "Message";
+    private final String HEADER_TEXT = "Text";
+    private final String HEADER_PART = "Part";
 
     private LocalDB db;
 
@@ -58,7 +56,7 @@ public class MailTransport implements AuroraTransport {
     }
 
     @Override
-    public void sendKeyMessage(AuroraOutKeyMessage key) throws AuroraException {
+    public void sendKeyMessage(OutKeyMessage key) throws AuroraException {
 
         if (!key.isArmored())
             throw new AuroraException("Please provide an armored key");
@@ -97,7 +95,7 @@ public class MailTransport implements AuroraTransport {
     }
 
     @Override
-    public void sendMessage(AuroraOutMessage msg) throws AuroraException {
+    public void sendMessage(OutMessage<?> msg) throws AuroraException {
 
         if (!msg.isArmored())
             throw new AuroraException("Please provide an armored message");
@@ -110,7 +108,15 @@ public class MailTransport implements AuroraTransport {
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject("Aurora message");
-            message.setHeader(HEADER, HEADER_MESSAGE);
+
+            if (msg instanceof StringOutMessage)
+                message.setHeader(HEADER, HEADER_TEXT);
+
+            else if (msg instanceof PartOutMessage)
+                message.setHeader(HEADER, HEADER_PART);
+
+            else
+                throw new AuroraException("Unknow message type");
 
             // Content
             StringBuilder sb = new StringBuilder();
@@ -178,17 +184,40 @@ public class MailTransport implements AuroraTransport {
 
                         String content = getMessageContent(message);
 
-                        int start = content.indexOf(AuroraInMessage.ARMOR_BEGIN);
-                        int end = content.indexOf(AuroraInMessage.ARMOR_END);
-                        if (start == -1 || end == -1)
-                            throw new AuroraException("Unable to parse message content");
+                        int start = content.indexOf(InMessage.ARMOR_BEGIN);
+                        int end = content.indexOf(InMessage.ARMOR_END);
+                        if (start == -1 || end == -1) {
+
+                            // TODO: log Unable to parse message content
+                            continue;
+                        }
 
                         content = content.substring(start, end + 38);
+                        switch (header[0]) {
 
-                        if (header[0].equals(HEADER_KEY))
-                            messageHandler.keyMessageReceived(new AuroraInKeyMessage(content.getBytes()));
-                        else if (header[0].equals(HEADER_MESSAGE))
-                            messageHandler.messageReceived(new AuroraInMessage(content.getBytes()));
+                            case HEADER_KEY: {
+
+                                messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
+
+                            } break;
+
+                            case HEADER_TEXT: {
+
+                                messageHandler.messageReceived(new StringInMessage(content.getBytes()));
+
+                            } break;
+
+                            case HEADER_PART: {
+
+                                messageHandler.messageReceived(new PartInMessage(content.getBytes()));
+
+                            } break;
+
+                            default: {
+
+                                // TODO: log wrong header content
+                            }
+                        }
                     }
                 }
 

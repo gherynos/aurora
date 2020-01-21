@@ -13,11 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class AuroraInKeyMessage extends AuroraKeyMessage {
+public class InKeyMessage extends KeyMessage {
 
-    private boolean decrypted = false;
-
-    public AuroraInKeyMessage(byte[] ciphertext) {
+    public InKeyMessage(byte[] ciphertext) {
 
         this.ciphertext = ciphertext;
     }

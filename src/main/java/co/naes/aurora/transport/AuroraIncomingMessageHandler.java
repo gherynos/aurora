@@ -1,11 +1,11 @@
 package co.naes.aurora.transport;
 
-import co.naes.aurora.msg.AuroraInKeyMessage;
-import co.naes.aurora.msg.AuroraInMessage;
+import co.naes.aurora.msg.InKeyMessage;
+import co.naes.aurora.msg.InMessage;
 
 public interface AuroraIncomingMessageHandler {
 
-    void messageReceived(AuroraInMessage message);
+    void messageReceived(InMessage<?> message);
 
-    void keyMessageReceived(AuroraInKeyMessage keyMessage);
+    void keyMessageReceived(InKeyMessage keyMessage);
 }

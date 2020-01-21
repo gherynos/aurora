@@ -66,9 +66,7 @@ public class LocalDB {
 
     private Connection getConnection() throws SQLException {
 
-        String sFolder = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
-
-        String url = String.format("jdbc:h2:%s/aurora;CIPHER=AES", sFolder);
+        String url = String.format("jdbc:h2:%s/aurora;CIPHER=AES", Main.CONF_FOLDER);
         String user = "sa";
         String pwds = String.format("%s aurora", password);
 

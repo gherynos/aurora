@@ -1,5 +1,7 @@
 package co.naes.aurora.msg;
 
+import java.util.Arrays;
+
 abstract class CiphertextMessage {
 
     public static final String APP = "AURORA";
@@ -10,20 +12,11 @@ abstract class CiphertextMessage {
 
     public boolean isArmored() {
 
-        // TODO: improve
-
         if (ciphertext == null || ciphertext.length < ARMOR_BEGIN.length())
             return false;
 
-        byte[] ab = ARMOR_BEGIN.getBytes();
-
-        for (short i = 0; i < ab.length; i++) {
-
-            if (ciphertext[i] != ab[i])
-                return false;
-        }
-
-        return true;
+        return Arrays.equals(ARMOR_BEGIN.getBytes(), 0, ARMOR_BEGIN.length(),
+                ciphertext, 0, ARMOR_BEGIN.length());
     }
 
     public byte[] getCiphertext() {
