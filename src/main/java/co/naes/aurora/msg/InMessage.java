@@ -3,6 +3,9 @@ package co.naes.aurora.msg;
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.msg.in.ConfInMessage;
+import co.naes.aurora.msg.in.PartInMessage;
+import co.naes.aurora.msg.in.StringInMessage;
 import net.nharyes.libsaltpack.InputParameters;
 import net.nharyes.libsaltpack.MessageReader;
 import net.nharyes.libsaltpack.SaltpackException;
@@ -12,10 +15,29 @@ import org.msgpack.core.MessageUnpacker;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.InvalidParameterException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class InMessage<T> extends CiphertextMessage {
 
-    protected short messageType;
+    public static final Map<String, Class<? extends InMessage<?>>> map;
+
+    static {
+
+        map = new HashMap<>();
+        map.put("Text", StringInMessage.class);
+        map.put("Part", PartInMessage.class);
+        map.put("Conf", ConfInMessage.class);
+    }
+
+    public static Class<? extends InMessage<?>> getClass(String identifier) throws InvalidParameterException {
+
+        if (!map.containsKey(identifier))
+            throw new InvalidParameterException("Unknown identifier");
+
+        return map.get(identifier);
+    }
 
     protected boolean decrypted = false;
 
@@ -73,10 +95,5 @@ public abstract class InMessage<T> extends CiphertextMessage {
             throw new AuroraException("Decrypt message first.");
 
         return data;
-    }
-
-    public short getMessageType() {
-
-        return messageType;
     }
 }

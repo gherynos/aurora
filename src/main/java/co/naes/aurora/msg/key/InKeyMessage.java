@@ -1,7 +1,8 @@
-package co.naes.aurora.msg;
+package co.naes.aurora.msg.key;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.msg.KeyMessage;
 import net.nharyes.libsaltpack.InputParameters;
 import net.nharyes.libsaltpack.MessageReader;
 import net.nharyes.libsaltpack.SaltpackException;

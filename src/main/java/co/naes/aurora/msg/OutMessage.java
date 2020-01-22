@@ -3,6 +3,9 @@ package co.naes.aurora.msg;
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.msg.out.ConfOutMessage;
+import co.naes.aurora.msg.out.PartOutMessage;
+import co.naes.aurora.msg.out.StringOutMessage;
 import net.nharyes.libsaltpack.MessageWriter;
 import net.nharyes.libsaltpack.OutputParameters;
 import net.nharyes.libsaltpack.SaltpackException;
@@ -11,8 +14,29 @@ import org.msgpack.core.MessagePack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.InvalidParameterException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class OutMessage<T> extends CiphertextMessage {
+
+    public static final Map<Class<? extends OutMessage<?>>, String> map;
+
+    static {
+
+        map = new HashMap<>();
+        map.put(StringOutMessage.class, "Text");
+        map.put(PartOutMessage.class, "Part");
+        map.put(ConfOutMessage.class, "Conf");
+    }
+
+    public static String getIdentifier(Class<?> clazz) throws InvalidParameterException {
+
+        if (!map.containsKey(clazz))
+            throw new InvalidParameterException("Unknown class");
+
+        return map.get(clazz);
+    }
 
     protected PublicKeys recipient;
 

@@ -1,5 +1,6 @@
-package co.naes.aurora.msg;
+package co.naes.aurora.msg.in;
 
+import co.naes.aurora.msg.InMessage;
 import org.msgpack.core.MessageUnpacker;
 
 import java.io.IOException;

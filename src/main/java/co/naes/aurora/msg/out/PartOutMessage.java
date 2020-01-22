@@ -1,8 +1,9 @@
-package co.naes.aurora.msg;
+package co.naes.aurora.msg.out;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.msg.OutMessage;
 import co.naes.aurora.parts.Part;
 import org.msgpack.core.MessageBufferPacker;
 
@@ -13,7 +14,8 @@ public class PartOutMessage extends OutMessage<Part> {
     @Override
     protected void packData(MessageBufferPacker packer, Part part) throws IOException {
 
-        packer.packInt(part.getSequenceNumber());
+        packer.packString(part.getId().getFileId());
+        packer.packInt(part.getId().getSequenceNumber());
         packer.packInt(part.getTotal());
         packer.packLong(part.getTotalSize());
         packer.packBinaryHeader(part.getData().length);

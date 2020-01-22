@@ -32,7 +32,7 @@ public class Joiner {
             if (channel.size() == 0)
                 aFile.setLength(part.getTotalSize());
 
-            channel.position(part.getSequenceNumber() * Splitter.PART_SIZE);
+            channel.position(part.getId().getSequenceNumber() * Splitter.PART_SIZE);
 
             if (channel.write(ByteBuffer.wrap(part.getData())) != part.getData().length)
                 throw new AuroraException("Some bytes were not written...");

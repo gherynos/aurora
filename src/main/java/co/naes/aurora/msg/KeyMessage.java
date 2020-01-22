@@ -5,7 +5,7 @@ import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
 
-abstract class KeyMessage extends CiphertextMessage {
+public abstract class KeyMessage extends CiphertextMessage {
 
     protected final byte[] SALT = "84e=tz+>4AH8L9A4".getBytes();
 

@@ -1,13 +1,15 @@
 package co.naes.aurora;
 
-import co.naes.aurora.msg.*;
+import co.naes.aurora.msg.key.InKeyMessage;
+import co.naes.aurora.msg.InMessage;
+import co.naes.aurora.msg.in.PartInMessage;
+import co.naes.aurora.msg.in.StringInMessage;
 import co.naes.aurora.parts.Part;
-import co.naes.aurora.transport.AuroraIncomingMessageHandler;
+import co.naes.aurora.transport.IncomingMessageHandler;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Main {
@@ -20,7 +22,7 @@ public class Main {
         AuroraSession session = new AuroraSession(db);
 
         AuroraTransport transport = new MailTransport(db);
-        transport.setIncomingMessageHandler(new AuroraIncomingMessageHandler() {
+        transport.setIncomingMessageHandler(new IncomingMessageHandler() {
 
             @Override
             public void messageReceived(InMessage<?> message) {

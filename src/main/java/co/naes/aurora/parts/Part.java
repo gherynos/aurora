@@ -2,7 +2,7 @@ package co.naes.aurora.parts;
 
 public class Part {
 
-    private int sequenceNumber;
+    private PartId id;
 
     private int total;
 
@@ -10,17 +10,17 @@ public class Part {
 
     private byte[] data;
 
-    public Part(int sequenceNumber, int total, long totalSize, byte[] data) {
+    public Part(PartId id, int total, long totalSize, byte[] data) {
 
-        this.sequenceNumber = sequenceNumber;
+        this.id = id;
         this.total = total;
         this.totalSize = totalSize;
         this.data = data;
     }
 
-    public int getSequenceNumber() {
+    public PartId getId() {
 
-        return sequenceNumber;
+        return id;
     }
 
     public int getTotal() {

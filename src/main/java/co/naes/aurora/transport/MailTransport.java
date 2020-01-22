@@ -2,24 +2,26 @@ package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.LocalDB;
-import co.naes.aurora.msg.*;
+import co.naes.aurora.msg.key.InKeyMessage;
+import co.naes.aurora.msg.InMessage;
+import co.naes.aurora.msg.key.OutKeyMessage;
+import co.naes.aurora.msg.OutMessage;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 
 public class MailTransport implements AuroraTransport {
 
-    private final String HEADER = "X-Aurora";
+    private final String HEADER = "X-Aurora-Type";
     private final String HEADER_KEY = "Key";
-    private final String HEADER_TEXT = "Text";
-    private final String HEADER_PART = "Part";
 
     private LocalDB db;
 
-    private AuroraIncomingMessageHandler messageHandler;
+    private IncomingMessageHandler messageHandler;
 
     public MailTransport(LocalDB db) {
 
@@ -50,7 +52,7 @@ public class MailTransport implements AuroraTransport {
     }
 
     @Override
-    public void setIncomingMessageHandler(AuroraIncomingMessageHandler messageHandler) {
+    public void setIncomingMessageHandler(IncomingMessageHandler messageHandler) {
 
         this.messageHandler = messageHandler;
     }
@@ -108,15 +110,7 @@ public class MailTransport implements AuroraTransport {
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject("Aurora message");
-
-            if (msg instanceof StringOutMessage)
-                message.setHeader(HEADER, HEADER_TEXT);
-
-            else if (msg instanceof PartOutMessage)
-                message.setHeader(HEADER, HEADER_PART);
-
-            else
-                throw new AuroraException("Unknow message type");
+            message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
 
             // Content
             StringBuilder sb = new StringBuilder();
@@ -193,31 +187,18 @@ public class MailTransport implements AuroraTransport {
                         }
 
                         content = content.substring(start, end + 38);
-                        switch (header[0]) {
+                        if (header[0].equals(HEADER_KEY))
+                            messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
 
-                            case HEADER_KEY: {
+                        else
+                            try {
 
-                                messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
+                                InMessage.getClass(header[0]).getConstructor(byte[].class).newInstance((Object) content.getBytes());
 
-                            } break;
+                            } catch (InvalidParameterException | SecurityException | ReflectiveOperationException ex) {
 
-                            case HEADER_TEXT: {
-
-                                messageHandler.messageReceived(new StringInMessage(content.getBytes()));
-
-                            } break;
-
-                            case HEADER_PART: {
-
-                                messageHandler.messageReceived(new PartInMessage(content.getBytes()));
-
-                            } break;
-
-                            default: {
-
-                                // TODO: log wrong header content
+                                // TODO: log unknown identifier
                             }
-                        }
                     }
                 }
 

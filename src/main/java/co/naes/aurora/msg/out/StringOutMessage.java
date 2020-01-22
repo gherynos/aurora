@@ -1,8 +1,9 @@
-package co.naes.aurora.msg;
+package co.naes.aurora.msg.out;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.msg.OutMessage;
 import org.msgpack.core.MessageBufferPacker;
 
 import java.io.IOException;

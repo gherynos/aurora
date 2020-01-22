@@ -11,20 +11,24 @@ public class Splitter {
 
     public static final int PART_SIZE = 1024; // TODO: FIX
 
+    private String fileId;
+
     private FileChannel channel;
 
     private int totalParts;
 
     private boolean lastPartSmaller;
 
-    public Splitter(String filePath) throws AuroraException {
+    public Splitter(String fileId, String filePath) throws AuroraException {
+
+        this.fileId = fileId;
 
         try {
 
             RandomAccessFile aFile = new RandomAccessFile(filePath, "r");
             channel = aFile.getChannel();
 
-            totalParts = (int)Math.ceil(channel.size() / (float)PART_SIZE);
+            totalParts = (int) Math.ceil(channel.size() / (float) PART_SIZE);
             lastPartSmaller = (channel.size() % PART_SIZE) != 0;
 
         } catch (IOException ex) {
@@ -47,7 +51,7 @@ public class Splitter {
 
             ByteBuffer data;
             channel.position(PART_SIZE * sequenceNumber);
-            if (sequenceNumber == totalParts -1 && lastPartSmaller)
+            if (sequenceNumber == totalParts - 1 && lastPartSmaller)
                 data = ByteBuffer.allocate((int) channel.size() - (PART_SIZE * (totalParts - 1)));
 
             else
@@ -56,7 +60,7 @@ public class Splitter {
             if (channel.read(data) != data.capacity())
                 throw new AuroraException("Some bytes were not read...");
 
-            return new Part(sequenceNumber, totalParts, channel.size(), data.array());
+            return new Part(new PartId(fileId, sequenceNumber), totalParts, channel.size(), data.array());
 
         } catch (IOException ex) {
 

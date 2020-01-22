@@ -4,7 +4,6 @@ import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -78,13 +77,13 @@ public class LocalDB {
         try (var conn = getConnection();
              var st = conn.createStatement()) {
 
-            for (Object oKey: properties.keySet()) {
+            for (Object oKey : properties.keySet()) {
 
                 String key = (String) oKey;
                 st.execute(String.format("MERGE INTO PROPERTIES KEY(NAME) VALUES('%s', '%s')", key, properties.getProperty(key)));
             }
 
-            for (Object oKey: mailProperties.keySet()) {
+            for (Object oKey : mailProperties.keySet()) {
 
                 String key = (String) oKey;
                 st.execute(String.format("MERGE INTO MAIL_PROPERTIES KEY(NAME) VALUES('%s', '%s')", key, mailProperties.getProperty(key)));
