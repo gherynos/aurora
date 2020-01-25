@@ -83,7 +83,7 @@ public class Main {
 //        StringOutMessage am = new StringOutMessage(session, self, "A text message", true);
 //        transport.sendMessage(am);
 
-        transport.checkForMessages();
+//        transport.checkForMessages();
     }
 
     public static void main(String[] args) throws Exception {

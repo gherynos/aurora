@@ -193,7 +193,8 @@ public class MailTransport implements AuroraTransport {
                         else
                             try {
 
-                                InMessage.getClass(header[0]).getConstructor(byte[].class).newInstance((Object) content.getBytes());
+                                var constructor = InMessage.getClass(header[0]).getConstructor(byte[].class);
+                                messageHandler.messageReceived(constructor.newInstance((Object) content.getBytes()));
 
                             } catch (InvalidParameterException | SecurityException | ReflectiveOperationException ex) {
 

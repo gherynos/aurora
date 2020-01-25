@@ -43,6 +43,8 @@ public class LocalDB {
                 st.execute("CREATE TABLE PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
+                st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR PRIMARY KEY, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
+                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID));");
 
             } else {
 
@@ -153,6 +155,86 @@ public class LocalDB {
             var res = st.executeQuery("SELECT EMAIL FROM PUBLIC_KEYS");
             while (res.next())
                 out.add(res.getString(1));
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void addOutgoingFile(String fileId, String path, String emailAddress) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?)")) {
+
+            st.setString(1, fileId);
+            st.setString(2, path);
+            st.setObject(3, emailAddress);
+
+            st.execute();
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while storing outgoing file to the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void addPartsToSend(String fileId, int totalParts) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?)")) {
+
+            conn.setAutoCommit(false);
+
+            for (int i = 0; i < totalParts; i++) {
+
+                st.setInt(1, i);
+                st.setString(2, fileId);
+                st.addBatch();
+            }
+
+            int[] res = st.executeBatch();
+            if (res.length != totalParts)
+                throw new SQLException("Unable to insert all the parts");
+
+            conn.commit();
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while storing outgoing file to the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<String[]> getPendingOutputFiles() throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            List<String[]> out = new ArrayList<>();
+            var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PART_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID) > 0;");
+            while (res.next())
+                out.add(new String[]{res.getString(1), res.getString(2), res.getString(3)});
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Integer> getPartsToSend(String fileId) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("SELECT SEQUENCE FROM PART_TO_SEND WHERE FILE_ID = ?")) {
+
+            List<Integer> out = new ArrayList<>();
+            st.setString(1, fileId);
+            var res = st.executeQuery();
+            while (res.next())
+                out.add(res.getInt(1));
 
             return out;
 

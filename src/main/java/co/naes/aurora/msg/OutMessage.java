@@ -44,6 +44,8 @@ public abstract class OutMessage<T> extends CiphertextMessage {
 
     public OutMessage(AuroraSession session, PublicKeys recipient, T data, boolean armored) throws AuroraException {
 
+        this.recipient = recipient;
+
         // encrypt message
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
