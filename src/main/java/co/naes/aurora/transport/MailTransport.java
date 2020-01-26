@@ -169,7 +169,7 @@ public class MailTransport implements AuroraTransport {
 
             try (Folder inbox = store.getFolder("INBOX")) {
 
-                inbox.open(Folder.READ_ONLY);
+                inbox.open(Folder.READ_WRITE);
                 Message[] messages = inbox.getMessages();
                 for (Message message : messages) {
 
@@ -187,14 +187,21 @@ public class MailTransport implements AuroraTransport {
                         }
 
                         content = content.substring(start, end + 38);
-                        if (header[0].equals(HEADER_KEY))
-                            messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
+                        if (header[0].equals(HEADER_KEY)) {
 
-                        else
+                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
+
+                            // mark message for deletion
+                            message.setFlag(Flags.Flag.DELETED, res);
+
+                        } else
                             try {
 
                                 var constructor = InMessage.getClass(header[0]).getConstructor(byte[].class);
-                                messageHandler.messageReceived(constructor.newInstance((Object) content.getBytes()));
+                                boolean res = messageHandler.messageReceived(constructor.newInstance((Object) content.getBytes()));
+
+                                // mark message for deletion
+                                message.setFlag(Flags.Flag.DELETED, res);
 
                             } catch (InvalidParameterException | SecurityException | ReflectiveOperationException ex) {
 

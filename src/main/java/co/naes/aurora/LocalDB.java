@@ -44,7 +44,7 @@ public class LocalDB {
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
                 st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR PRIMARY KEY, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
-                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID));");
+                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, SENT_ONCE BOOL, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID));");
 
             } else {
 
@@ -110,13 +110,13 @@ public class LocalDB {
     public void storePublicKeys(PublicKeys keys) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.createStatement()) {
+             var st = conn.prepareStatement("MERGE INTO PUBLIC_KEYS KEY(EMAIL) VALUES(?, ?, ?)")) {
 
-            st.execute(String.format("MERGE INTO PUBLIC_KEYS KEY(EMAIL) VALUES('%s', '%s', '%s')",
-                    keys.getEmailAddress(),
-                    Utils.baseXencode(keys.getPublicKey(), Constants.ALPHABET_BASE62),
-                    Utils.baseXencode(keys.getPublicSignKey(), Constants.ALPHABET_BASE62)
-            ));
+            st.setString(1, keys.getEmailAddress());
+            st.setString(2, Utils.baseXencode(keys.getPublicKey(), Constants.ALPHABET_BASE62));
+            st.setString(3, Utils.baseXencode(keys.getPublicSignKey(), Constants.ALPHABET_BASE62));
+
+            st.execute();
 
         } catch (SQLException | SaltpackException ex) {
 
@@ -127,11 +127,35 @@ public class LocalDB {
     public PublicKeys getPublicKeys(String emailAddress) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.createStatement()) {
+             var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE EMAIL = ?")) {
 
-            var res = st.executeQuery(String.format("SELECT * FROM PUBLIC_KEYS WHERE EMAIL = '%s'", emailAddress));
+            st.setString(1, emailAddress);
+            var res = st.executeQuery();
             if (!res.next())
                 throw new AuroraException(String.format("Key for '%s' not found.", emailAddress));
+
+            String id = res.getString(1);
+            String encryption = res.getString(2);
+            String signature = res.getString(3);
+
+            return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
+                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), id);
+
+        } catch (SQLException | SaltpackException ex) {
+
+            throw new AuroraException("Error while loading keys from the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public PublicKeys getPublicKeys(byte[] encryptionKey) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE ENCRYPTION = ?")) {
+
+            st.setString(1, Utils.baseXencode(encryptionKey, Constants.ALPHABET_BASE62));
+            var res = st.executeQuery();
+            if (!res.next())
+                throw new AuroraException("Entry for encryption key provided not found.");
 
             String id = res.getString(1);
             String encryption = res.getString(2);
@@ -184,7 +208,7 @@ public class LocalDB {
     public void addPartsToSend(String fileId, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?)")) {
+             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?, FALSE)")) {
 
             conn.setAutoCommit(false);
 
@@ -228,7 +252,7 @@ public class LocalDB {
     public List<Integer> getPartsToSend(String fileId) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("SELECT SEQUENCE FROM PART_TO_SEND WHERE FILE_ID = ?")) {
+             var st = conn.prepareStatement("SELECT SEQUENCE FROM PART_TO_SEND WHERE FILE_ID = ? AND SENT_ONCE = FALSE")) {
 
             List<Integer> out = new ArrayList<>();
             st.setString(1, fileId);
@@ -241,6 +265,48 @@ public class LocalDB {
         } catch (SQLException ex) {
 
             throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void markPartsAsSent(List<Integer> sequenceNumbers, String fileId) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("UPDATE PART_TO_SEND SET SENT_ONCE = TRUE WHERE SEQUENCE = ? AND FILE_ID = ?")) {
+
+            conn.setAutoCommit(false);
+
+            for (Integer sequenceNumber : sequenceNumbers) {
+
+                st.setInt(1, sequenceNumber);
+                st.setString(2, fileId);
+                st.addBatch();
+            }
+
+            int[] res = st.executeBatch();
+            if (res.length != sequenceNumbers.size())
+                throw new SQLException("Unable to update all the parts");
+
+            conn.commit();
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while updating part on the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void deletePartToSend(int sequenceNumber, String fileId) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("DELETE FROM PART_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ?")) {
+
+            st.setInt(1, sequenceNumber);
+            st.setString(2, fileId);
+
+            st.execute();
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while updating part on the DB: " + ex.getMessage(), ex);
         }
     }
 }

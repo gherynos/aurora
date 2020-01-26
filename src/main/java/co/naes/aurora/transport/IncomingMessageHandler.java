@@ -5,7 +5,7 @@ import co.naes.aurora.msg.InMessage;
 
 public interface IncomingMessageHandler {
 
-    void messageReceived(InMessage<?> message);
+    boolean messageReceived(InMessage<?> message);
 
-    void keyMessageReceived(InKeyMessage keyMessage);
+    boolean keyMessageReceived(InKeyMessage keyMessage);
 }

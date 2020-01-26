@@ -22,68 +22,13 @@ public class Main {
         AuroraSession session = new AuroraSession(db);
 
         AuroraTransport transport = new MailTransport(db);
-        transport.setIncomingMessageHandler(new IncomingMessageHandler() {
 
-            @Override
-            public void messageReceived(InMessage<?> message) {
+        Messenger messenger = new Messenger(db, transport, session);
 
-                try {
-
-                    message.decrypt(session);
-
-                    if (message instanceof StringInMessage) {
-
-                        System.out.println(((StringInMessage) message).getData());
-                    }
-
-                    if (message instanceof PartInMessage) {
-
-                        Part p = ((PartInMessage) message).getData();
-                    }
-
-                    System.out.println(Arrays.toString(session.getPublicKey()));
-                    System.out.println(Arrays.toString(message.getSender().getPublicKey()));
-
-                } catch (Exception ex) {
-
-                    ex.printStackTrace();
-                }
-            }
-
-            @Override
-            public void keyMessageReceived(InKeyMessage keyMessage) {
-
-                try {
-
-                    char[] password = "aRandomPasswordToGenerate".toCharArray(); // TODO: fix
-                    PublicKeys keys = keyMessage.getPublicKeys(password);
-
-                    System.out.println(Arrays.toString(session.getPublicKey()));
-                    System.out.println(Arrays.toString(keys.getPublicKey()));
-
-                    System.out.println(session.getEmailAddress());
-                    System.out.println(keys.getEmailAddress());
-
-                    System.out.println(Arrays.toString(keys.getPublicSignKey()));
-
-                    db.storePublicKeys(keys);
-
-                } catch (Exception ex) {
-
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-//        OutKeyMessage keyMessage = new OutKeyMessage(session, "service@naes.co", true);
-//        transport.sendKeyMessage(keyMessage);
-//
-//        PublicKeys self = db.getPublicKeys("service@naes.co");
-//
-//        StringOutMessage am = new StringOutMessage(session, self, "A text message", true);
-//        transport.sendMessage(am);
-
-//        transport.checkForMessages();
+        PublicKeys self = db.getPublicKeys("service@naes.co");
+//        messenger.addFileToSend(self, "/Users/gherynos/Downloads/BonificoOrdinario.pdf.pdf");
+//        messenger.send();
+//        messenger.receive();
     }
 
     public static void main(String[] args) throws Exception {
