@@ -131,19 +131,36 @@ public class Messenger implements IncomingMessageHandler  {
 
             if (message instanceof PartInMessage) {
 
-                // store part in temporary file
                 Part part = ((PartInMessage) message).getData();
+                PublicKeys sender = db.getPublicKeys(message.getSender().getPublicKey());
+
+                // check incoming file existence
+                String[] incomingFile = db.getIncomingFile(part.getId().getFileId());
+                if (incomingFile == null) {
+
+                    incomingFile = new String[3];
+                    incomingFile[0] = part.getId().getFileId();
+                    incomingFile[1] = incomingTempPath + File.separator + part.getId().getFileId() + ".temp";
+                    incomingFile[2] = sender.getEmailAddress();
+                    db.addIncomingFile(incomingFile[0], incomingFile[1], incomingFile[2]);
+
+                    // track parts to come
+                    db.addPartsToReceive(part.getId().getFileId(), part.getTotal());
+                }
+
+                // store part in temporary file
                 System.out.println("Processing part " + part.getId().getSequenceNumber() + " of " + part.getId().getFileId());
-                Joiner joiner = new Joiner(incomingTempPath + File.separator + part.getId().getFileId() + ".temp");
+                Joiner joiner = new Joiner(incomingFile[1]);
                 joiner.putPart(part);
 
                 // send confirmation
-                PublicKeys sender = db.getPublicKeys(message.getSender().getPublicKey());
                 ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
                 transport.sendMessage(conf);
 
-                // message processed successfully
-                return true;
+                // remove pending part to receive
+                db.deletePartToReceive(part.getId().getSequenceNumber(), part.getId().getFileId());
+
+                // TODO: check file complete
 
             } else if (message instanceof ConfInMessage) {
 
@@ -152,9 +169,14 @@ public class Messenger implements IncomingMessageHandler  {
                 System.out.println("Processing confirmation " + partId.getSequenceNumber() + " of " + partId.getFileId());
                 db.deletePartToSend(partId.getSequenceNumber(), partId.getFileId());
 
-                // message processed successfully
-                return true;
+            } else {
+
+                // TODO: log unknown type
+                return false;
             }
+
+            // message processed successfully
+            return true;
 
         } catch (AuroraException ex) {
 
