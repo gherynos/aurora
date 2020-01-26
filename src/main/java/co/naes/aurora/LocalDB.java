@@ -104,7 +104,7 @@ public class LocalDB {
 
     public Properties getMailProperties() {
 
-        return properties;
+        return mailProperties;
     }
 
     public void storePublicKeys(PublicKeys keys) throws AuroraException {

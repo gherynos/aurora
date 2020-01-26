@@ -28,6 +28,8 @@ public class Messenger implements IncomingMessageHandler  {
 
     private String incomingTempPath = Main.CONF_FOLDER + File.separator + "incoming";
 
+    private static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
+
     Messenger(LocalDB db, AuroraTransport transport, AuroraSession session) {
 
         this.db = db;
@@ -75,9 +77,14 @@ public class Messenger implements IncomingMessageHandler  {
                 PublicKeys recipient = db.getPublicKeys(pendingFile[2]);
 
                 // load parts to send
+                List<Integer> partsToSend = db.getPartsToSend(fileId);
+                if (partsToSend.size() > MAX_PARTS_TO_SEND_PER_FILE)
+                    partsToSend = partsToSend.subList(0, MAX_PARTS_TO_SEND_PER_FILE);
+
+                // send parts
                 Splitter sp = new Splitter(fileId, path);
                 List<Integer> sent = new ArrayList<>();
-                for (Integer sequenceNumber : db.getPartsToSend(fileId)) {
+                for (Integer sequenceNumber : partsToSend) {
 
                     try {
 
