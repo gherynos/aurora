@@ -51,7 +51,7 @@ public class Messenger implements IncomingMessageHandler  {
             db.addOutgoingFile(fileId, filePath, recipient.getEmailAddress());
 
             Splitter sp = new Splitter(fileId, filePath);
-            db.addPartsToSend(fileId, sp.getTotalParts());
+            db.addPartsToSend(fileId, recipient.getEmailAddress(), sp.getTotalParts());
 
         } catch (AuroraException ex) {
 
@@ -77,7 +77,7 @@ public class Messenger implements IncomingMessageHandler  {
                 PublicKeys recipient = db.getPublicKeys(pendingFile[2]);
 
                 // load parts to send
-                List<Integer> partsToSend = db.getPartsToSend(fileId);
+                List<Integer> partsToSend = db.getPartsToSend(fileId, recipient.getEmailAddress());
                 if (partsToSend.size() > MAX_PARTS_TO_SEND_PER_FILE)
                     partsToSend = partsToSend.subList(0, MAX_PARTS_TO_SEND_PER_FILE);
 
@@ -101,7 +101,7 @@ public class Messenger implements IncomingMessageHandler  {
                 }
 
                 // mark parts as sent
-                db.markPartsAsSent(sent, fileId);
+                db.markPartsAsSent(sent, fileId, recipient.getEmailAddress());
             }
 
         } catch (AuroraException ex) {
@@ -136,7 +136,7 @@ public class Messenger implements IncomingMessageHandler  {
                 PublicKeys sender = db.getPublicKeys(message.getSender().getPublicKey());
 
                 // check incoming file existence
-                String[] incomingFile = db.getIncomingFile(part.getId().getFileId());
+                String[] incomingFile = db.getIncomingFile(part.getId().getFileId(), sender.getEmailAddress());
                 if (incomingFile == null) {
 
                     incomingFile = new String[3];
@@ -146,14 +146,11 @@ public class Messenger implements IncomingMessageHandler  {
                     db.addIncomingFile(incomingFile[0], incomingFile[1], incomingFile[2]);
 
                     // track parts to come
-                    db.addPartsToReceive(part.getId().getFileId(), part.getTotal());
+                    db.addPartsToReceive(part.getId().getFileId(), sender.getEmailAddress(), part.getTotal());
 
                 } else {
 
-                    List<Integer> missingParts = db.getPartsToReceive(part.getId().getFileId());
-                    if (missingParts.isEmpty()) {
-
-                        // TODO: notify file completed
+                    if (db.isIncomingFileComplete(part.getId().getFileId(), sender.getEmailAddress())) {
 
                         // TODO: log + UI
                         System.out.println("Discarded part " + part.getId().getSequenceNumber() + " for " + part.getId().getFileId());
@@ -171,14 +168,22 @@ public class Messenger implements IncomingMessageHandler  {
                 transport.sendMessage(conf);
 
                 // remove pending part to receive
-                db.deletePartToReceive(part.getId().getSequenceNumber(), part.getId().getFileId());
+                db.deletePartToReceive(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getEmailAddress());
+
+                db.markFilesAsComplete();
+                if (db.isIncomingFileComplete(part.getId().getFileId(), sender.getEmailAddress())) {
+
+                    // TODO: UI
+                    System.out.println("File " + part.getId().getFileId() + " complete!");
+                }
 
             } else if (message instanceof ConfInMessage) {
 
                 // confirm part in DB
                 PartId partId = ((ConfInMessage) message).getData();
+                PublicKeys sender = db.getPublicKeys(message.getSender().getPublicKey());
                 System.out.println("Processing confirmation " + partId.getSequenceNumber() + " of " + partId.getFileId());
-                db.deletePartToSend(partId.getSequenceNumber(), partId.getFileId());
+                db.deletePartToSend(partId.getSequenceNumber(), partId.getFileId(), sender.getEmailAddress());
 
             } else {
 
