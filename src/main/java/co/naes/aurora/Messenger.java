@@ -114,6 +114,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         try {
 
+            db.decreaseCounters();
             transport.checkForMessages();
 
         } catch (AuroraException ex) {
@@ -146,6 +147,18 @@ public class Messenger implements IncomingMessageHandler  {
 
                     // track parts to come
                     db.addPartsToReceive(part.getId().getFileId(), part.getTotal());
+
+                } else {
+
+                    List<Integer> missingParts = db.getPartsToReceive(part.getId().getFileId());
+                    if (missingParts.isEmpty()) {
+
+                        // TODO: notify file completed
+
+                        // TODO: log + UI
+                        System.out.println("Discarded part " + part.getId().getSequenceNumber() + " for " + part.getId().getFileId());
+                        return true;
+                    }
                 }
 
                 // store part in temporary file
@@ -159,8 +172,6 @@ public class Messenger implements IncomingMessageHandler  {
 
                 // remove pending part to receive
                 db.deletePartToReceive(part.getId().getSequenceNumber(), part.getId().getFileId());
-
-                // TODO: check file complete
 
             } else if (message instanceof ConfInMessage) {
 

@@ -29,6 +29,8 @@ public class LocalDB {
 
     private Properties mailProperties = new Properties();
 
+    private static final int COUNTER = 5;
+
     public LocalDB(String password) throws AuroraException {
 
         this.password = password;
@@ -44,7 +46,7 @@ public class LocalDB {
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
                 st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR PRIMARY KEY, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
-                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, SENT_ONCE BOOL, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID));");
+                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID));");
                 st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR PRIMARY KEY, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT FK_INC_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
                 st.execute("CREATE TABLE PART_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, CONSTRAINT PK_REC PRIMARY KEY (SEQUENCE, FILE_ID), CONSTRAINT FK_INC_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID));");
 
@@ -210,7 +212,7 @@ public class LocalDB {
     public void addPartsToSend(String fileId, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?, FALSE)")) {
+             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?, FALSE, ?)")) {
 
             conn.setAutoCommit(false);
 
@@ -218,6 +220,7 @@ public class LocalDB {
 
                 st.setInt(1, i);
                 st.setString(2, fileId);
+                st.setInt(3, COUNTER);
                 st.addBatch();
             }
 
@@ -273,14 +276,15 @@ public class LocalDB {
     public void markPartsAsSent(List<Integer> sequenceNumbers, String fileId) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("UPDATE PART_TO_SEND SET SENT_ONCE = TRUE WHERE SEQUENCE = ? AND FILE_ID = ?")) {
+             var st = conn.prepareStatement("UPDATE PART_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ?")) {
 
             conn.setAutoCommit(false);
 
             for (Integer sequenceNumber : sequenceNumbers) {
 
-                st.setInt(1, sequenceNumber);
-                st.setString(2, fileId);
+                st.setInt(1, COUNTER);
+                st.setInt(2, sequenceNumber);
+                st.setString(3, fileId);
                 st.addBatch();
             }
 
@@ -309,6 +313,20 @@ public class LocalDB {
         } catch (SQLException ex) {
 
             throw new AuroraException("Error while updating part on the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void decreaseCounters() throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            st.execute("UPDATE PART_TO_SEND SET COUNTER = COUNTER - 1 WHERE SENT_ONCE = TRUE");
+            st.execute("UPDATE PART_TO_SEND SET SENT_ONCE = FALSE WHERE SENT_ONCE = TRUE AND COUNTER = 0");
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while decreasing counters on the DB: " + ex.getMessage(), ex);
         }
     }
 
@@ -387,6 +405,25 @@ public class LocalDB {
         } catch (SQLException ex) {
 
             throw new AuroraException("Error while updating part on the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Integer> getPartsToReceive(String fileId) throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.prepareStatement("SELECT SEQUENCE FROM PART_TO_RECEIVE WHERE FILE_ID = ?")) {
+
+            List<Integer> out = new ArrayList<>();
+            st.setString(1, fileId);
+            var res = st.executeQuery();
+            while (res.next())
+                out.add(res.getInt(1));
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
         }
     }
 }
