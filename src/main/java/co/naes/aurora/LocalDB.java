@@ -46,9 +46,9 @@ public class LocalDB {
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
                 st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_OF PRIMARY KEY(FILE_ID, EMAIL), CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
-                st.execute("CREATE TABLE PART_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PS_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID), CONSTRAINT FK_PS_EMAIL FOREIGN KEY(EMAIL) REFERENCES OUTGOING_FILES(EMAIL));");
+                st.execute("CREATE TABLE PARTS_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PS_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID), CONSTRAINT FK_PS_EMAIL FOREIGN KEY(EMAIL) REFERENCES OUTGOING_FILES(EMAIL));");
                 st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, COMPLETE BOOL, CONSTRAINT PK_IF PRIMARY KEY (FILE_ID, EMAIL), CONSTRAINT FK_INC_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
-                st.execute("CREATE TABLE PART_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_PR PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PR_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID), CONSTRAINT FK_PR_EMAIL FOREIGN KEY(EMAIL) REFERENCES INCOMING_FILES(EMAIL));");
+                st.execute("CREATE TABLE PARTS_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_PR PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PR_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID), CONSTRAINT FK_PR_EMAIL FOREIGN KEY(EMAIL) REFERENCES INCOMING_FILES(EMAIL));");
 
             } else {
 
@@ -212,7 +212,7 @@ public class LocalDB {
     public void addPartsToSend(String fileId, String emailAddress, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO PART_TO_SEND VALUES(?, ?, ?, FALSE, ?)")) {
+             var st = conn.prepareStatement("INSERT INTO PARTS_TO_SEND VALUES(?, ?, ?, FALSE, ?)")) {
 
             conn.setAutoCommit(false);
 
@@ -243,7 +243,7 @@ public class LocalDB {
              var st = conn.createStatement()) {
 
             List<String[]> out = new ArrayList<>();
-            var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PART_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.EMAIL = OF.EMAIL) > 0;");
+            var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.EMAIL = OF.EMAIL) > 0;");
             while (res.next())
                 out.add(new String[]{res.getString(1), res.getString(2), res.getString(3)});
 
@@ -258,7 +258,7 @@ public class LocalDB {
     public List<Integer> getPartsToSend(String fileId, String emailAddress) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("SELECT SEQUENCE FROM PART_TO_SEND WHERE FILE_ID = ? AND EMAIL = ? AND SENT_ONCE = FALSE")) {
+             var st = conn.prepareStatement("SELECT SEQUENCE FROM PARTS_TO_SEND WHERE FILE_ID = ? AND EMAIL = ? AND SENT_ONCE = FALSE")) {
 
             List<Integer> out = new ArrayList<>();
             st.setString(1, fileId);
@@ -278,7 +278,7 @@ public class LocalDB {
     public void markPartsAsSent(List<Integer> sequenceNumbers, String fileId, String emailAddress) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("UPDATE PART_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("UPDATE PARTS_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             conn.setAutoCommit(false);
 
@@ -306,7 +306,7 @@ public class LocalDB {
     public void deletePartToSend(int sequenceNumber, String fileId, String emailAddress) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("DELETE FROM PART_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("DELETE FROM PARTS_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
@@ -360,7 +360,7 @@ public class LocalDB {
     public void addPartsToReceive(String fileId, String emailAddress, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO PART_TO_RECEIVE VALUES(?, ?, ?)")) {
+             var st = conn.prepareStatement("INSERT INTO PARTS_TO_RECEIVE VALUES(?, ?, ?)")) {
 
             conn.setAutoCommit(false);
 
@@ -387,7 +387,7 @@ public class LocalDB {
     public void deletePartToReceive(int sequenceNumber, String fileId, String emailAddress) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("DELETE FROM PART_TO_RECEIVE WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("DELETE FROM PARTS_TO_RECEIVE WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
@@ -425,8 +425,8 @@ public class LocalDB {
         try (var conn = getConnection();
              var st = conn.createStatement()) {
 
-            st.execute("UPDATE PART_TO_SEND SET COUNTER = COUNTER - 1 WHERE SENT_ONCE = TRUE;");
-            st.execute("UPDATE PART_TO_SEND SET SENT_ONCE = FALSE WHERE SENT_ONCE = TRUE AND COUNTER = 0;");
+            st.execute("UPDATE PARTS_TO_SEND SET COUNTER = COUNTER - 1 WHERE SENT_ONCE = TRUE;");
+            st.execute("UPDATE PARTS_TO_SEND SET SENT_ONCE = FALSE WHERE SENT_ONCE = TRUE AND COUNTER = 0;");
 
         } catch (SQLException ex) {
 
@@ -439,7 +439,7 @@ public class LocalDB {
         try (var conn = getConnection();
              var st = conn.createStatement()) {
 
-            st.execute("UPDATE INCOMING_FILES INC SET COMPLETE = TRUE WHERE NOT EXISTS (SELECT SEQUENCE FROM PART_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.EMAIL = PS.EMAIL LIMIT 1);");
+            st.execute("UPDATE INCOMING_FILES INC SET COMPLETE = TRUE WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.EMAIL = PS.EMAIL LIMIT 1);");
 
         } catch (SQLException ex) {
 
