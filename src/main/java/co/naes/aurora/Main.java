@@ -11,6 +11,10 @@ import co.naes.aurora.transport.MailTransport;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -18,12 +22,75 @@ public class Main {
 
     Main() throws Exception {
 
+        LogManager.getLogManager().readConfiguration(this.getClass().getResourceAsStream("/logging.properties"));
+
         LocalDB db = new LocalDB("theDbPassword");
         AuroraSession session = new AuroraSession(db);
 
         AuroraTransport transport = new MailTransport(db);
 
-        Messenger messenger = new Messenger(db, transport, session);
+        Messenger messenger = new Messenger(db, transport, session, new Messenger.StatusHandler() {
+
+            @Override
+            public void sendingPart(int sequenceNumber, String fileId, String emailAddress) {
+
+                System.out.println("Sending part " + sequenceNumber + " " + fileId + " " + emailAddress);
+            }
+
+            @Override
+            public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
+
+                System.out.println("Unable to send part " + sequenceNumber + " " + fileId + " " + emailAddress);
+            }
+
+            @Override
+            public void discardedPart(int sequenceNumber, String fileId, String emailAddress) {
+
+                System.out.println("Discarded part " + sequenceNumber + " " + fileId + " " + emailAddress);
+            }
+
+            @Override
+            public void processingPart(int sequenceNumber, String fileId, String emailAddress) {
+
+                System.out.println("Processing part " + sequenceNumber + " " + fileId + " " + emailAddress);
+            }
+
+            @Override
+            public void processingConfirmation(int sequenceNumber, String fileId, String emailAddress) {
+
+                System.out.println("Processing confirmation " + sequenceNumber + " " + fileId + " " + emailAddress);
+            }
+
+            @Override
+            public void errorsWhileSendingMessages(String message) {
+
+                System.out.println("Error: " + message);
+            }
+
+            @Override
+            public void errorsWhileReceivingMessages(String message) {
+
+                System.out.println("Error: " + message);
+            }
+
+            @Override
+            public void errorsWhileProcessingReceivedMessage(String message) {
+
+                System.out.println("Error: " + message);
+            }
+
+            @Override
+            public void errorsWhileProcessingKeyMessage(String message) {
+
+                System.out.println("Error: " + message);
+            }
+
+            @Override
+            public void fileComplete(String fileId, String emailAddress, String path) {
+
+                System.out.println("File complete " + " " + fileId + " " + emailAddress + " " + path);
+            }
+        });
 
         PublicKeys self = db.getPublicKeys("service@naes.co");
 //        messenger.addFileToSend(self, "/Users/gherynos/Downloads/BonificoOrdinario.pdf.pdf");

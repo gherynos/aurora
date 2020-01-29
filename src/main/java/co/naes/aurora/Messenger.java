@@ -17,8 +17,35 @@ import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Messenger implements IncomingMessageHandler  {
+
+    public interface StatusHandler {
+
+        void sendingPart(int sequenceNumber, String fileId, String emailAddress);
+
+        void unableToSendPart(int sequenceNumber, String fileId, String emailAddress);
+
+        void processingPart(int sequenceNumber, String fileId, String emailAddress);
+
+        void discardedPart(int sequenceNumber, String fileId, String emailAddress);
+
+        void processingConfirmation(int sequenceNumber, String fileId, String emailAddress);
+
+        void errorsWhileSendingMessages(String message);
+
+        void errorsWhileReceivingMessages(String message);
+
+        void errorsWhileProcessingReceivedMessage(String message);
+
+        void errorsWhileProcessingKeyMessage(String message);
+
+        void fileComplete(String fileId, String emailAddress, String path);
+    };
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private LocalDB db;
 
@@ -26,15 +53,18 @@ public class Messenger implements IncomingMessageHandler  {
 
     private AuroraSession session;
 
+    private StatusHandler handler;
+
     private String incomingTempPath = Main.CONF_FOLDER + File.separator + "incoming";
 
     private static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
 
-    Messenger(LocalDB db, AuroraTransport transport, AuroraSession session) {
+    Messenger(LocalDB db, AuroraTransport transport, AuroraSession session, StatusHandler handler) {
 
         this.db = db;
         this.transport = transport;
         this.session = session;
+        this.handler = handler;
 
         transport.setIncomingMessageHandler(this);
 
@@ -43,22 +73,25 @@ public class Messenger implements IncomingMessageHandler  {
             throw new RuntimeException("Unable to write to conf folder");
     }
 
-    public void addFileToSend(PublicKeys recipient, String filePath) throws AuroraException {
+    public boolean addFileToSend(PublicKeys recipient, String filePath) throws AuroraException {
 
+        String fileId = new File(filePath).getName();
         try {
 
-            String fileId = new File(filePath).getName();
             db.addOutgoingFile(fileId, filePath, recipient.getEmailAddress());
 
             Splitter sp = new Splitter(fileId, filePath);
             db.addPartsToSend(fileId, recipient.getEmailAddress(), sp.getTotalParts());
 
+            return true;
+
         } catch (AuroraException ex) {
 
             if (ex.getCause() instanceof JdbcSQLIntegrityConstraintViolationException) {
 
-                // TODO: log + UI
-                System.out.println("File already added");
+                // file already added
+                logger.fine(String.format("File '%s' for recipient '%s' already added", fileId, recipient.getEmailAddress()));
+                return false;
 
             } else
                 throw ex;
@@ -66,6 +99,8 @@ public class Messenger implements IncomingMessageHandler  {
     }
 
     public void send() {
+
+        logger.fine("Sending messages...");
 
         try {
 
@@ -89,14 +124,16 @@ public class Messenger implements IncomingMessageHandler  {
                     try {
 
                         // send part message
-                        System.out.println("Sending part " + sequenceNumber + " for " + fileId);
+                        logger.fine(String.format("Sending part %d for %s", sequenceNumber, fileId));
+                        handler.sendingPart(sequenceNumber, fileId, recipient.getEmailAddress());
                         PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(sequenceNumber), true);
                         transport.sendMessage(msg);
                         sent.add(sequenceNumber);
 
                     } catch (AuroraException ex) {
 
-                        // TODO: log
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
+                        handler.unableToSendPart(sequenceNumber, fileId, recipient.getEmailAddress());
                     }
                 }
 
@@ -106,11 +143,14 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            ex.printStackTrace();  // TODO: log + UI
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            handler.errorsWhileSendingMessages(ex.getMessage());
         }
     }
 
     public void receive() {
+
+        logger.fine("Receiving messages...");
 
         try {
 
@@ -119,7 +159,8 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            ex.printStackTrace();  // TODO: log + UI
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            handler.errorsWhileReceivingMessages(ex.getMessage());
         }
     }
 
@@ -152,14 +193,16 @@ public class Messenger implements IncomingMessageHandler  {
 
                     if (db.isIncomingFileComplete(part.getId().getFileId(), sender.getEmailAddress())) {
 
-                        // TODO: log + UI
-                        System.out.println("Discarded part " + part.getId().getSequenceNumber() + " for " + part.getId().getFileId());
+                        // part discarded
+                        logger.fine(String.format("Discarded part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId()));
+                        handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getEmailAddress());
                         return true;
                     }
                 }
 
                 // store part in temporary file
-                System.out.println("Processing part " + part.getId().getSequenceNumber() + " of " + part.getId().getFileId());
+                logger.fine(String.format("Processing part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId()));
+                handler.processingPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getEmailAddress());
                 Joiner joiner = new Joiner(incomingFile[1]);
                 joiner.putPart(part);
 
@@ -173,8 +216,9 @@ public class Messenger implements IncomingMessageHandler  {
                 db.markFilesAsComplete();
                 if (db.isIncomingFileComplete(part.getId().getFileId(), sender.getEmailAddress())) {
 
-                    // TODO: UI
-                    System.out.println("File " + part.getId().getFileId() + " complete!");
+                    // file complete
+                    logger.fine(String.format("File %s complete", part.getId().getFileId()));
+                    handler.fileComplete(part.getId().getFileId(), sender.getEmailAddress(), incomingFile[1]);
                 }
 
             } else if (message instanceof ConfInMessage) {
@@ -182,12 +226,15 @@ public class Messenger implements IncomingMessageHandler  {
                 // confirm part in DB
                 PartId partId = ((ConfInMessage) message).getData();
                 PublicKeys sender = db.getPublicKeys(message.getSender().getPublicKey());
-                System.out.println("Processing confirmation " + partId.getSequenceNumber() + " of " + partId.getFileId());
+
+                logger.fine(String.format("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId()));
+                handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getEmailAddress());
                 db.deletePartToSend(partId.getSequenceNumber(), partId.getFileId(), sender.getEmailAddress());
 
             } else {
 
-                // TODO: log unknown type
+                // unknown part type
+                logger.warning(String.format("Unknown part type '%s'", message.getClass()));
                 return false;
             }
 
@@ -196,7 +243,8 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            ex.printStackTrace(); // TODO: log + UI
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
         }
 
         return false;
@@ -217,7 +265,8 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            ex.printStackTrace(); // TODO: log + UI
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            handler.errorsWhileProcessingKeyMessage(ex.getMessage());
         }
 
         return false;
