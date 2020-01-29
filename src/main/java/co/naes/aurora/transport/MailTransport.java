@@ -10,6 +10,7 @@ import co.naes.aurora.msg.OutMessage;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.SubjectTerm;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
@@ -72,7 +73,7 @@ public class MailTransport implements AuroraTransport {
             // Create message
             message = new MimeMessage(getSession(false));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
-            message.setSubject("Aurora key");
+            message.setSubject("Aurora key");  // TODO: change
             message.setHeader(HEADER, HEADER_KEY);
 
             // Content
@@ -112,7 +113,7 @@ public class MailTransport implements AuroraTransport {
             message = new MimeMessage(getSession(false));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
-            message.setSubject("Aurora message");
+            message.setSubject("Aurora message");  // TODO: change
             message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
 
             // Content
@@ -173,7 +174,7 @@ public class MailTransport implements AuroraTransport {
             try (Folder inbox = store.getFolder("INBOX")) {
 
                 inbox.open(Folder.READ_WRITE);
-                Message[] messages = inbox.getMessages();
+                Message[] messages = inbox.search(new SubjectTerm("Aurora"));  // TODO: change
                 for (Message message : messages) {
 
                     String[] header = message.getHeader(HEADER);
