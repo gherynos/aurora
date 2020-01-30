@@ -4,6 +4,7 @@ import co.naes.aurora.msg.InMessage;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
 import co.naes.aurora.msg.key.InKeyMessage;
+import co.naes.aurora.msg.key.OutKeyMessage;
 import co.naes.aurora.msg.out.ConfOutMessage;
 import co.naes.aurora.msg.out.PartOutMessage;
 import co.naes.aurora.parts.Joiner;
@@ -43,6 +44,10 @@ public class Messenger implements IncomingMessageHandler  {
         void errorsWhileProcessingKeyMessage(String message);
 
         void fileComplete(String fileId, String emailAddress, String path);
+
+        char[] keyMessageReceived();
+
+        void keyMessageSent(char[] password);
     };
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -96,6 +101,16 @@ public class Messenger implements IncomingMessageHandler  {
             } else
                 throw ex;
         }
+    }
+
+    public void sendKeys(String emailAddress) throws AuroraException {
+
+        logger.fine("Sending key message...");
+
+        OutKeyMessage km = new OutKeyMessage(session, emailAddress, true);
+        transport.sendKeyMessage(km);
+
+        handler.keyMessageSent(km.getPassword());
     }
 
     public void send() {
@@ -255,13 +270,10 @@ public class Messenger implements IncomingMessageHandler  {
 
         try {
 
-            char[] password = "aRandomPasswordToGenerate".toCharArray(); // TODO: fix
+            char[] password = handler.keyMessageReceived();
             PublicKeys keys = keyMessage.getPublicKeys(password);
 
             db.storePublicKeys(keys);
-
-            // key processed successfully
-            return true;
 
         } catch (AuroraException ex) {
 
@@ -269,6 +281,7 @@ public class Messenger implements IncomingMessageHandler  {
             handler.errorsWhileProcessingKeyMessage(ex.getMessage());
         }
 
-        return false;
+        // remove key message in any case
+        return true;
     }
 }

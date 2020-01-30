@@ -20,6 +20,8 @@ public class Main {
 
     public static String CONF_FOLDER = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
 
+    private char[] temp_pwd;
+
     Main() throws Exception {
 
         LogManager.getLogManager().readConfiguration(this.getClass().getResourceAsStream("/logging.properties"));
@@ -90,9 +92,29 @@ public class Main {
 
                 System.out.println("File complete " + " " + fileId + " " + emailAddress + " " + path);
             }
+
+            @Override
+            public char[] keyMessageReceived() {
+
+                System.out.println("Key message received");
+
+                return temp_pwd;
+            }
+
+            @Override
+            public void keyMessageSent(char[] password) {
+
+                System.out.println("Key message sent");
+
+                temp_pwd = password;
+            }
         });
 
-        PublicKeys self = db.getPublicKeys("service@naes.co");
+//        messenger.sendKeys("service@naes.co");
+//        Thread.sleep(30000);
+//        messenger.receive();
+
+//        PublicKeys self = db.getPublicKeys("service@naes.co");
 //        messenger.addFileToSend(self, "/Users/gherynos/Downloads/BonificoOrdinario.pdf.pdf");
 //        messenger.send();
 //        messenger.receive();

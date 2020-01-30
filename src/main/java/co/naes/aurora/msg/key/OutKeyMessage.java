@@ -2,6 +2,7 @@ package co.naes.aurora.msg.key;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.Constellations;
 import co.naes.aurora.msg.KeyMessage;
 import net.nharyes.libsaltpack.*;
 import org.msgpack.core.MessageBufferPacker;
@@ -23,7 +24,7 @@ public class OutKeyMessage extends KeyMessage {
             this.recipientIdentifier = recipientIdentifier;
 
             // generate random password
-            password = "aRandomPasswordToGenerate".toCharArray(); // TODO: fix
+            password = Constellations.getRandom(6);
 
             // derive key from password
             byte[][][] symmetricKeys = {deriveKeyFromPassword(password)};
