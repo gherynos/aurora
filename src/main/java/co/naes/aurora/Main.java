@@ -8,7 +8,9 @@ import co.naes.aurora.parts.Part;
 import co.naes.aurora.transport.IncomingMessageHandler;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
+import co.naes.aurora.ui.Settings;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Handler;
