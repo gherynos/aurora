@@ -22,6 +22,7 @@ public class LocalDB {
     public static final String MAIL_INCOMING_PASSWORD = "aurora.mail.incoming.password";
     public static final String MAIL_OUTGOING_USERNAME = "aurora.mail.outgoing.username";
     public static final String MAIL_OUTGOING_PASSWORD = "aurora.mail.outgoing.password";
+    public static final String ACCOUNT_NAME = "aurora.account.name";
 
     private String password;
 

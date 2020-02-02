@@ -18,6 +18,7 @@ public class Settings {
     private final String SMTP_SSL = "mail.smtp.ssl.enable";
     private final String SMTP_TLS = "mail.smtp.starttls.enable";
     private final String SMTP_AUTH = "mail.smtp.auth";
+    private final String SMTP_FROM = "mail.smtp.from";
 
     private JTextField imapHostTextField;
     private JTextField imapPortTextField;
@@ -38,13 +39,11 @@ public class Settings {
     private JButton okButton;
     private JButton cancelButton;
 
-    private LocalDB db;
     private Properties main;
     private Properties mail;
 
     public Settings(LocalDB db) {
 
-        this.db = db;
         main = db.getProperties();
         mail = db.getMailProperties();
 
@@ -78,6 +77,7 @@ public class Settings {
                 try {
 
                     // Account
+                    main.setProperty(LocalDB.ACCOUNT_NAME, nameTextField.getText());
                     main.setProperty(LocalDB.SESSION_EMAIL_ADDRESS, emailTextField.getText());
 
                     // IMAP
@@ -93,12 +93,13 @@ public class Settings {
                     mail.setProperty(SMTP_PORT, smtpPortTextField.getText());
                     mail.setProperty(SMTP_SSL, "" + smtpSslRadioButton.isSelected());
                     mail.setProperty(SMTP_TLS, "" + smtpTlsRadioButton.isSelected());
-                    mail.getProperty(SMTP_AUTH, "" + smtpAuthCheckBox.isSelected());
+                    mail.setProperty(SMTP_AUTH, "" + smtpAuthCheckBox.isSelected());
                     if (smtpAuthCheckBox.isSelected()) {
 
                         main.setProperty(LocalDB.MAIL_OUTGOING_USERNAME, smtpUsernameTextField.getText());
                         main.setProperty(LocalDB.MAIL_OUTGOING_PASSWORD, smtpPasswordField.getText());
                     }
+                    mail.setProperty(SMTP_FROM, emailTextField.getText());
 
                     db.saveProperties();
 
@@ -122,6 +123,7 @@ public class Settings {
     private void populate() {
 
         // Account
+        nameTextField.setText(main.getProperty(LocalDB.ACCOUNT_NAME, ""));
         emailTextField.setText(main.getProperty(LocalDB.SESSION_EMAIL_ADDRESS, ""));
 
         // IMAP
@@ -145,6 +147,9 @@ public class Settings {
     private String checkFields() {
 
         // Account
+        if (nameTextField.getText().isEmpty())
+            return "Please insert your full name";
+
         if (!emailTextField.getText().contains("@"))
             return "Please insert a vaild email address";
 

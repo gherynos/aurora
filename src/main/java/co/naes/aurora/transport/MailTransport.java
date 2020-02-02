@@ -12,6 +12,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.SubjectTerm;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.logging.Logger;
@@ -72,6 +73,9 @@ public class MailTransport implements AuroraTransport {
 
             // Create message
             message = new MimeMessage(getSession(false));
+            message.setFrom(new InternetAddress(
+                    db.getProperties().getProperty(LocalDB.SESSION_EMAIL_ADDRESS),
+                    db.getProperties().getProperty(LocalDB.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
             message.setSubject("Aurora key");  // TODO: change
             message.setHeader(HEADER, HEADER_KEY);
@@ -85,7 +89,7 @@ public class MailTransport implements AuroraTransport {
             sb.append("\n");
             message.setContent(sb.toString(), "text/plain");
 
-        } catch (MessagingException ex) {
+        } catch (MessagingException | UnsupportedEncodingException ex) {
 
             throw new AuroraException("Error while creating key message: " + ex.getMessage(), ex);
         }
@@ -111,6 +115,9 @@ public class MailTransport implements AuroraTransport {
 
             // Create message
             message = new MimeMessage(getSession(false));
+            message.setFrom(new InternetAddress(
+                    db.getProperties().getProperty(LocalDB.SESSION_EMAIL_ADDRESS),
+                    db.getProperties().getProperty(LocalDB.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject("Aurora message");  // TODO: change
@@ -125,7 +132,7 @@ public class MailTransport implements AuroraTransport {
             sb.append("\n");
             message.setContent(sb.toString(), "text/plain");
 
-        } catch (MessagingException ex) {
+        } catch (MessagingException | UnsupportedEncodingException ex) {
 
             throw new AuroraException("Error while creating message: " + ex.getMessage(), ex);
         }

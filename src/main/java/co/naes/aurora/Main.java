@@ -112,7 +112,9 @@ public class Main {
             }
         });
 
-//        messenger.sendKeys("service@naes.co");
+//        new Settings(db);
+
+//        messenger.sendKeys("luca.zanconato@naes.co");
 //        Thread.sleep(30000);
 //        messenger.receive();
 
