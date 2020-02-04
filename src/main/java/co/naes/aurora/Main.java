@@ -8,6 +8,7 @@ import co.naes.aurora.parts.Part;
 import co.naes.aurora.transport.IncomingMessageHandler;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
+import co.naes.aurora.ui.RequestFocusListener;
 import co.naes.aurora.ui.Settings;
 
 import javax.swing.*;
@@ -22,95 +23,47 @@ public class Main {
 
     public static String CONF_FOLDER = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
 
-    private char[] temp_pwd;
+    private LocalDB db;
 
     Main() throws Exception {
 
         LogManager.getLogManager().readConfiguration(this.getClass().getResourceAsStream("/logging.properties"));
 
-        LocalDB db = new LocalDB("theDbPassword");
+        // ask for db password
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel("Please enter the password:");
+        JPasswordField pass = new JPasswordField(15);
+        panel.add(label);
+        panel.add(pass);
+        pass.addAncestorListener(new RequestFocusListener());
+        String[] options = new String[]{"OK", "Cancel"};
+        int option = JOptionPane.showOptionDialog(null, panel, "Unlock DB",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+                null, options, options[0]);
+
+        if (option == 0) {
+
+            try {
+
+                db = new LocalDB(new String(pass.getPassword()));
+
+            } catch (AuroraException ex) {
+
+                JOptionPane.showMessageDialog(null, "Unable to unlock DB: wrong password?",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                System.exit(-1);
+            }
+
+        } else
+            System.exit(-1);
+
         AuroraSession session = new AuroraSession(db);
 
         AuroraTransport transport = new MailTransport(db);
 
-        Messenger messenger = new Messenger(db, transport, session, new Messenger.StatusHandler() {
+        var mainFrame = new co.naes.aurora.ui.Main(db);
 
-            @Override
-            public void sendingPart(int sequenceNumber, String fileId, String emailAddress) {
-
-                System.out.println("Sending part " + sequenceNumber + " " + fileId + " " + emailAddress);
-            }
-
-            @Override
-            public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
-
-                System.out.println("Unable to send part " + sequenceNumber + " " + fileId + " " + emailAddress);
-            }
-
-            @Override
-            public void discardedPart(int sequenceNumber, String fileId, String emailAddress) {
-
-                System.out.println("Discarded part " + sequenceNumber + " " + fileId + " " + emailAddress);
-            }
-
-            @Override
-            public void processingPart(int sequenceNumber, String fileId, String emailAddress) {
-
-                System.out.println("Processing part " + sequenceNumber + " " + fileId + " " + emailAddress);
-            }
-
-            @Override
-            public void processingConfirmation(int sequenceNumber, String fileId, String emailAddress) {
-
-                System.out.println("Processing confirmation " + sequenceNumber + " " + fileId + " " + emailAddress);
-            }
-
-            @Override
-            public void errorsWhileSendingMessages(String message) {
-
-                System.out.println("Error: " + message);
-            }
-
-            @Override
-            public void errorsWhileReceivingMessages(String message) {
-
-                System.out.println("Error: " + message);
-            }
-
-            @Override
-            public void errorsWhileProcessingReceivedMessage(String message) {
-
-                System.out.println("Error: " + message);
-            }
-
-            @Override
-            public void errorsWhileProcessingKeyMessage(String message) {
-
-                System.out.println("Error: " + message);
-            }
-
-            @Override
-            public void fileComplete(String fileId, String emailAddress, String path) {
-
-                System.out.println("File complete " + " " + fileId + " " + emailAddress + " " + path);
-            }
-
-            @Override
-            public char[] keyMessageReceived() {
-
-                System.out.println("Key message received");
-
-                return temp_pwd;
-            }
-
-            @Override
-            public void keyMessageSent(char[] password) {
-
-                System.out.println("Key message sent");
-
-                temp_pwd = password;
-            }
-        });
+        Messenger messenger = new Messenger(db, transport, session, mainFrame);
 
 //        new Settings(db);
 

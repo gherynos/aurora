@@ -6,8 +6,12 @@ import co.naes.aurora.LocalDB;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Settings {
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private final String IMAP_HOST = "mail.imap.host";
     private final String IMAP_PORT = "mail.imap.port";
@@ -107,8 +111,9 @@ public class Settings {
 
                 } catch (AuroraException ex) {
 
-                    JOptionPane.showMessageDialog(frame,
-                            String.format("Unable to save settings: %s", ex.getMessage()),
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                    JOptionPane.showMessageDialog(frame, "Unable to save settings",
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }

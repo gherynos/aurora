@@ -1,5 +1,7 @@
 package co.naes.aurora;
 
+import co.naes.aurora.ui.IncomingFile;
+import co.naes.aurora.ui.OutgoingFile;
 import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
@@ -46,9 +48,9 @@ public class LocalDB {
                 st.execute("CREATE TABLE PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (EMAIL VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
-                st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_OF PRIMARY KEY(FILE_ID, EMAIL), CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
+                st.execute("CREATE TABLE OUTGOING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, TOTAL_PARTS INT, CONSTRAINT PK_OF PRIMARY KEY(FILE_ID, EMAIL), CONSTRAINT FK_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
                 st.execute("CREATE TABLE PARTS_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PS_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID), CONSTRAINT FK_PS_EMAIL FOREIGN KEY(EMAIL) REFERENCES OUTGOING_FILES(EMAIL));");
-                st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, COMPLETE BOOL, CONSTRAINT PK_IF PRIMARY KEY (FILE_ID, EMAIL), CONSTRAINT FK_INC_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
+                st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, TOTAL_PARTS INT, COMPLETE BOOL, CONSTRAINT PK_IF PRIMARY KEY (FILE_ID, EMAIL), CONSTRAINT FK_INC_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
                 st.execute("CREATE TABLE PARTS_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_PR PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PR_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID), CONSTRAINT FK_PR_EMAIL FOREIGN KEY(EMAIL) REFERENCES INCOMING_FILES(EMAIL));");
 
             } else {
@@ -193,14 +195,15 @@ public class LocalDB {
         }
     }
 
-    public void addOutgoingFile(String fileId, String path, String emailAddress) throws AuroraException {
+    public void addOutgoingFile(String fileId, String path, String emailAddress, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?)")) {
+             var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?, ?)")) {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setObject(3, emailAddress);
+            st.setString(3, emailAddress);
+            st.setInt(4, totalParts);
 
             st.execute();
 
@@ -321,14 +324,15 @@ public class LocalDB {
         }
     }
 
-    public void addIncomingFile(String fileId, String path, String emailAddress) throws AuroraException {
+    public void addIncomingFile(String fileId, String path, String emailAddress, int totalParts) throws AuroraException {
 
         try (var conn = getConnection();
-             var st = conn.prepareStatement("INSERT INTO INCOMING_FILES VALUES(?, ?, ?, FALSE)")) {
+             var st = conn.prepareStatement("INSERT INTO INCOMING_FILES VALUES(?, ?, ?, ?, FALSE)")) {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setObject(3, emailAddress);
+            st.setString(3, emailAddress);
+            st.setInt(4, totalParts);
 
             st.execute();
 
@@ -445,6 +449,47 @@ public class LocalDB {
         } catch (SQLException ex) {
 
             throw new AuroraException("Error while marking files as complete on the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<IncomingFile> getIncomingFiles() throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            var res = st.executeQuery("SELECT INC.FILE_ID, INC.EMAIL, INC.TOTAL_PARTS, COUNT(P.SEQUENCE) FROM INCOMING_FILES INC, PARTS_TO_RECEIVE P WHERE P.FILE_ID = INC.FILE_ID GROUP BY P.FILE_ID");
+
+            List<IncomingFile> out = new ArrayList<>();
+            while (res.next())
+                out.add(new IncomingFile(res.getString(1), res.getString(2), res.getInt(4), res.getInt(3)));
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading incoming files: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<OutgoingFile> getOutgoingFiles() throws AuroraException {
+
+        try (var conn = getConnection();
+             var st = conn.createStatement()) {
+
+            var res = st.executeQuery("SELECT OF.FILE_ID, OF.EMAIL, OF.TOTAL_PARTS, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=TRUE GROUP BY FILE_ID) AS SENT, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=FALSE GROUP BY FILE_ID) AS TO_SEND FROM OUTGOING_FILES OF");
+
+            List<OutgoingFile> out = new ArrayList<>();
+            while (res.next()) {
+
+                if (res.getObject(4) != null || res.getObject(5) != null)
+                    out.add(new OutgoingFile(res.getString(1), res.getString(2), res.getInt(4), res.getInt(5), res.getInt(3)));
+            }
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading outgoing files: " + ex.getMessage(), ex);
         }
     }
 }

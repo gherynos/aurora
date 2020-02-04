@@ -25,6 +25,8 @@ public class Messenger implements IncomingMessageHandler  {
 
     public interface StatusHandler {
 
+        void self(Messenger messenger);
+
         void sendingPart(int sequenceNumber, String fileId, String emailAddress);
 
         void unableToSendPart(int sequenceNumber, String fileId, String emailAddress);
@@ -71,6 +73,8 @@ public class Messenger implements IncomingMessageHandler  {
         this.session = session;
         this.handler = handler;
 
+        handler.self(this);
+
         transport.setIncomingMessageHandler(this);
 
         File iTemp = new File(incomingTempPath);
@@ -83,9 +87,8 @@ public class Messenger implements IncomingMessageHandler  {
         String fileId = new File(filePath).getName();
         try {
 
-            db.addOutgoingFile(fileId, filePath, recipient.getEmailAddress());
-
             Splitter sp = new Splitter(fileId, filePath);
+            db.addOutgoingFile(fileId, filePath, recipient.getEmailAddress(), sp.getTotalParts());
             db.addPartsToSend(fileId, recipient.getEmailAddress(), sp.getTotalParts());
 
             return true;
@@ -199,7 +202,7 @@ public class Messenger implements IncomingMessageHandler  {
                     incomingFile[0] = part.getId().getFileId();
                     incomingFile[1] = incomingTempPath + File.separator + part.getId().getFileId() + ".temp";
                     incomingFile[2] = sender.getEmailAddress();
-                    db.addIncomingFile(incomingFile[0], incomingFile[1], incomingFile[2]);
+                    db.addIncomingFile(incomingFile[0], incomingFile[1], incomingFile[2], part.getTotal());
 
                     // track parts to come
                     db.addPartsToReceive(part.getId().getFileId(), sender.getEmailAddress(), part.getTotal());
