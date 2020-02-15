@@ -19,6 +19,7 @@ public class Main implements Messenger.StatusHandler {
     private JTable incomingTable;
     private JTable outgoingTable;
     private JLabel statusLabel;
+    private JButton settingsButton;
 
     private LocalDB db;
 
@@ -30,6 +31,8 @@ public class Main implements Messenger.StatusHandler {
     private Messenger messenger;
 
     private StatusModal statusModal;
+
+    private Settings settings;
 
     public Main(LocalDB db) {
 
@@ -107,6 +110,14 @@ public class Main implements Messenger.StatusHandler {
                 sendAndReceiveButton.setEnabled(true);
 
             }).start();
+        });
+        settingsButton.addActionListener(e -> {
+
+            if (settings == null)
+                settings = new Settings(db, (boolean saved) -> settings = null);
+
+            else
+                settings.requestFocus();
         });
     }
 

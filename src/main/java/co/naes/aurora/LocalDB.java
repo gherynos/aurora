@@ -6,6 +6,7 @@ import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -33,6 +34,11 @@ public class LocalDB {
     private Properties mailProperties = new Properties();
 
     private static final int COUNTER = 5;
+
+    public static boolean exists() {
+
+        return new File(String.format("%s%saurora.mv.db", Main.CONF_FOLDER, File.separator)).exists();
+    }
 
     public LocalDB(String password) throws AuroraException {
 

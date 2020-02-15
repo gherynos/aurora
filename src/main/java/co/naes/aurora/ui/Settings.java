@@ -11,6 +11,11 @@ import java.util.logging.Logger;
 
 public class Settings {
 
+    public interface SettingsStatusHandler {
+
+        void settingsClosed(boolean saved);
+    }
+
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private final String IMAP_HOST = "mail.imap.host";
@@ -46,7 +51,9 @@ public class Settings {
     private Properties main;
     private Properties mail;
 
-    public Settings(LocalDB db) {
+    private JFrame frame;
+
+    public Settings(LocalDB db, SettingsStatusHandler statusHandler) {
 
         main = db.getProperties();
         mail = db.getMailProperties();
@@ -61,7 +68,7 @@ public class Settings {
             smtpPasswordField.setEnabled(smtpAuthCheckBox.isSelected());
         });
 
-        JFrame frame = new JFrame("Settings");
+        frame = new JFrame("Settings");
         frame.setContentPane(mainPanel);
         frame.setMinimumSize(
                 new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
@@ -108,6 +115,7 @@ public class Settings {
                     db.saveProperties();
 
                     frame.dispose();
+                    statusHandler.settingsClosed(true);
 
                 } catch (AuroraException ex) {
 
@@ -122,6 +130,7 @@ public class Settings {
         cancelButton.addActionListener(e -> {
 
             frame.dispose();
+            statusHandler.settingsClosed(false);
         });
     }
 
@@ -197,5 +206,10 @@ public class Settings {
             return "Please insert the SMTP password";
 
         return null;
+    }
+
+    public void requestFocus() {
+
+        frame.requestFocus();
     }
 }

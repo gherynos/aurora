@@ -74,6 +74,12 @@
               <text value="Send and Receive"/>
             </properties>
           </component>
+          <component id="6902a" class="javax.swing.JButton" binding="settingsButton">
+            <constraints/>
+            <properties>
+              <text value="Settings"/>
+            </properties>
+          </component>
         </children>
       </toolbar>
       <grid id="38dd8" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
