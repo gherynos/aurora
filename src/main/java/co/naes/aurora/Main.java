@@ -1,23 +1,12 @@
 package co.naes.aurora;
 
-import co.naes.aurora.msg.key.InKeyMessage;
-import co.naes.aurora.msg.InMessage;
-import co.naes.aurora.msg.in.PartInMessage;
-import co.naes.aurora.msg.in.StringInMessage;
-import co.naes.aurora.parts.Part;
-import co.naes.aurora.transport.IncomingMessageHandler;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
 import co.naes.aurora.ui.RequestFocusListener;
-import co.naes.aurora.ui.Settings;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.Arrays;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {
 
@@ -63,18 +52,7 @@ public class Main {
 
         var mainFrame = new co.naes.aurora.ui.Main(db);
 
-        Messenger messenger = new Messenger(db, transport, session, mainFrame);
-
-//        new Settings(db);
-
-//        messenger.sendKeys("luca.zanconato@naes.co");
-//        Thread.sleep(30000);
-//        messenger.receive();
-
-//        PublicKeys self = db.getPublicKeys("service@naes.co");
-//        messenger.addFileToSend(self, "/Users/gherynos/Downloads/BonificoOrdinario.pdf.pdf");
-//        messenger.send();
-//        messenger.receive();
+        new Messenger(db, transport, session, mainFrame);
     }
 
     public static void main(String[] args) throws Exception {

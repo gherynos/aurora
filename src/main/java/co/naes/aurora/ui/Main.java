@@ -29,9 +29,13 @@ public class Main implements Messenger.StatusHandler {
 
     private Messenger messenger;
 
+    private StatusModal statusModal;
+
     public Main(LocalDB db) {
 
         this.db = db;
+
+        statusModal = new StatusModal("Aurora");
 
         frame = new JFrame("Aurora");
         frame.setContentPane(mainPanel);
@@ -86,14 +90,21 @@ public class Main implements Messenger.StatusHandler {
 
             new Thread(() -> {
 
-                // TODO: show progress
+                sendAndReceiveButton.setEnabled(false);
 
+                statusModal.setMessage("Sending messages...");
                 messenger.send();
+
+                statusModal.setMessage("Receiving messages...");
                 messenger.receive();
+
+                statusModal.setMessage("Updating database...");
                 updateTables();
                 clearStatus();
 
-                // TODO: clear progress
+                statusModal.hide();
+
+                sendAndReceiveButton.setEnabled(true);
 
             }).start();
         });
