@@ -5,6 +5,8 @@ import co.naes.aurora.LocalDB;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +55,7 @@ public class Settings {
 
     private JFrame frame;
 
-    public Settings(LocalDB db, SettingsStatusHandler statusHandler) {
+    public Settings(Component relativeTo, LocalDB db, SettingsStatusHandler statusHandler) {
 
         main = db.getProperties();
         mail = db.getMailProperties();
@@ -74,8 +76,15 @@ public class Settings {
                 new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
-        frame.setLocationRelativeTo(null);
+        frame.setLocationRelativeTo(relativeTo);
         frame.setVisible(true);
+        frame.addWindowListener(new WindowAdapter() {
+
+            public void windowClosing(WindowEvent e) {
+
+                statusHandler.settingsClosed(false);
+            }
+        });
 
         okButton.addActionListener(e -> {
 

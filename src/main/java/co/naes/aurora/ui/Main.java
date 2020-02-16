@@ -20,6 +20,7 @@ public class Main implements Messenger.StatusHandler {
     private JTable outgoingTable;
     private JLabel statusLabel;
     private JButton settingsButton;
+    private JButton sendKeysButton;
 
     private LocalDB db;
 
@@ -33,6 +34,8 @@ public class Main implements Messenger.StatusHandler {
     private StatusModal statusModal;
 
     private Settings settings;
+
+    private SendKeys sendKeys;
 
     public Main(LocalDB db) {
 
@@ -114,10 +117,49 @@ public class Main implements Messenger.StatusHandler {
         settingsButton.addActionListener(e -> {
 
             if (settings == null)
-                settings = new Settings(db, (boolean saved) -> settings = null);
+                settings = new Settings(mainPanel, db, (boolean saved) -> settings = null);
 
             else
                 settings.requestFocus();
+        });
+        sendKeysButton.addActionListener(e -> {
+
+            if (sendKeys == null)
+                sendKeys = new SendKeys(mainPanel, new SendKeys.SendKeysStatusHandler() {
+
+                    @Override
+                    public void sendKeys(String email) {
+
+                        new Thread(() -> {
+
+                            statusModal.setMessage("Sending key message...");
+
+                            try {
+
+                                messenger.sendKeys(email);
+
+                            } catch (AuroraException ex) {
+
+                                JOptionPane.showMessageDialog(frame, "Unable to send keys to recipient",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+
+                            } finally {
+
+                                statusModal.hide();
+                            }
+
+                        }).start();
+                    }
+
+                    @Override
+                    public void sendKeysClosed() {
+
+                        sendKeys = null;
+                    }
+                });
+
+            else
+                sendKeys.requestFocus();
         });
     }
 
@@ -244,6 +286,11 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void keyMessageSent(char[] password) {
 
-        // TODO: UI
+        if (sendKeys == null)
+            JOptionPane.showMessageDialog(frame, "Keys sent but the dialog is closed",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+
+        else
+            sendKeys.keysSent(password);
     }
 }

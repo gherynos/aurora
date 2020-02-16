@@ -59,7 +59,7 @@
       </grid>
       <toolbar id="3dcd">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="-1" height="20"/>
           </grid>
         </constraints>
@@ -78,6 +78,12 @@
             <constraints/>
             <properties>
               <text value="Settings"/>
+            </properties>
+          </component>
+          <component id="edff0" class="javax.swing.JButton" binding="sendKeysButton">
+            <constraints/>
+            <properties>
+              <text value="Send Keys"/>
             </properties>
           </component>
         </children>

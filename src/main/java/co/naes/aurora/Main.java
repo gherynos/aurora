@@ -58,7 +58,7 @@ public class Main {
         if (!db.getProperties().containsKey(LocalDB.MAIL_INCOMING_PASSWORD)) {
 
             // connection settings need to be entered before creating the other components
-            new Settings(db, saved -> {
+            new Settings(null, db, saved -> {
 
                 if (!saved)
                     System.exit(-1);
