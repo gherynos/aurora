@@ -41,8 +41,6 @@ public class Main implements Messenger.StatusHandler {
 
         this.db = db;
 
-        statusModal = new StatusModal("Aurora");
-
         frame = new JFrame("Aurora");
         frame.setContentPane(mainPanel);
         frame.setMinimumSize(
@@ -51,6 +49,8 @@ public class Main implements Messenger.StatusHandler {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        statusModal = new StatusModal(frame, "Aurora");
 
         // incoming files
         incomingModel = new DefaultTableModel() {
@@ -132,6 +132,7 @@ public class Main implements Messenger.StatusHandler {
 
                         new Thread(() -> {
 
+                            statusModal.setRelativeTo(sendKeys);
                             statusModal.setMessage("Sending key message...");
 
                             try {
@@ -146,6 +147,7 @@ public class Main implements Messenger.StatusHandler {
                             } finally {
 
                                 statusModal.hide();
+                                statusModal.setRelativeTo(frame);
                             }
 
                         }).start();
@@ -278,9 +280,10 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public char[] keyMessageReceived() {
 
-        // TODO: UI
+        var kr = new KeysReceived(frame);
+        kr.setVisible(true);
 
-        return new char[0];
+        return kr.getPassword();
     }
 
     @Override

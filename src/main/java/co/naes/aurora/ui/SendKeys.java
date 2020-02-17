@@ -1,16 +1,14 @@
 package co.naes.aurora.ui;
 
-import co.naes.aurora.AuroraException;
-import co.naes.aurora.Messenger;
+import co.naes.aurora.Constellations;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SendKeys {
+public class SendKeys extends JFrame {
 
     public interface SendKeysStatusHandler {
 
@@ -34,21 +32,18 @@ public class SendKeys {
     private JTextField block5TextField;
     private JTextField block6TextField;
 
-    private JFrame frame;
-
     private String[] password;
 
     public SendKeys(Component relativeTo, SendKeysStatusHandler statusHandler) {
 
-        frame = new JFrame("Send key");
-        frame.setContentPane(mainPanel);
-        frame.setMinimumSize(
-                new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setLocationRelativeTo(relativeTo);
-        frame.setVisible(true);
-        frame.addWindowListener(new WindowAdapter() {
+        super("Send key");
+
+        setContentPane(mainPanel);
+        setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(relativeTo);
+        addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
 
@@ -59,7 +54,7 @@ public class SendKeys {
         sendKeysButton.addActionListener(e -> {
 
             if (!emailTextField.getText().contains("@"))
-                JOptionPane.showMessageDialog(frame, "Please insert a vaild email address",
+                JOptionPane.showMessageDialog(this, "Please insert a vaild email address",
                         "Error", JOptionPane.ERROR_MESSAGE);
 
             else {
@@ -83,20 +78,17 @@ public class SendKeys {
 
         closeButton.addActionListener(e -> {
 
-            frame.dispose();
+            dispose();
             statusHandler.sendKeysClosed();
         });
+
+        setVisible(true);
     }
 
     public void keysSent(char[] password) {
 
         keysReceivedButton.setEnabled(true);
 
-        this.password = new String(password).split(" ");
-    }
-
-    public void requestFocus() {
-
-        frame.requestFocus();
+        this.password = new String(password).split(Constellations.SEPARATOR);
     }
 }

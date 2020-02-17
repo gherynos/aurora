@@ -1,6 +1,7 @@
 package co.naes.aurora.ui;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class StatusModal {
 
@@ -12,8 +13,11 @@ public class StatusModal {
 
     private String title;
 
-    public StatusModal(String title) {
+    private Component relativeTo;
 
+    public StatusModal(Component relativeTo, String title) {
+
+        this.relativeTo = relativeTo;
         this.title = title;
 
         progressBar = new JProgressBar();
@@ -25,8 +29,9 @@ public class StatusModal {
 
     private void createDialog() {
 
-        dialog = pane.createDialog(null, title);
+        dialog = pane.createDialog(relativeTo, title);
         dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        dialog.setLocationRelativeTo(relativeTo);
     }
 
     public void setMessage(String message) {
@@ -49,5 +54,13 @@ public class StatusModal {
 
         dialog.dispose();
         dialog = null;
+    }
+
+    public void setRelativeTo(Component component) {
+
+        relativeTo = component;
+
+        if (dialog != null)
+            dialog.setLocationRelativeTo(component);
     }
 }

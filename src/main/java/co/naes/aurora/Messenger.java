@@ -274,6 +274,9 @@ public class Messenger implements IncomingMessageHandler  {
         try {
 
             char[] password = handler.keyMessageReceived();
+            if (password == null)
+                return true;
+
             PublicKeys keys = keyMessage.getPublicKeys(password);
 
             db.storePublicKeys(keys);
@@ -281,7 +284,7 @@ public class Messenger implements IncomingMessageHandler  {
         } catch (AuroraException ex) {
 
             logger.log(Level.SEVERE, ex.getMessage(), ex);
-            handler.errorsWhileProcessingKeyMessage(ex.getMessage());
+            handler.errorsWhileProcessingKeyMessage("Wrong password");
         }
 
         // remove key message in any case
