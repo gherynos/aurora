@@ -35,4 +35,10 @@ public class PublicKeys {
 
         return emailAddress;
     }
+
+    @Override
+    public String toString() {
+
+        return emailAddress;
+    }
 }

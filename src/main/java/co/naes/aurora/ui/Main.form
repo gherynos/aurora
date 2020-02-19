@@ -86,6 +86,12 @@
               <text value="Send Keys"/>
             </properties>
           </component>
+          <component id="e11b3" class="javax.swing.JButton" binding="addFileButton">
+            <constraints/>
+            <properties>
+              <text value="Add file"/>
+            </properties>
+          </component>
         </children>
       </toolbar>
       <grid id="38dd8" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

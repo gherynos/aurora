@@ -36,7 +36,7 @@ public class SendKeys extends JFrame {
 
     public SendKeys(Component relativeTo, SendKeysStatusHandler statusHandler) {
 
-        super("Send key");
+        super("Send keys");
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));

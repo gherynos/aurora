@@ -3,6 +3,7 @@ package co.naes.aurora.ui;
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.LocalDB;
 import co.naes.aurora.Messenger;
+import co.naes.aurora.PublicKeys;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -21,6 +22,7 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     private JLabel statusLabel;
     private JButton settingsButton;
     private JButton sendKeysButton;
+    private JButton addFileButton;
 
     private LocalDB db;
 
@@ -160,6 +162,26 @@ public class Main extends JFrame implements Messenger.StatusHandler {
 
             else
                 sendKeys.requestFocus();
+        });
+        addFileButton.addActionListener(e -> {
+
+            try {
+
+                AddFile af = new AddFile(this, db.listPublicKeysAddresses());
+                af.setVisible(true);
+                if (!af.isCanceled()) {
+
+                    PublicKeys recipient = db.getPublicKeys(af.getSelectedRecipient());
+                    messenger.addFileToSend(recipient, af.getSelectedFile().getAbsolutePath());
+                    updateTables();
+                }
+
+            } catch (AuroraException ex) {
+
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                showError("Unable to load recipients");
+            }
         });
     }
 
