@@ -16,9 +16,17 @@ import java.io.IOException;
 
 public class InKeyMessage extends KeyMessage {
 
-    public InKeyMessage(byte[] ciphertext) {
+    private String sender;
+
+    public InKeyMessage(byte[] ciphertext, String sender) {
 
         this.ciphertext = ciphertext;
+        this.sender = sender;
+    }
+
+    public String getSender() {
+
+        return sender;
     }
 
     public PublicKeys getPublicKeys(char[] password) throws AuroraException {

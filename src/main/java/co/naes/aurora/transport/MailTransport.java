@@ -201,7 +201,9 @@ public class MailTransport implements AuroraTransport {
                         content = content.substring(start, end + 38);
                         if (header[0].equals(HEADER_KEY)) {
 
-                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes()));
+                            InternetAddress from = (InternetAddress) message.getFrom()[0];
+                            String sender = String.format("%s - %s", from.getPersonal(), from.getAddress());
+                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes(), sender));
 
                             // mark message for deletion
                             message.setFlag(Flags.Flag.DELETED, res);

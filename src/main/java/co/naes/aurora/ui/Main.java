@@ -278,9 +278,9 @@ public class Main implements Messenger.StatusHandler {
     }
 
     @Override
-    public char[] keyMessageReceived() {
+    public char[] keyMessageReceived(String sender) {
 
-        var kr = new KeysReceived(frame);
+        var kr = new KeysReceived(frame, sender);
         kr.setVisible(true);
 
         return kr.getPassword();
@@ -295,5 +295,12 @@ public class Main implements Messenger.StatusHandler {
 
         else
             sendKeys.keysSent(password);
+    }
+
+    @Override
+    public void keysStored(String emailAddress) {
+
+        JOptionPane.showMessageDialog(frame, String.format("Keys for %s successfully stored", emailAddress),
+                "Keys stored", JOptionPane.INFORMATION_MESSAGE);
     }
 }

@@ -17,16 +17,17 @@ public class KeysReceived extends JDialog {
     private JComboBox<String> block6ComboBox;
     private JButton unlockButton;
     private JButton cancelButton;
+    private JTextField senderTextField;
 
     private char[] password;
 
-    public KeysReceived(Frame owner) {
+    public KeysReceived(Frame owner, String sender) {
 
         super(owner, "Keys received", true);
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(owner);
 
         unlockButton.addActionListener(e -> {
@@ -57,6 +58,9 @@ public class KeysReceived extends JDialog {
                 dispose();
             }
         });
+
+        senderTextField.setText(sender);
+        pack();
     }
 
     private void createUIComponents() {

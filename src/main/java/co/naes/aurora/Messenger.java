@@ -47,9 +47,11 @@ public class Messenger implements IncomingMessageHandler  {
 
         void fileComplete(String fileId, String emailAddress, String path);
 
-        char[] keyMessageReceived();
+        char[] keyMessageReceived(String sender);
 
         void keyMessageSent(char[] password);
+
+        void keysStored(String emailAddress);
     };
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -273,13 +275,15 @@ public class Messenger implements IncomingMessageHandler  {
 
         try {
 
-            char[] password = handler.keyMessageReceived();
+            char[] password = handler.keyMessageReceived(keyMessage.getSender());
             if (password == null)
                 return true;
 
             PublicKeys keys = keyMessage.getPublicKeys(password);
 
             db.storePublicKeys(keys);
+
+            handler.keysStored(keys.getEmailAddress());
 
         } catch (AuroraException ex) {
 
