@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Settings {
+public class Settings extends JFrame {
 
     public interface SettingsStatusHandler {
 
@@ -53,9 +53,9 @@ public class Settings {
     private Properties main;
     private Properties mail;
 
-    private JFrame frame;
-
     public Settings(Component relativeTo, LocalDB db, SettingsStatusHandler statusHandler) {
+
+        super("Settings");
 
         main = db.getProperties();
         mail = db.getMailProperties();
@@ -70,15 +70,12 @@ public class Settings {
             smtpPasswordField.setEnabled(smtpAuthCheckBox.isSelected());
         });
 
-        frame = new JFrame("Settings");
-        frame.setContentPane(mainPanel);
-        frame.setMinimumSize(
-                new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setLocationRelativeTo(relativeTo);
-        frame.setVisible(true);
-        frame.addWindowListener(new WindowAdapter() {
+        setContentPane(mainPanel);
+        setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(relativeTo);
+        addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
 
@@ -90,7 +87,7 @@ public class Settings {
 
             String res = checkFields();
             if (res != null)
-                JOptionPane.showMessageDialog(frame, res, "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, res, "Error", JOptionPane.ERROR_MESSAGE);
 
             else {
 
@@ -123,14 +120,14 @@ public class Settings {
 
                     db.saveProperties();
 
-                    frame.dispose();
+                    dispose();
                     statusHandler.settingsClosed(true);
 
                 } catch (AuroraException ex) {
 
                     logger.log(Level.SEVERE, ex.getMessage(), ex);
 
-                    JOptionPane.showMessageDialog(frame, "Unable to save settings",
+                    JOptionPane.showMessageDialog(this, "Unable to save settings",
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -138,9 +135,11 @@ public class Settings {
 
         cancelButton.addActionListener(e -> {
 
-            frame.dispose();
+            dispose();
             statusHandler.settingsClosed(false);
         });
+
+        setVisible(true);
     }
 
     private void populate() {
@@ -215,10 +214,5 @@ public class Settings {
             return "Please insert the SMTP password";
 
         return null;
-    }
-
-    public void requestFocus() {
-
-        frame.requestFocus();
     }
 }

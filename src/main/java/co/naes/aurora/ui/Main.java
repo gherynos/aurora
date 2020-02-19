@@ -10,7 +10,7 @@ import java.awt.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Main implements Messenger.StatusHandler {
+public class Main extends JFrame implements Messenger.StatusHandler {
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
@@ -23,8 +23,6 @@ public class Main implements Messenger.StatusHandler {
     private JButton sendKeysButton;
 
     private LocalDB db;
-
-    private JFrame frame;
 
     private DefaultTableModel incomingModel;
     private DefaultTableModel outgoingModel;
@@ -39,18 +37,18 @@ public class Main implements Messenger.StatusHandler {
 
     public Main(LocalDB db) {
 
+        super("Aurora");
+
         this.db = db;
 
-        frame = new JFrame("Aurora");
-        frame.setContentPane(mainPanel);
-        frame.setMinimumSize(
-                new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        setContentPane(mainPanel);
+        setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
 
-        statusModal = new StatusModal(frame, "Aurora");
+        statusModal = new StatusModal(this, "Aurora");
 
         // incoming files
         incomingModel = new DefaultTableModel() {
@@ -92,6 +90,7 @@ public class Main implements Messenger.StatusHandler {
         updateTables();
 
         // buttons actions
+        final JFrame me = this;
         sendAndReceiveButton.addActionListener(e -> {
 
             new Thread(() -> {
@@ -141,13 +140,13 @@ public class Main implements Messenger.StatusHandler {
 
                             } catch (AuroraException ex) {
 
-                                JOptionPane.showMessageDialog(frame, "Unable to send keys to recipient",
+                                JOptionPane.showMessageDialog(me, "Unable to send keys to recipient",
                                         "Error", JOptionPane.ERROR_MESSAGE);
 
                             } finally {
 
                                 statusModal.hide();
-                                statusModal.setRelativeTo(frame);
+                                statusModal.setRelativeTo(me);
                             }
 
                         }).start();
@@ -183,7 +182,7 @@ public class Main implements Messenger.StatusHandler {
 
             logger.log(Level.SEVERE, ex.getMessage(), ex);
 
-            JOptionPane.showMessageDialog(frame, "Unable to load files status",
+            JOptionPane.showMessageDialog(this, "Unable to load files status",
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -216,7 +215,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
 
-        JOptionPane.showMessageDialog(frame,
+        JOptionPane.showMessageDialog(this,
                 String.format("Unable to send part #%d of %s for %s", sequenceNumber, fileId, emailAddress),
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -242,7 +241,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void errorsWhileSendingMessages(String message) {
 
-        JOptionPane.showMessageDialog(frame,
+        JOptionPane.showMessageDialog(this,
                 String.format("Unable to send pending messages: %s", message),
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -250,7 +249,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void errorsWhileReceivingMessages(String message) {
 
-        JOptionPane.showMessageDialog(frame,
+        JOptionPane.showMessageDialog(this,
                 String.format("Unable to receive messages: %s", message),
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -258,7 +257,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void errorsWhileProcessingReceivedMessage(String message) {
 
-        JOptionPane.showMessageDialog(frame,
+        JOptionPane.showMessageDialog(this,
                 String.format("Unable to process incoming message: %s", message),
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -266,7 +265,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void errorsWhileProcessingKeyMessage(String message) {
 
-        JOptionPane.showMessageDialog(frame,
+        JOptionPane.showMessageDialog(this,
                 String.format("Unable to process incoming key message: %s", message),
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -280,7 +279,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public char[] keyMessageReceived(String sender) {
 
-        var kr = new KeysReceived(frame, sender);
+        var kr = new KeysReceived(this, sender);
         kr.setVisible(true);
 
         return kr.getPassword();
@@ -290,7 +289,7 @@ public class Main implements Messenger.StatusHandler {
     public void keyMessageSent(char[] password) {
 
         if (sendKeys == null)
-            JOptionPane.showMessageDialog(frame, "Keys sent but the dialog is closed",
+            JOptionPane.showMessageDialog(this, "Keys sent but the dialog is closed",
                     "Error", JOptionPane.ERROR_MESSAGE);
 
         else
@@ -300,7 +299,7 @@ public class Main implements Messenger.StatusHandler {
     @Override
     public void keysStored(String emailAddress) {
 
-        JOptionPane.showMessageDialog(frame, String.format("Keys for %s successfully stored", emailAddress),
+        JOptionPane.showMessageDialog(this, String.format("Keys for %s successfully stored", emailAddress),
                 "Keys stored", JOptionPane.INFORMATION_MESSAGE);
     }
 }
