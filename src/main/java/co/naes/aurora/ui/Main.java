@@ -140,8 +140,7 @@ public class Main extends JFrame implements Messenger.StatusHandler {
 
                             } catch (AuroraException ex) {
 
-                                JOptionPane.showMessageDialog(me, "Unable to send keys to recipient",
-                                        "Error", JOptionPane.ERROR_MESSAGE);
+                                showError("Unable to send keys to recipient");
 
                             } finally {
 
@@ -182,8 +181,7 @@ public class Main extends JFrame implements Messenger.StatusHandler {
 
             logger.log(Level.SEVERE, ex.getMessage(), ex);
 
-            JOptionPane.showMessageDialog(this, "Unable to load files status",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            showError("Unable to load files status");
         }
     }
 
@@ -198,6 +196,12 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     private void clearStatus() {
 
         updateStatus(" ");
+    }
+
+    private void showError(String message) {
+
+        JOptionPane.showMessageDialog(this, message.replace(": ", ":\n"),
+                "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     @Override
@@ -215,9 +219,7 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     @Override
     public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
 
-        JOptionPane.showMessageDialog(this,
-                String.format("Unable to send part #%d of %s for %s", sequenceNumber, fileId, emailAddress),
-                "Error", JOptionPane.ERROR_MESSAGE);
+        showError(String.format("Unable to send part #%d of %s for %s", sequenceNumber, fileId, emailAddress));
     }
 
     @Override
@@ -241,33 +243,25 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     @Override
     public void errorsWhileSendingMessages(String message) {
 
-        JOptionPane.showMessageDialog(this,
-                String.format("Unable to send pending messages: %s", message),
-                "Error", JOptionPane.ERROR_MESSAGE);
+        showError(message);
     }
 
     @Override
     public void errorsWhileReceivingMessages(String message) {
 
-        JOptionPane.showMessageDialog(this,
-                String.format("Unable to receive messages: %s", message),
-                "Error", JOptionPane.ERROR_MESSAGE);
+        showError(message);
     }
 
     @Override
     public void errorsWhileProcessingReceivedMessage(String message) {
 
-        JOptionPane.showMessageDialog(this,
-                String.format("Unable to process incoming message: %s", message),
-                "Error", JOptionPane.ERROR_MESSAGE);
+        showError(message);
     }
 
     @Override
     public void errorsWhileProcessingKeyMessage(String message) {
 
-        JOptionPane.showMessageDialog(this,
-                String.format("Unable to process incoming key message: %s", message),
-                "Error", JOptionPane.ERROR_MESSAGE);
+        showError(message);
     }
 
     @Override
@@ -289,8 +283,7 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     public void keyMessageSent(char[] password) {
 
         if (sendKeys == null)
-            JOptionPane.showMessageDialog(this, "Keys sent but the dialog is closed",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            showError("Keys sent but the dialog is closed");
 
         else
             sendKeys.keysSent(password);
