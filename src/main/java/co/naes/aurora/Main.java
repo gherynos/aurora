@@ -12,11 +12,11 @@ import java.util.logging.LogManager;
 
 public class Main {
 
-    public static String CONF_FOLDER = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
-
     private LocalDB db;
 
-    Main() {
+    private String confFolder;
+
+    Main(String cf) {
 
         try {
 
@@ -27,15 +27,22 @@ public class Main {
             ex.printStackTrace();
         }
 
+        if (cf != null)
+            confFolder = cf;
+
+        else
+            confFolder = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
+
         // ask for db password
+        boolean dbExists = LocalDB.exists(confFolder);
         JPanel panel = new JPanel();
-        JLabel label = new JLabel(LocalDB.exists()? "Password to unlock the DB:" : "New password for the DB:");
+        JLabel label = new JLabel(dbExists ? "Password to unlock the DB:" : "New password for the DB:");
         JPasswordField pass = new JPasswordField(15);
         panel.add(label);
         panel.add(pass);
         pass.addAncestorListener(new RequestFocusListener());
         String[] options = new String[]{"OK", "Cancel"};
-        int option = JOptionPane.showOptionDialog(null, panel, LocalDB.exists()? "Unlock DB" : "New DB",
+        int option = JOptionPane.showOptionDialog(null, panel, dbExists ? "Unlock DB" : "New DB",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, options, options[0]);
 
@@ -43,9 +50,11 @@ public class Main {
 
             try {
 
-                db = new LocalDB(new String(pass.getPassword()));
+                db = new LocalDB(confFolder, new String(pass.getPassword()));
 
             } catch (AuroraException ex) {
+
+                ex.printStackTrace();
 
                 JOptionPane.showMessageDialog(null, "Unable to unlock DB: wrong password?",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -80,7 +89,7 @@ public class Main {
             AuroraSession session = new AuroraSession(db);
             AuroraTransport transport = new MailTransport(db);
             var mainFrame = new co.naes.aurora.ui.Main(db);
-            new Messenger(db, transport, session, mainFrame);
+            new Messenger(db, transport, session, confFolder, mainFrame);
 
         } catch (AuroraException ex) {
 
@@ -92,6 +101,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        new Main();
+        new Main(args.length > 0 ? args[0] : null);
     }
 }

@@ -64,16 +64,18 @@ public class Messenger implements IncomingMessageHandler  {
 
     private StatusHandler handler;
 
-    private String incomingTempPath = Main.CONF_FOLDER + File.separator + "incoming";
+    private String incomingTempPath;
 
     private static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
 
-    Messenger(LocalDB db, AuroraTransport transport, AuroraSession session, StatusHandler handler) {
+    Messenger(LocalDB db, AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) {
 
         this.db = db;
         this.transport = transport;
         this.session = session;
         this.handler = handler;
+
+        incomingTempPath = confFolder + File.separator + "incoming";
 
         handler.self(this);
 

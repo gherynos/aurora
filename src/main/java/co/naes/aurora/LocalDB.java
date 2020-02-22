@@ -27,6 +27,8 @@ public class LocalDB {
     public static final String MAIL_OUTGOING_PASSWORD = "aurora.mail.outgoing.password";
     public static final String ACCOUNT_NAME = "aurora.account.name";
 
+    private String confFolder;
+
     private String password;
 
     private Properties properties = new Properties();
@@ -35,13 +37,14 @@ public class LocalDB {
 
     private static final int COUNTER = 5;
 
-    public static boolean exists() {
+    public static boolean exists(String confFolder) {
 
-        return new File(String.format("%s%saurora.mv.db", Main.CONF_FOLDER, File.separator)).exists();
+        return new File(String.format("%s%saurora.mv.db", confFolder, File.separator)).exists();
     }
 
-    public LocalDB(String password) throws AuroraException {
+    public LocalDB(String confFolder, String password) throws AuroraException {
 
+        this.confFolder = confFolder;
         this.password = password;
 
         try (var conn = getConnection();
@@ -80,7 +83,7 @@ public class LocalDB {
 
     private Connection getConnection() throws SQLException {
 
-        String url = String.format("jdbc:h2:%s/aurora;CIPHER=AES", Main.CONF_FOLDER);
+        String url = String.format("jdbc:h2:%s/aurora;CIPHER=AES", confFolder);
         String user = "sa";
         String pwds = String.format("%s aurora", password);
 
