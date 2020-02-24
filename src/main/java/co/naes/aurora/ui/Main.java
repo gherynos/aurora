@@ -95,28 +95,25 @@ public class Main extends JFrame implements Messenger.StatusHandler {
 
         // buttons actions
         final JFrame me = this;
-        sendAndReceiveButton.addActionListener(e -> {
+        sendAndReceiveButton.addActionListener(e -> new Thread(() -> {
 
-            new Thread(() -> {
+            sendAndReceiveButton.setEnabled(false);
 
-                sendAndReceiveButton.setEnabled(false);
+            statusModal.setMessage("Sending messages...");
+            messenger.send();
 
-                statusModal.setMessage("Sending messages...");
-                messenger.send();
+            statusModal.setMessage("Receiving messages...");
+            messenger.receive();
 
-                statusModal.setMessage("Receiving messages...");
-                messenger.receive();
+            statusModal.setMessage("Updating database...");
+            updateTables();
+            clearStatus();
 
-                statusModal.setMessage("Updating database...");
-                updateTables();
-                clearStatus();
+            statusModal.hide();
 
-                statusModal.hide();
+            sendAndReceiveButton.setEnabled(true);
 
-                sendAndReceiveButton.setEnabled(true);
-
-            }).start();
-        });
+        }).start());
         settingsButton.addActionListener(e -> {
 
             if (settings == null)
@@ -296,7 +293,8 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     @Override
     public void fileComplete(String fileId, String emailAddress, String path) {
 
-        // TODO: UI
+        JOptionPane.showMessageDialog(this, String.format("File %s successfully received\nfrom %s",
+                fileId, emailAddress), "File received", JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override

@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +34,7 @@ public class Settings extends JFrame {
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(5, 2, new Insets(8, 8, 8, 8), -1, -1));
-        mainPanel.setMinimumSize(new Dimension(468, 601));
+        mainPanel.setMinimumSize(new Dimension(478, 631));
         mainPanel.setPreferredSize(new Dimension(468, 601));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(5, 2, new Insets(10, 10, 10, 10), -1, -1));
@@ -116,19 +117,28 @@ public class Settings extends JFrame {
         smtpPasswordField = new JPasswordField();
         panel3.add(smtpPasswordField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel5 = new JPanel();
-        panel5.setLayout(new GridLayoutManager(2, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel5.setLayout(new GridLayoutManager(3, 3, new Insets(10, 10, 10, 10), -1, -1));
         mainPanel.add(panel5, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        panel5.setBorder(BorderFactory.createTitledBorder("Account"));
+        panel5.setBorder(BorderFactory.createTitledBorder("General"));
         final JLabel label12 = new JLabel();
         label12.setText("Full Name:");
         panel5.add(label12, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nameTextField = new JTextField();
-        panel5.add(nameTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel5.add(nameTextField, new GridConstraints(0, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label13 = new JLabel();
         label13.setText("Email:");
         panel5.add(label13, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         emailTextField = new JTextField();
-        panel5.add(emailTextField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel5.add(emailTextField, new GridConstraints(1, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label14 = new JLabel();
+        label14.setText("Incoming dir:");
+        panel5.add(label14, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        browseButton = new JButton();
+        browseButton.setText("Browse");
+        panel5.add(browseButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        incomingTextField = new JTextField();
+        incomingTextField.setEditable(false);
+        panel5.add(incomingTextField, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         mainPanel.add(panel6, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -204,6 +214,8 @@ public class Settings extends JFrame {
     private JTextField emailTextField;
     private JButton okButton;
     private JButton cancelButton;
+    private JButton browseButton;
+    private JTextField incomingTextField;
 
     private Properties main;
     private Properties mail;
@@ -248,9 +260,10 @@ public class Settings extends JFrame {
 
                 try {
 
-                    // Account
+                    // General
                     main.setProperty(LocalDB.ACCOUNT_NAME, nameTextField.getText());
                     main.setProperty(LocalDB.SESSION_EMAIL_ADDRESS, emailTextField.getText());
+                    main.setProperty(LocalDB.INCOMING_DIRECTORY, incomingTextField.getText());
 
                     // IMAP
                     mail.setProperty(MAIL_STORE_PROTOCOL, "imap");
@@ -296,14 +309,26 @@ public class Settings extends JFrame {
             statusHandler.settingsClosed(false);
         });
 
+        browseButton.addActionListener(e -> {
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION)
+                incomingTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        });
+
         setVisible(true);
     }
 
     private void populate() {
 
-        // Account
+        // General
         nameTextField.setText(main.getProperty(LocalDB.ACCOUNT_NAME, ""));
         emailTextField.setText(main.getProperty(LocalDB.SESSION_EMAIL_ADDRESS, ""));
+        incomingTextField.setText(main.getProperty(LocalDB.INCOMING_DIRECTORY,
+                String.format("%s%cDownloads", System.getProperty("user.home"), File.separatorChar)));
 
         // IMAP
         imapHostTextField.setText(mail.getProperty(IMAP_HOST, ""));

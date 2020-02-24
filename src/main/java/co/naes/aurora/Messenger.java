@@ -16,6 +16,9 @@ import co.naes.aurora.transport.IncomingMessageHandler;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -238,9 +241,24 @@ public class Messenger implements IncomingMessageHandler  {
                 db.markFilesAsComplete();
                 if (db.isIncomingFileComplete(part.getId().getFileId(), sender.getEmailAddress())) {
 
-                    // file complete
-                    logger.fine(String.format("File %s complete", part.getId().getFileId()));
-                    handler.fileComplete(part.getId().getFileId(), sender.getEmailAddress(), incomingFile[1]);
+                    try {
+
+                        // move file to incoming directory
+                        String newPath = String.format("%s%s%s",
+                                db.getProperties().get(LocalDB.INCOMING_DIRECTORY), File.separator, part.getId().getFileId());
+                        Files.move(
+                            Paths.get(String.format("%s%s%s.temp", incomingTempPath, File.separator, part.getId().getFileId())),
+                            Paths.get(newPath)
+                        );
+
+                        logger.fine(String.format("File %s complete", part.getId().getFileId()));
+                        handler.fileComplete(part.getId().getFileId(), sender.getEmailAddress(), newPath);
+
+                    } catch (IOException ex) {
+
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
+                        handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
+                    }
                 }
 
             } else if (message instanceof ConfInMessage) {
