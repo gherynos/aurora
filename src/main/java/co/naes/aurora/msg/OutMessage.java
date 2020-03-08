@@ -67,7 +67,17 @@ public abstract class OutMessage<T> extends CiphertextMessage {
             packer.close();
 
             MessageWriter enc = new MessageWriter(op, session.getSecretKey(), recipients);
-            enc.addBlock(packer.toByteArray(), true); // TODO: check size and split blocks
+
+            byte[] buf = packer.toByteArray();
+            int block = Math.min(buf.length, 1024 * 1024);
+            int start = 0;
+            for (int i = 0; i < buf.length / block; i++) {
+
+                enc.addBlock(buf, start, block, (buf.length - start) <= block);
+                start += block;
+            }
+            if (buf.length - start > 0)
+                enc.addBlock(buf, start, buf.length - start, true);
 
             out.flush();
             enc.destroy();

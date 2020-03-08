@@ -9,7 +9,7 @@ import java.nio.channels.FileChannel;
 
 public class Splitter {
 
-    public static final int PART_SIZE = 102400; // TODO: FIX
+    public static final int PART_SIZE = 1024 * (1024 + 256);
 
     private String fileId;
 
