@@ -14,35 +14,38 @@ import org.msgpack.core.MessagePack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class OutMessage<T> extends CiphertextMessage {
 
-    public static final Map<Class<? extends OutMessage<?>>, String> map;
-
-    static {
-
-        map = new HashMap<>();
-        map.put(StringOutMessage.class, "Text");
-        map.put(PartOutMessage.class, "Part");
-        map.put(ConfOutMessage.class, "Conf");
-    }
-
-    public static String getIdentifier(Class<?> clazz) throws InvalidParameterException {
-
-        if (!map.containsKey(clazz))
-            throw new InvalidParameterException("Unknown class");
-
-        return map.get(clazz);
-    }
+    public static final Map<Class<? extends OutMessage<?>>, String> MAP;
 
     protected PublicKeys recipient;
 
     protected abstract void packData(MessageBufferPacker packer, T data) throws IOException;
 
+    static {
+
+        MAP = new HashMap<>();
+        MAP.put(StringOutMessage.class, "Text");
+        MAP.put(PartOutMessage.class, "Part");
+        MAP.put(ConfOutMessage.class, "Conf");
+    }
+
+    public static String getIdentifier(Class<?> clazz) throws AuroraException {
+
+        if (!MAP.containsKey(clazz)) {
+
+            throw new AuroraException("Unknown class");
+        }
+
+        return MAP.get(clazz);
+    }
+
     public OutMessage(AuroraSession session, PublicKeys recipient, T data, boolean armored) throws AuroraException {
+
+        super();
 
         this.recipient = recipient;
 
@@ -61,28 +64,32 @@ public abstract class OutMessage<T> extends CiphertextMessage {
                 op.setWordsInPhrase(5);
             }
 
-            // create binary data
-            MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-            packData(packer, data);
-            packer.close();
 
-            MessageWriter enc = new MessageWriter(op, session.getSecretKey(), recipients);
+            try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
 
-            byte[] buf = packer.toByteArray();
-            int block = Math.min(buf.length, 1024 * 1024);
-            int start = 0;
-            for (int i = 0; i < buf.length / block; i++) {
+                // create binary data
+                packData(packer, data);
 
-                enc.addBlock(buf, start, block, (buf.length - start) <= block);
-                start += block;
+                MessageWriter enc = new MessageWriter(op, session.getSecretKey(), recipients);
+
+                byte[] buf = packer.toByteArray();
+                int block = Math.min(buf.length, 1024 * 1024);
+                int start = 0;
+                for (int i = 0; i < buf.length / block; i++) {
+
+                    enc.addBlock(buf, start, block, (buf.length - start) <= block);
+                    start += block;
+                }
+                if (buf.length - start > 0) {
+
+                    enc.addBlock(buf, start, buf.length - start, true);
+                }
+
+                out.flush();
+                enc.destroy();
+
+                ciphertext = out.toByteArray();
             }
-            if (buf.length - start > 0)
-                enc.addBlock(buf, start, buf.length - start, true);
-
-            out.flush();
-            enc.destroy();
-
-            ciphertext = out.toByteArray();
 
         } catch (IOException | SaltpackException ex) {
 

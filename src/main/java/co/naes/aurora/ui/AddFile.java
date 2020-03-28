@@ -11,6 +11,8 @@ import java.util.List;
 
 public class AddFile extends JDialog {
 
+    private static final long serialVersionUID = 142871230210913L;
+
     private JPanel mainPanel;
     private JList<String> recipientList;
     private JButton browseButton;
@@ -18,7 +20,7 @@ public class AddFile extends JDialog {
     private JButton okButton;
     private JButton cancelButton;
 
-    private List<String> recipients;
+    private final List<String> recipients;
 
     private String selectedRecipient;
     private File selectedFile;
@@ -51,15 +53,17 @@ public class AddFile extends JDialog {
 
         okButton.addActionListener(e -> {
 
-            if (recipientList.getSelectedIndex() == -1)
+            if (recipientList.getSelectedIndex() == -1) {
+
                 JOptionPane.showMessageDialog(this, "Please select a recipient",
                         "Error", JOptionPane.WARNING_MESSAGE);
 
-            else if (selectedFile == null)
+            } else if (selectedFile == null) {
+
                 JOptionPane.showMessageDialog(this, "Please select a file",
                         "Error", JOptionPane.WARNING_MESSAGE);
 
-            else {
+            } else {
 
                 selectedRecipient = recipientList.getSelectedValue();
 

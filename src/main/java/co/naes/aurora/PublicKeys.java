@@ -2,33 +2,33 @@ package co.naes.aurora;
 
 public class PublicKeys {
 
-    private byte[] publicKey;
+    private final byte[] publicKey;
 
     private byte[] publicSignKey;
 
-    private String emailAddress;
+    private final String emailAddress;
 
     public PublicKeys(byte[] publicKey, String emailAddress) {
 
-        this.publicKey = publicKey;
+        this.publicKey = publicKey.clone();
         this.emailAddress = emailAddress;
     }
 
     public PublicKeys(byte[] publicKey, byte[] publicSignKey, String emailAddress) {
 
-        this.publicKey = publicKey;
-        this.publicSignKey = publicSignKey;
+        this.publicKey = publicKey.clone();
+        this.publicSignKey = publicSignKey.clone();
         this.emailAddress = emailAddress;
     }
 
     public byte[] getPublicKey() {
 
-        return publicKey;
+        return publicKey.clone();
     }
 
     public byte[] getPublicSignKey() {
 
-        return publicSignKey;
+        return publicSignKey.clone();
     }
 
     public String getEmailAddress() {

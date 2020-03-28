@@ -13,9 +13,11 @@ import java.awt.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Main extends JFrame implements Messenger.StatusHandler {
+public class MainFrame extends JFrame implements Messenger.StatusHandler {  // NOPMD
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
+
+    private static final int MAX_STATUS_LENGTH = 100;
 
     private JPanel mainPanel;
     private JButton sendAndReceiveButton;
@@ -26,20 +28,20 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     private JButton sendKeysButton;
     private JButton addFileButton;
 
-    private LocalDB db;
+    private final LocalDB db;
 
-    private DefaultTableModel incomingModel;
-    private DefaultTableModel outgoingModel;
+    private final DefaultTableModel incomingModel;
+    private final DefaultTableModel outgoingModel;
 
     private Messenger messenger;
 
-    private StatusModal statusModal;
+    private final StatusModal statusModal;
 
     private Settings settings;
 
     private SendKeys sendKeys;
 
-    public Main(LocalDB db) {
+    public MainFrame(LocalDB db) {
 
         super("Aurora");
 
@@ -116,15 +118,18 @@ public class Main extends JFrame implements Messenger.StatusHandler {
         }).start());
         settingsButton.addActionListener(e -> {
 
-            if (settings == null)
+            if (settings == null) {
+
                 settings = new Settings(mainPanel, db, (boolean saved) -> settings = null);
 
-            else
+            } else {
+
                 settings.requestFocus();
+            }
         });
         sendKeysButton.addActionListener(e -> {
 
-            if (sendKeys == null)
+            if (sendKeys == null) {
                 sendKeys = new SendKeys(mainPanel, new SendKeys.SendKeysStatusHandler() {
 
                     @Override
@@ -155,12 +160,14 @@ public class Main extends JFrame implements Messenger.StatusHandler {
                     @Override
                     public void sendKeysClosed() {
 
-                        sendKeys = null;
+                        sendKeys = null;  // NOPMD
                     }
                 });
 
-            else
+            } else {
+
                 sendKeys.requestFocus();
+            }
         });
         addFileButton.addActionListener(e -> {
 
@@ -171,13 +178,16 @@ public class Main extends JFrame implements Messenger.StatusHandler {
                 if (!af.isCanceled()) {
 
                     PublicKeys recipient = db.getPublicKeys(af.getSelectedRecipient());
-                    if (messenger.addFileToSend(recipient, af.getSelectedFile().getAbsolutePath()))
+                    if (messenger.addFileToSend(recipient, af.getSelectedFile().getAbsolutePath())) {
+
                         updateTables();
 
-                    else
+                    } else {
+
                         JOptionPane.showMessageDialog(this,
                                 "File for the selected recipient already added/sent",
                                 "Add file", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
 
             } catch (AuroraException ex) {
@@ -194,13 +204,17 @@ public class Main extends JFrame implements Messenger.StatusHandler {
         try {
 
             incomingModel.setRowCount(0);
-            for (IncomingFile iFile : db.getIncomingFiles())
+            for (IncomingFile iFile : db.getIncomingFiles()) {
+
                 incomingModel.addRow(iFile.asRow());
+            }
             incomingModel.fireTableDataChanged();
 
             outgoingModel.setRowCount(0);
-            for (OutgoingFile oFile : db.getOutgoingFiles())
+            for (OutgoingFile oFile : db.getOutgoingFiles()) {
+
                 outgoingModel.addRow(oFile.asRow());
+            }
             outgoingModel.fireTableDataChanged();
 
         } catch (AuroraException ex) {
@@ -213,10 +227,14 @@ public class Main extends JFrame implements Messenger.StatusHandler {
 
     private void updateStatus(String status) {
 
-        if (status.length() > 100)
-            status = status.substring(0, 100) + "...";
+        if (status.length() > MAX_STATUS_LENGTH) {
 
-        statusLabel.setText(status);
+            statusLabel.setText(status.substring(0, MAX_STATUS_LENGTH) + "...");
+
+        } else {
+
+            statusLabel.setText(status);
+        }
     }
 
     private void clearStatus() {
@@ -309,11 +327,14 @@ public class Main extends JFrame implements Messenger.StatusHandler {
     @Override
     public void keyMessageSent(char[] password) {
 
-        if (sendKeys == null)
+        if (sendKeys == null) {
+
             showError("Keys sent but the dialog is closed");
 
-        else
+        } else {
+
             sendKeys.keysSent(password);
+        }
     }
 
     @Override

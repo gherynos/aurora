@@ -2,9 +2,9 @@ package co.naes.aurora.parts;
 
 public class PartId {
 
-    private String fileId;
+    private final String fileId;
 
-    private int sequenceNumber;
+    private final int sequenceNumber;
 
     public PartId(String fileId, int sequenceNumber) {
 

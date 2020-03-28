@@ -5,13 +5,13 @@ import java.awt.*;
 
 public class StatusModal {
 
-    private JOptionPane pane;
+    private final JOptionPane pane;
 
     private JDialog dialog;
 
-    JProgressBar progressBar;
+    private final JProgressBar progressBar;
 
-    private String title;
+    private final String title;
 
     private Component relativeTo;
 
@@ -41,26 +41,32 @@ public class StatusModal {
             pane.setMessage(message);
             pane.add(progressBar, 1);
 
-            if (dialog == null)
+            if (dialog == null) {
+
                 createDialog();
+            }
 
             dialog.pack();
-            if (!dialog.isShowing())
+            if (!dialog.isShowing()) {
+
                 dialog.setVisible(true);
+            }
         });
     }
 
     public void hide() {
 
         dialog.dispose();
-        dialog = null;
+        dialog = null;  // NOPMD
     }
 
     public void setRelativeTo(Component component) {
 
         relativeTo = component;
 
-        if (dialog != null)
+        if (dialog != null) {
+
             dialog.setLocationRelativeTo(component);
+        }
     }
 }

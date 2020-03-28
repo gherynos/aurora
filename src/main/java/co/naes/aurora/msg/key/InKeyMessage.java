@@ -16,11 +16,13 @@ import java.io.IOException;
 
 public class InKeyMessage extends KeyMessage {
 
-    private String sender;
+    private final String sender;
 
     public InKeyMessage(byte[] ciphertext, String sender) {
 
-        this.ciphertext = ciphertext;
+        super();
+
+        this.ciphertext = ciphertext.clone();
         this.sender = sender;
     }
 
@@ -29,7 +31,7 @@ public class InKeyMessage extends KeyMessage {
         return sender;
     }
 
-    public PublicKeys getPublicKeys(char[] password) throws AuroraException {
+    public PublicKeys getPublicKeys(char ... password) throws AuroraException {
 
         try {
 
@@ -43,18 +45,18 @@ public class InKeyMessage extends KeyMessage {
 
             ByteArrayOutputStream msg = new ByteArrayOutputStream();
             MessageReader dec = new MessageReader(ip, new byte[]{}, key);
-            while (dec.hasMoreBlocks())
+            while (dec.hasMoreBlocks()) {
+
                 msg.writeBytes(dec.getBlock());
+            }
             byte[] publicSignKey = dec.getSender();
             dec.destroy();
 
             // unpack key
-            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msg.toByteArray());
-
+            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msg.toByteArray());  // NOPMD
             String identifier = unpacker.unpackString();
             Value v = unpacker.unpackValue();
             byte[] publicKey = v.asBinaryValue().asByteArray();
-            unpacker.close();
 
             return new PublicKeys(publicKey, publicSignKey, identifier);
 

@@ -28,13 +28,13 @@ public class LocalDB {
     public static final String ACCOUNT_NAME = "aurora.account.name";
     public static final String INCOMING_DIRECTORY = "aurora.incoming.directory";
 
-    private String confFolder;
+    private final String confFolder;
 
-    private String password;
+    private final String password;
 
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
-    private Properties mailProperties = new Properties();
+    private final Properties mailProperties = new Properties();
 
     private static final int COUNTER = 5;
 
@@ -52,7 +52,23 @@ public class LocalDB {
              var st = conn.createStatement()) {
 
             var rs = conn.getMetaData().getTables("", "", "PROPERTIES", null);
-            if (!rs.next()) {
+            if (rs.next()) {
+
+                // load properties
+                var props = st.executeQuery("SELECT * FROM PROPERTIES");
+                while (props.next()) {
+
+                    properties.put(props.getString(1), props.getString(2));
+                }
+
+                // load mail properties
+                var mprops = st.executeQuery("SELECT * FROM MAIL_PROPERTIES");
+                while (mprops.next()) {
+
+                    mailProperties.put(mprops.getString(1), mprops.getString(2));
+                }
+
+            } else {
 
                 // create tables
                 st.execute("CREATE TABLE PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
@@ -62,18 +78,6 @@ public class LocalDB {
                 st.execute("CREATE TABLE PARTS_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PS_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID), CONSTRAINT FK_PS_EMAIL FOREIGN KEY(EMAIL) REFERENCES OUTGOING_FILES(EMAIL));");
                 st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR, PATH VARCHAR, EMAIL VARCHAR, TOTAL_PARTS INT, COMPLETE BOOL, CONSTRAINT PK_IF PRIMARY KEY (FILE_ID, EMAIL), CONSTRAINT FK_INC_EMAIL FOREIGN KEY(EMAIL) REFERENCES PUBLIC_KEYS(EMAIL));");
                 st.execute("CREATE TABLE PARTS_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, EMAIL VARCHAR, CONSTRAINT PK_PR PRIMARY KEY (SEQUENCE, FILE_ID, EMAIL), CONSTRAINT FK_PR_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID), CONSTRAINT FK_PR_EMAIL FOREIGN KEY(EMAIL) REFERENCES INCOMING_FILES(EMAIL));");
-
-            } else {
-
-                // load properties
-                var props = st.executeQuery("SELECT * FROM PROPERTIES");
-                while (props.next())
-                    properties.put(props.getString(1), props.getString(2));
-
-                // load mail properties
-                var mprops = st.executeQuery("SELECT * FROM MAIL_PROPERTIES");
-                while (mprops.next())
-                    mailProperties.put(mprops.getString(1), mprops.getString(2));
             }
 
         } catch (SQLException ex) {
@@ -148,8 +152,10 @@ public class LocalDB {
 
             st.setString(1, emailAddress);
             var res = st.executeQuery();
-            if (!res.next())
+            if (!res.next()) {
+
                 throw new AuroraException(String.format("Key for '%s' not found.", emailAddress));
+            }
 
             String id = res.getString(1);
             String encryption = res.getString(2);
@@ -171,8 +177,10 @@ public class LocalDB {
 
             st.setString(1, Utils.baseXencode(encryptionKey, Constants.ALPHABET_BASE62));
             var res = st.executeQuery();
-            if (!res.next())
+            if (!res.next()) {
+
                 throw new AuroraException("Entry for encryption key provided not found.");
+            }
 
             String id = res.getString(1);
             String encryption = res.getString(2);
@@ -194,8 +202,10 @@ public class LocalDB {
 
             List<String> out = new ArrayList<>();
             var res = st.executeQuery("SELECT EMAIL FROM PUBLIC_KEYS");
-            while (res.next())
+            while (res.next()) {
+
                 out.add(res.getString(1));
+            }
 
             return out;
 
@@ -240,14 +250,16 @@ public class LocalDB {
             }
 
             int[] res = st.executeBatch();
-            if (res.length != totalParts)
+            if (res.length != totalParts) {
+
                 throw new SQLException("Unable to insert all the parts");
+            }
 
             conn.commit();
 
         } catch (SQLException ex) {
 
-            throw new AuroraException("Error while storing outgoing file to the DB: " + ex.getMessage(), ex);
+            throw new AuroraException("Error while adding part to send to the DB: " + ex.getMessage(), ex);
         }
     }
 
@@ -258,8 +270,10 @@ public class LocalDB {
 
             List<String[]> out = new ArrayList<>();
             var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.EMAIL = OF.EMAIL) > 0;");
-            while (res.next())
+            while (res.next()) {
+
                 out.add(new String[]{res.getString(1), res.getString(2), res.getString(3)});
+            }
 
             return out;
 
@@ -278,8 +292,10 @@ public class LocalDB {
             st.setString(1, fileId);
             st.setString(2, emailAddress);
             var res = st.executeQuery();
-            while (res.next())
+            while (res.next()) {
+
                 out.add(res.getInt(1));
+            }
 
             return out;
 
@@ -306,8 +322,10 @@ public class LocalDB {
             }
 
             int[] res = st.executeBatch();
-            if (res.length != sequenceNumbers.size())
+            if (res.length != sequenceNumbers.size()) {
+
                 throw new SQLException("Unable to update all the parts");
+            }
 
             conn.commit();
 
@@ -361,8 +379,10 @@ public class LocalDB {
             st.setString(2, emailAddress);
             var res = st.executeQuery();
 
-            if (!res.next())
+            if (!res.next()) {
+
                 return null;
+            }
 
             return new String[]{res.getString(1), res.getString(2), res.getString(3)};
 
@@ -388,8 +408,10 @@ public class LocalDB {
             }
 
             int[] res = st.executeBatch();
-            if (res.length != totalParts)
+            if (res.length != totalParts) {
+
                 throw new SQLException("Unable to insert all the parts");
+            }
 
             conn.commit();
 
@@ -424,8 +446,10 @@ public class LocalDB {
             st.setString(1, fileId);
             st.setString(2, emailAddress);
             var res = st.executeQuery();
-            if (!res.next())
+            if (!res.next()) {
+
                 throw new AuroraException("File not found in DB");
+            }
 
             return res.getBoolean(1);
 
@@ -470,8 +494,10 @@ public class LocalDB {
             var res = st.executeQuery("SELECT INC.FILE_ID, INC.EMAIL, INC.TOTAL_PARTS, COUNT(P.SEQUENCE) FROM INCOMING_FILES INC, PARTS_TO_RECEIVE P WHERE P.FILE_ID = INC.FILE_ID GROUP BY P.FILE_ID");
 
             List<IncomingFile> out = new ArrayList<>();
-            while (res.next())
+            while (res.next()) {
+
                 out.add(new IncomingFile(res.getString(1), res.getString(2), res.getInt(4), res.getInt(3)));
+            }
 
             return out;
 
@@ -491,8 +517,10 @@ public class LocalDB {
             List<OutgoingFile> out = new ArrayList<>();
             while (res.next()) {
 
-                if (res.getObject(4) != null || res.getObject(5) != null)
+                if (res.getObject(4) != null || res.getObject(5) != null) {
+
                     out.add(new OutgoingFile(res.getString(1), res.getString(2), res.getInt(4), res.getInt(5), res.getInt(3)));
+                }
             }
 
             return out;

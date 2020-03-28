@@ -26,7 +26,21 @@ import java.util.logging.Logger;
 
 public class Messenger implements IncomingMessageHandler  {
 
-    public interface StatusHandler {
+    protected final Logger logger = Logger.getLogger(getClass().getName());
+
+    private final LocalDB db;
+
+    private final AuroraTransport transport;
+
+    private final AuroraSession session;
+
+    private final StatusHandler handler;
+
+    private final String incomingTempPath;
+
+    private static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
+
+    public interface StatusHandler {  // NOPMD
 
         void self(Messenger messenger);
 
@@ -52,26 +66,12 @@ public class Messenger implements IncomingMessageHandler  {
 
         char[] keyMessageReceived(String sender);
 
-        void keyMessageSent(char[] password);
+        void keyMessageSent(char ... password);
 
         void keysStored(String emailAddress);
     };
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
-
-    private LocalDB db;
-
-    private AuroraTransport transport;
-
-    private AuroraSession session;
-
-    private StatusHandler handler;
-
-    private String incomingTempPath;
-
-    private static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
-
-    Messenger(LocalDB db, AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) {
+    protected Messenger(LocalDB db, AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) throws AuroraException {
 
         this.db = db;
         this.transport = transport;
@@ -85,8 +85,10 @@ public class Messenger implements IncomingMessageHandler  {
         transport.setIncomingMessageHandler(this);
 
         File iTemp = new File(incomingTempPath);
-        if (!iTemp.exists() && !iTemp.mkdirs())
-            throw new RuntimeException("Unable to write to conf folder");
+        if (!iTemp.exists() && !iTemp.mkdirs()) {
+
+            throw new AuroraException("Unable to write to conf folder");
+        }
     }
 
     public boolean addFileToSend(PublicKeys recipient, String filePath) throws AuroraException {
@@ -108,8 +110,10 @@ public class Messenger implements IncomingMessageHandler  {
                 logger.fine(String.format("File '%s' for recipient '%s' already added", fileId, recipient.getEmailAddress()));
                 return false;
 
-            } else
+            } else {
+
                 throw ex;
+            }
         }
     }
 
@@ -138,8 +142,10 @@ public class Messenger implements IncomingMessageHandler  {
 
                 // load parts to send
                 List<Integer> partsToSend = db.getPartsToSend(fileId, recipient.getEmailAddress());
-                if (partsToSend.size() > MAX_PARTS_TO_SEND_PER_FILE)
+                if (partsToSend.size() > MAX_PARTS_TO_SEND_PER_FILE) {
+
                     partsToSend = partsToSend.subList(0, MAX_PARTS_TO_SEND_PER_FILE);
+                }
 
                 // send parts
                 Splitter sp = new Splitter(fileId, path);
@@ -296,8 +302,10 @@ public class Messenger implements IncomingMessageHandler  {
         try {
 
             char[] password = handler.keyMessageReceived(keyMessage.getSender());
-            if (password == null)
+            if (password == null) {
+
                 return true;
+            }
 
             PublicKeys keys = keyMessage.getPublicKeys(password);
 

@@ -2,13 +2,13 @@ package co.naes.aurora.ui;
 
 public class IncomingFile {
 
-    private String fileId;
+    private final String fileId;
 
-    private String sender;
+    private final String sender;
 
-    private int missing;
+    private final int missing;
 
-    private int total;
+    private final int total;
 
     public IncomingFile(String fileId, String sender, int missing, int total) {
 

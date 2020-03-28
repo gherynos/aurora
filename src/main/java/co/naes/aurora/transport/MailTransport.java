@@ -21,10 +21,10 @@ public class MailTransport implements AuroraTransport {
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
-    private final String HEADER = "X-Aurora-Type";
-    private final String HEADER_KEY = "Key";
+    private static final String HEADER = "X-Aurora-Type";
+    private static final String HEADER_KEY = "Key";
 
-    private LocalDB db;
+    private final LocalDB db;
 
     private IncomingMessageHandler messageHandler;
 
@@ -39,15 +39,18 @@ public class MailTransport implements AuroraTransport {
 
             protected PasswordAuthentication getPasswordAuthentication() {
 
-                if (incoming)
+                if (incoming) {
+
                     return new PasswordAuthentication(
                             db.getProperties().getProperty(LocalDB.MAIL_INCOMING_USERNAME),
                             db.getProperties().getProperty(LocalDB.MAIL_INCOMING_PASSWORD));
 
-                else
+                } else {
+
                     return new PasswordAuthentication(
                             db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_USERNAME),
                             db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_PASSWORD));
+                }
             }
         };
         Session session = Session.getInstance(db.getMailProperties(), auth);
@@ -65,8 +68,10 @@ public class MailTransport implements AuroraTransport {
     @Override
     public void sendKeyMessage(OutKeyMessage key) throws AuroraException {
 
-        if (!key.isArmored())
+        if (!key.isArmored()) {
+
             throw new AuroraException("Please provide an armored key");
+        }
 
         Message message;
         try {
@@ -107,8 +112,10 @@ public class MailTransport implements AuroraTransport {
     @Override
     public void sendMessage(OutMessage<?> msg) throws AuroraException {
 
-        if (!msg.isArmored())
+        if (!msg.isArmored()) {
+
             throw new AuroraException("Please provide an armored message");
+        }
 
         Message message;
         try {
@@ -153,25 +160,22 @@ public class MailTransport implements AuroraTransport {
 
         if (content instanceof Multipart) {
 
-            String messageContent = "";
             Multipart multipart = (Multipart) content;
             for (int i = 0; i < multipart.getCount(); i++) {
 
                 Part part = multipart.getBodyPart(i);
                 if (part.isMimeType("text/plain")) {
 
-                    messageContent = part.getContent().toString();
-                    break;
+                    return part.getContent().toString();
                 }
             }
-
-            return messageContent;
         }
+
         return content.toString();
     }
 
     @Override
-    public void checkForMessages() throws AuroraException {
+    public void checkForMessages() throws AuroraException {  // NOPMD
 
         try (Store store = getSession(true).getStore()) {
 
@@ -185,7 +189,11 @@ public class MailTransport implements AuroraTransport {
                 for (Message message : messages) {
 
                     String[] header = message.getHeader(HEADER);
-                    if (header != null) {
+                    if (header == null) {
+
+                        logger.finer(String.format("Discarded message %d", message.getMessageNumber()));
+
+                    } else {
 
                         String content = getMessageContent(message);
 
@@ -208,7 +216,8 @@ public class MailTransport implements AuroraTransport {
                             // mark message for deletion
                             message.setFlag(Flags.Flag.DELETED, res);
 
-                        } else
+                        } else {
+
                             try {
 
                                 var constructor = InMessage.getClass(header[0]).getConstructor(byte[].class);
@@ -222,10 +231,7 @@ public class MailTransport implements AuroraTransport {
                                 // unknown identifier
                                 logger.warning(String.format("Unknow message identifier '%s'", header[0]));
                             }
-
-                    } else {
-
-                        logger.finer(String.format("Discarded message %d", message.getMessageNumber()));
+                        }
                     }
                 }
 

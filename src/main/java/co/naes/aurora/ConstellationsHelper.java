@@ -3,7 +3,7 @@ package co.naes.aurora;
 import java.io.CharArrayWriter;
 import java.util.Random;
 
-public abstract class Constellations {
+public final class ConstellationsHelper {
 
     public static final String[] LIST = {
             "Andromeda",
@@ -98,13 +98,17 @@ public abstract class Constellations {
 
     public static final String SEPARATOR = "#";
 
+    private ConstellationsHelper() { }
+
     public static char[] getRandom(int num) {
 
         Random r = new Random();
         CharArrayWriter cw = new CharArrayWriter();
 
-        for (int i = 0; i < num - 1; i++)
+        for (int i = 0; i < num - 1; i++) {
+
             cw.append(LIST[r.nextInt(LIST.length)]).append(SEPARATOR);
+        }
         cw.append(LIST[r.nextInt(LIST.length)]);
 
         return cw.toCharArray();

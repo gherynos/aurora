@@ -7,11 +7,16 @@ import net.nharyes.libsaltpack.Utils;
 
 public abstract class KeyMessage extends CiphertextMessage {
 
-    protected final byte[] SALT = "84e=tz+>4AH8L9A4".getBytes();
+    protected static final byte[] SALT = "84e=tz+>4AH8L9A4".getBytes();
 
-    private final byte[] IDENTIFIER = "AuroraTempKey".getBytes();
+    private static final byte[] IDENTIFIER = "AuroraTempKey".getBytes();
 
-    protected byte[][] deriveKeyFromPassword(char[] password) throws AuroraException {
+    protected KeyMessage() {
+
+        super();
+    }
+
+    protected byte[][] deriveKeyFromPassword(char ... password) throws AuroraException {
 
         try {
 

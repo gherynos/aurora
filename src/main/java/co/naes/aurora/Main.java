@@ -2,21 +2,26 @@ package co.naes.aurora;
 
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
+import co.naes.aurora.ui.MainFrame;
 import co.naes.aurora.ui.RequestFocusListener;
 import co.naes.aurora.ui.Settings;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-public class Main {
+public class Main {  // NOPMD
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private LocalDB db;
 
     private String confFolder;
 
-    Main(String cf) {
+    private Main(String cf) {
 
         try {
 
@@ -24,14 +29,17 @@ public class Main {
 
         } catch (IOException ex) {
 
-            ex.printStackTrace();
+            ex.printStackTrace();  // NOPMD
         }
 
-        if (cf != null)
-            confFolder = cf;
+        if (cf == null) {
 
-        else
             confFolder = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
+
+        } else {
+
+            confFolder = cf;
+        }
 
         // ask for db password
         boolean dbExists = LocalDB.exists(confFolder);
@@ -41,7 +49,7 @@ public class Main {
         panel.add(label);
         panel.add(pass);
         pass.addAncestorListener(new RequestFocusListener());
-        String[] options = new String[]{"OK", "Cancel"};
+        String[] options = {"OK", "Cancel"};
         int option = JOptionPane.showOptionDialog(null, panel, dbExists ? "Unlock DB" : "New DB",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, options, options[0]);
@@ -54,31 +62,35 @@ public class Main {
 
             } catch (AuroraException ex) {
 
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
 
                 JOptionPane.showMessageDialog(null, "Unable to unlock DB: wrong password?",
                         "Error", JOptionPane.ERROR_MESSAGE);
                 System.exit(-1);
             }
 
-        } else
-            System.exit(-1);
+        } else {
 
-        if (!db.getProperties().containsKey(LocalDB.MAIL_INCOMING_PASSWORD)) {
+            System.exit(-1);
+        }
+
+        if (db.getProperties().containsKey(LocalDB.MAIL_INCOMING_PASSWORD)) {
+
+            // normal flow
+            showApplication();
+
+        } else {
 
             // connection settings need to be entered before creating the other components
             new Settings(null, db, saved -> {
 
-                if (!saved)
+                if (!saved) {
+
                     System.exit(-1);
+                }
 
                 showApplication();
             });
-
-        } else {
-
-            // normal flow
-            showApplication();
         }
     }
 
@@ -88,7 +100,7 @@ public class Main {
 
             AuroraSession session = new AuroraSession(db);
             AuroraTransport transport = new MailTransport(db);
-            var mainFrame = new co.naes.aurora.ui.Main(db);
+            var mainFrame = new MainFrame(db);
             new Messenger(db, transport, session, confFolder, mainFrame);
 
         } catch (AuroraException ex) {
@@ -101,6 +113,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        new Main(args.length > 0 ? args[0] : null);
+        new Main(args.length > 0 ? args[0] : null);  // NOPMD
     }
 }

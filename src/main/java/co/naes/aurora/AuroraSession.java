@@ -16,7 +16,7 @@ public class AuroraSession {
 
     private String emailAddress;
 
-    AuroraSession(LocalDB db) throws AuroraException {
+    protected AuroraSession(LocalDB db) throws AuroraException {
 
         try {
 
@@ -59,22 +59,22 @@ public class AuroraSession {
 
     public byte[] getSecretKey() {
 
-        return secretKey;
+        return secretKey.clone();
     }
 
     public byte[] getPublicKey() {
 
-        return publicKey;
+        return publicKey.clone();
     }
 
     public byte[] getSignSecretKey() {
 
-        return secretSignKey;
+        return secretSignKey.clone();
     }
 
     public byte[] getPublicSignKey() {
 
-        return publicSignKey;
+        return publicSignKey.clone();
     }
 
     public String getEmailAddress() {

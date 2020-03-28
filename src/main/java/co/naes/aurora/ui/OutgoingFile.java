@@ -2,15 +2,15 @@ package co.naes.aurora.ui;
 
 public class OutgoingFile {
 
-    private String fileId;
+    private final String fileId;
 
-    private String recipient;
+    private final String recipient;
 
-    private int sent;
+    private final int sent;
 
-    private int toSend;
+    private final int toSend;
 
-    private int total;
+    private final int total;
 
     public OutgoingFile(String fileId, String recipient, int sent, int toSend, int total) {
 

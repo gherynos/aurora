@@ -15,29 +15,12 @@ import org.msgpack.core.MessageUnpacker;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class InMessage<T> extends CiphertextMessage {
 
-    public static final Map<String, Class<? extends InMessage<?>>> map;
-
-    static {
-
-        map = new HashMap<>();
-        map.put("Text", StringInMessage.class);
-        map.put("Part", PartInMessage.class);
-        map.put("Conf", ConfInMessage.class);
-    }
-
-    public static Class<? extends InMessage<?>> getClass(String identifier) throws InvalidParameterException {
-
-        if (!map.containsKey(identifier))
-            throw new InvalidParameterException("Unknown identifier");
-
-        return map.get(identifier);
-    }
+    public static final Map<String, Class<? extends InMessage<?>>> MAP;
 
     protected boolean decrypted = false;
 
@@ -47,9 +30,29 @@ public abstract class InMessage<T> extends CiphertextMessage {
 
     protected abstract T unpackData(MessageUnpacker unpacker) throws IOException;
 
+    static {
+
+        MAP = new HashMap<>();
+        MAP.put("Text", StringInMessage.class);
+        MAP.put("Part", PartInMessage.class);
+        MAP.put("Conf", ConfInMessage.class);
+    }
+
+    public static Class<? extends InMessage<?>> getClass(String identifier) throws AuroraException {
+
+        if (!MAP.containsKey(identifier)) {
+
+            throw new AuroraException("Unknown identifier");
+        }
+
+        return MAP.get(identifier);
+    }
+
     public InMessage(byte[] ciphertext) {
 
-        this.ciphertext = ciphertext;
+        super();
+
+        this.ciphertext = ciphertext.clone();
     }
 
     public void decrypt(AuroraSession session) throws AuroraException {
@@ -63,13 +66,15 @@ public abstract class InMessage<T> extends CiphertextMessage {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             MessageReader dec = new MessageReader(ip, session.getSecretKey());
-            while (dec.hasMoreBlocks())
+            while (dec.hasMoreBlocks()) {
+
                 out.writeBytes(dec.getBlock());
+            }
             sender = new PublicKeys(dec.getSender(), null);
             dec.destroy();
 
             // unpack data
-            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(out.toByteArray());
+            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(out.toByteArray());  // NOPMD
             data = unpackData(unpacker);
             unpacker.close();
 
@@ -83,16 +88,20 @@ public abstract class InMessage<T> extends CiphertextMessage {
 
     public PublicKeys getSender() throws AuroraException {
 
-        if (!decrypted)
+        if (!decrypted) {
+
             throw new AuroraException("Decrypt message first.");
+        }
 
         return sender;
     }
 
     public T getData() throws AuroraException {
 
-        if (!decrypted)
+        if (!decrypted) {
+
             throw new AuroraException("Decrypt message first.");
+        }
 
         return data;
     }

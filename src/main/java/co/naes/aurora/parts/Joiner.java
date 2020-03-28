@@ -29,13 +29,17 @@ public class Joiner {
 
         try {
 
-            if (channel.size() == 0)
+            if (channel.size() == 0) {
+
                 aFile.setLength(part.getTotalSize());
+            }
 
             channel.position(part.getId().getSequenceNumber() * Splitter.PART_SIZE);
 
-            if (channel.write(ByteBuffer.wrap(part.getData())) != part.getData().length)
+            if (channel.write(ByteBuffer.wrap(part.getData())) != part.getData().length) {
+
                 throw new AuroraException("Some bytes were not written...");
+            }
 
         } catch (IOException ex) {
 

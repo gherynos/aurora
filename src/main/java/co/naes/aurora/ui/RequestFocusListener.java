@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-public class RequestFocusListener implements AncestorListener {
+public class RequestFocusListener implements AncestorListener {  // NOPMD
 
     public void ancestorAdded(final AncestorEvent e) {
 
@@ -17,6 +17,6 @@ public class RequestFocusListener implements AncestorListener {
         });
     }
 
-    public void ancestorMoved(AncestorEvent e) {}
-    public void ancestorRemoved(AncestorEvent e) {}
+    public void ancestorMoved(AncestorEvent e) { }
+    public void ancestorRemoved(AncestorEvent e) { }
 }

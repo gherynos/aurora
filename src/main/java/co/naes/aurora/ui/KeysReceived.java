@@ -1,15 +1,16 @@
 package co.naes.aurora.ui;
 
-import co.naes.aurora.Constellations;
+import co.naes.aurora.ConstellationsHelper;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 
 public class KeysReceived extends JDialog {
+
+    private static final long serialVersionUID = 12682350203945L;
 
     private JPanel mainPanel;
     private JComboBox<String> block1ComboBox;
@@ -37,15 +38,15 @@ public class KeysReceived extends JDialog {
         unlockButton.addActionListener(e -> {
 
             String sb = block1ComboBox.getSelectedItem() +
-                    Constellations.SEPARATOR +
+                    ConstellationsHelper.SEPARATOR +
                     block2ComboBox.getSelectedItem() +
-                    Constellations.SEPARATOR +
+                    ConstellationsHelper.SEPARATOR +
                     block3ComboBox.getSelectedItem() +
-                    Constellations.SEPARATOR +
+                    ConstellationsHelper.SEPARATOR +
                     block4ComboBox.getSelectedItem() +
-                    Constellations.SEPARATOR +
+                    ConstellationsHelper.SEPARATOR +
                     block5ComboBox.getSelectedItem() +
-                    Constellations.SEPARATOR +
+                    ConstellationsHelper.SEPARATOR +
                     block6ComboBox.getSelectedItem();
             password = sb.toCharArray();
 
@@ -69,17 +70,17 @@ public class KeysReceived extends JDialog {
 
     private void createUIComponents() {
 
-        block1ComboBox = new JComboBox<>(Constellations.LIST);
-        block2ComboBox = new JComboBox<>(Constellations.LIST);
-        block3ComboBox = new JComboBox<>(Constellations.LIST);
-        block4ComboBox = new JComboBox<>(Constellations.LIST);
-        block5ComboBox = new JComboBox<>(Constellations.LIST);
-        block6ComboBox = new JComboBox<>(Constellations.LIST);
+        block1ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        block2ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        block3ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        block4ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        block5ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        block6ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
     }
 
     public char[] getPassword() {
 
-        return password;
+        return password.clone();
     }
 
     /**
