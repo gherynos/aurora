@@ -35,7 +35,7 @@ public class MailTransport implements AuroraTransport {
 
     private Session getSession(boolean incoming) {
 
-        Authenticator auth = new Authenticator() {
+        Authenticator auth = new Authenticator() {  // NOPMD
 
             protected PasswordAuthentication getPasswordAuthentication() {
 
@@ -86,13 +86,9 @@ public class MailTransport implements AuroraTransport {
             message.setHeader(HEADER, HEADER_KEY);
 
             // Content
-            StringBuilder sb = new StringBuilder();
-            sb.append("This is an Aurora key."); // TODO: change
-            sb.append("\n");
-            sb.append("\n");
-            sb.append(new String(key.getCiphertext(), StandardCharsets.UTF_8));
-            sb.append("\n");
-            message.setContent(sb.toString(), "text/plain");
+            String content = String.format("This is an Aurora key.\n\n%s\n",  // TODO: change
+                    new String(key.getCiphertext(), StandardCharsets.UTF_8));
+            message.setContent(content, "text/plain");
 
         } catch (MessagingException | UnsupportedEncodingException ex) {
 
@@ -131,13 +127,9 @@ public class MailTransport implements AuroraTransport {
             message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
 
             // Content
-            StringBuilder sb = new StringBuilder();
-            sb.append("This is an Aurora message."); // TODO: change
-            sb.append("\n");
-            sb.append("\n");
-            sb.append(new String(msg.getCiphertext(), StandardCharsets.UTF_8));
-            sb.append("\n");
-            message.setContent(sb.toString(), "text/plain");
+            String content = String.format("This is an Aurora message.\n\n%s\n",  // TODO: change
+                    new String(msg.getCiphertext(), StandardCharsets.UTF_8));
+            message.setContent(content, "text/plain");
 
         } catch (MessagingException | UnsupportedEncodingException ex) {
 
@@ -211,7 +203,7 @@ public class MailTransport implements AuroraTransport {
 
                             InternetAddress from = (InternetAddress) message.getFrom()[0];
                             String sender = String.format("%s - %s", from.getPersonal(), from.getAddress());
-                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes(), sender));
+                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes(), sender));  // NOPMD
 
                             // mark message for deletion
                             message.setFlag(Flags.Flag.DELETED, res);

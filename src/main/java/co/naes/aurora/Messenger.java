@@ -66,7 +66,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         char[] keyMessageReceived(String sender);
 
-        void keyMessageSent(char ... password);
+        void keyMessageSent(char[] password);
 
         void keysStored(String emailAddress);
     };
@@ -148,8 +148,8 @@ public class Messenger implements IncomingMessageHandler  {
                 }
 
                 // send parts
-                Splitter sp = new Splitter(fileId, path);
-                List<Integer> sent = new ArrayList<>();
+                Splitter sp = new Splitter(fileId, path);  // NOPMD
+                List<Integer> sent = new ArrayList<>();  // NOPMD
                 for (Integer sequenceNumber : partsToSend) {
 
                     try {
@@ -157,7 +157,7 @@ public class Messenger implements IncomingMessageHandler  {
                         // send part message
                         logger.fine(String.format("Sending part %d for %s", sequenceNumber, fileId));
                         handler.sendingPart(sequenceNumber, fileId, recipient.getEmailAddress());
-                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(sequenceNumber), true);
+                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(sequenceNumber), true);  // NOPMD
                         transport.sendMessage(msg);
                         sent.add(sequenceNumber);
 

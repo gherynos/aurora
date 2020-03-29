@@ -22,7 +22,7 @@ public abstract class InMessage<T> extends CiphertextMessage {
 
     public static final Map<String, Class<? extends InMessage<?>>> MAP;
 
-    protected boolean decrypted = false;
+    protected boolean decrypted;
 
     protected PublicKeys sender;
 

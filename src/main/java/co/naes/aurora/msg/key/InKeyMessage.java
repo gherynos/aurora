@@ -31,7 +31,7 @@ public class InKeyMessage extends KeyMessage {
         return sender;
     }
 
-    public PublicKeys getPublicKeys(char ... password) throws AuroraException {
+    public PublicKeys getPublicKeys(char[] password) throws AuroraException {
 
         try {
 

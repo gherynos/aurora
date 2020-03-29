@@ -16,7 +16,7 @@ public abstract class KeyMessage extends CiphertextMessage {
         super();
     }
 
-    protected byte[][] deriveKeyFromPassword(char ... password) throws AuroraException {
+    protected byte[][] deriveKeyFromPassword(char[] password) throws AuroraException {
 
         try {
 

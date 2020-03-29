@@ -266,8 +266,8 @@ public class Settings extends JFrame {  // NOPMD
                     mail.setProperty(MAIL_STORE_PROTOCOL, "imap");
                     mail.setProperty(IMAP_HOST, imapHostTextField.getText());
                     mail.setProperty(IMAP_PORT, imapPortTextField.getText());
-                    mail.setProperty(IMAP_SSL, "" + imapSslRadioButton.isSelected());
-                    mail.setProperty(IMAP_TLS, "" + imapTlsRadioButton.isSelected());
+                    mail.setProperty(IMAP_SSL, Boolean.toString(imapSslRadioButton.isSelected()));
+                    mail.setProperty(IMAP_TLS, Boolean.toString(imapTlsRadioButton.isSelected()));
                     main.setProperty(LocalDB.MAIL_INCOMING_USERNAME, imapUsernameTextField.getText());
                     main.setProperty(LocalDB.MAIL_INCOMING_PASSWORD, new String(imapPasswordField.getPassword()));
 
@@ -275,9 +275,9 @@ public class Settings extends JFrame {  // NOPMD
                     mail.setProperty(MAIL_TRANSPORT_PROTOCOL, "smtp");
                     mail.setProperty(SMTP_HOST, smtpHostTextField.getText());
                     mail.setProperty(SMTP_PORT, smtpPortTextField.getText());
-                    mail.setProperty(SMTP_SSL, "" + smtpSslRadioButton.isSelected());
-                    mail.setProperty(SMTP_TLS, "" + smtpTlsRadioButton.isSelected());
-                    mail.setProperty(SMTP_AUTH, "" + smtpAuthCheckBox.isSelected());
+                    mail.setProperty(SMTP_SSL, Boolean.toString(smtpSslRadioButton.isSelected()));
+                    mail.setProperty(SMTP_TLS, Boolean.toString(smtpTlsRadioButton.isSelected()));
+                    mail.setProperty(SMTP_AUTH, Boolean.toString(smtpAuthCheckBox.isSelected()));
                     if (smtpAuthCheckBox.isSelected()) {
 
                         main.setProperty(LocalDB.MAIL_OUTGOING_USERNAME, smtpUsernameTextField.getText());
