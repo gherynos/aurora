@@ -4,7 +4,9 @@ import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.ConstellationsHelper;
 import co.naes.aurora.msg.KeyMessage;
-import net.nharyes.libsaltpack.*;
+import net.nharyes.libsaltpack.MessageWriter;
+import net.nharyes.libsaltpack.OutputParameters;
+import net.nharyes.libsaltpack.SaltpackException;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 
