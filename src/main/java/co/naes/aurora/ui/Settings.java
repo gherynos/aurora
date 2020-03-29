@@ -1,7 +1,7 @@
 package co.naes.aurora.ui;
 
 import co.naes.aurora.AuroraException;
-import co.naes.aurora.LocalDB;
+import co.naes.aurora.db.DBUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -220,12 +220,12 @@ public class Settings extends JFrame {  // NOPMD
         void settingsClosed(boolean saved);
     }
 
-    public Settings(Component relativeTo, LocalDB db, SettingsStatusHandler statusHandler) {
+    public Settings(Component relativeTo, SettingsStatusHandler statusHandler) {
 
         super("Settings");
 
-        main = db.getProperties();
-        mail = db.getMailProperties();
+        main = DBUtils.getProperties();
+        mail = DBUtils.getMailProperties();
 
         populate();
 
@@ -258,9 +258,9 @@ public class Settings extends JFrame {  // NOPMD
                 try {
 
                     // General
-                    main.setProperty(LocalDB.ACCOUNT_NAME, nameTextField.getText());
-                    main.setProperty(LocalDB.SESSION_EMAIL_ADDRESS, emailTextField.getText());
-                    main.setProperty(LocalDB.INCOMING_DIRECTORY, incomingTextField.getText());
+                    main.setProperty(DBUtils.ACCOUNT_NAME, nameTextField.getText());
+                    main.setProperty(DBUtils.SESSION_EMAIL_ADDRESS, emailTextField.getText());
+                    main.setProperty(DBUtils.INCOMING_DIRECTORY, incomingTextField.getText());
 
                     // IMAP
                     mail.setProperty(MAIL_STORE_PROTOCOL, "imap");
@@ -268,8 +268,8 @@ public class Settings extends JFrame {  // NOPMD
                     mail.setProperty(IMAP_PORT, imapPortTextField.getText());
                     mail.setProperty(IMAP_SSL, Boolean.toString(imapSslRadioButton.isSelected()));
                     mail.setProperty(IMAP_TLS, Boolean.toString(imapTlsRadioButton.isSelected()));
-                    main.setProperty(LocalDB.MAIL_INCOMING_USERNAME, imapUsernameTextField.getText());
-                    main.setProperty(LocalDB.MAIL_INCOMING_PASSWORD, new String(imapPasswordField.getPassword()));
+                    main.setProperty(DBUtils.MAIL_INCOMING_USERNAME, imapUsernameTextField.getText());
+                    main.setProperty(DBUtils.MAIL_INCOMING_PASSWORD, new String(imapPasswordField.getPassword()));
 
                     // SMTP
                     mail.setProperty(MAIL_TRANSPORT_PROTOCOL, "smtp");
@@ -280,12 +280,12 @@ public class Settings extends JFrame {  // NOPMD
                     mail.setProperty(SMTP_AUTH, Boolean.toString(smtpAuthCheckBox.isSelected()));
                     if (smtpAuthCheckBox.isSelected()) {
 
-                        main.setProperty(LocalDB.MAIL_OUTGOING_USERNAME, smtpUsernameTextField.getText());
-                        main.setProperty(LocalDB.MAIL_OUTGOING_PASSWORD, new String(smtpPasswordField.getPassword()));
+                        main.setProperty(DBUtils.MAIL_OUTGOING_USERNAME, smtpUsernameTextField.getText());
+                        main.setProperty(DBUtils.MAIL_OUTGOING_PASSWORD, new String(smtpPasswordField.getPassword()));
                     }
                     mail.setProperty(SMTP_FROM, emailTextField.getText());
 
-                    db.saveProperties();
+                    DBUtils.saveProperties();
 
                     dispose();
                     statusHandler.settingsClosed(true);
@@ -328,9 +328,9 @@ public class Settings extends JFrame {  // NOPMD
     private void populate() {
 
         // General
-        nameTextField.setText(main.getProperty(LocalDB.ACCOUNT_NAME, ""));
-        emailTextField.setText(main.getProperty(LocalDB.SESSION_EMAIL_ADDRESS, ""));
-        incomingTextField.setText(main.getProperty(LocalDB.INCOMING_DIRECTORY,
+        nameTextField.setText(main.getProperty(DBUtils.ACCOUNT_NAME, ""));
+        emailTextField.setText(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS, ""));
+        incomingTextField.setText(main.getProperty(DBUtils.INCOMING_DIRECTORY,
                 String.format("%s%cDownloads", System.getProperty("user.home"), File.separatorChar)));
 
         // IMAP
@@ -338,8 +338,8 @@ public class Settings extends JFrame {  // NOPMD
         imapPortTextField.setText(mail.getProperty(IMAP_PORT, ""));
         imapSslRadioButton.setSelected(Boolean.parseBoolean(mail.getProperty(IMAP_SSL, "true")));
         imapTlsRadioButton.setSelected(Boolean.parseBoolean(mail.getProperty(IMAP_TLS, "false")));
-        imapUsernameTextField.setText(main.getProperty(LocalDB.MAIL_INCOMING_USERNAME, ""));
-        imapPasswordField.setText(main.getProperty(LocalDB.MAIL_INCOMING_PASSWORD, ""));
+        imapUsernameTextField.setText(main.getProperty(DBUtils.MAIL_INCOMING_USERNAME, ""));
+        imapPasswordField.setText(main.getProperty(DBUtils.MAIL_INCOMING_PASSWORD, ""));
 
         // SMTP
         smtpHostTextField.setText(mail.getProperty(SMTP_HOST, ""));
@@ -347,8 +347,8 @@ public class Settings extends JFrame {  // NOPMD
         smtpSslRadioButton.setSelected(Boolean.parseBoolean(mail.getProperty(SMTP_SSL, "true")));
         smtpTlsRadioButton.setSelected(Boolean.parseBoolean(mail.getProperty(SMTP_TLS, "false")));
         smtpAuthCheckBox.setSelected(Boolean.parseBoolean(mail.getProperty(SMTP_AUTH, "false")));
-        smtpUsernameTextField.setText(main.getProperty(LocalDB.MAIL_OUTGOING_USERNAME, ""));
-        smtpPasswordField.setText(main.getProperty(LocalDB.MAIL_OUTGOING_PASSWORD, ""));
+        smtpUsernameTextField.setText(main.getProperty(DBUtils.MAIL_OUTGOING_USERNAME, ""));
+        smtpPasswordField.setText(main.getProperty(DBUtils.MAIL_OUTGOING_PASSWORD, ""));
     }
 
     private String checkFields() {  // NOPMD

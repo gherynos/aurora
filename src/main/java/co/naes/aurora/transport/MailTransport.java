@@ -1,7 +1,7 @@
 package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
-import co.naes.aurora.LocalDB;
+import co.naes.aurora.db.DBUtils;
 import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.InMessage;
 import co.naes.aurora.msg.key.OutKeyMessage;
@@ -17,21 +17,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.logging.Logger;
 
-public class MailTransport implements AuroraTransport {
+public class MailTransport implements AuroraTransport {  // NOPMD
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private static final String HEADER = "X-Aurora-Type";
     private static final String HEADER_KEY = "Key";
 
-    private final LocalDB db;
-
     private IncomingMessageHandler messageHandler;
-
-    public MailTransport(LocalDB db) {
-
-        this.db = db;
-    }
 
     private Session getSession(boolean incoming) {
 
@@ -42,18 +35,18 @@ public class MailTransport implements AuroraTransport {
                 if (incoming) {
 
                     return new PasswordAuthentication(
-                            db.getProperties().getProperty(LocalDB.MAIL_INCOMING_USERNAME),
-                            db.getProperties().getProperty(LocalDB.MAIL_INCOMING_PASSWORD));
+                            DBUtils.getProperties().getProperty(DBUtils.MAIL_INCOMING_USERNAME),
+                            DBUtils.getProperties().getProperty(DBUtils.MAIL_INCOMING_PASSWORD));
 
                 } else {
 
                     return new PasswordAuthentication(
-                            db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_USERNAME),
-                            db.getProperties().getProperty(LocalDB.MAIL_OUTGOING_PASSWORD));
+                            DBUtils.getProperties().getProperty(DBUtils.MAIL_OUTGOING_USERNAME),
+                            DBUtils.getProperties().getProperty(DBUtils.MAIL_OUTGOING_PASSWORD));
                 }
             }
         };
-        Session session = Session.getInstance(db.getMailProperties(), auth);
+        Session session = Session.getInstance(DBUtils.getMailProperties(), auth);
         session.setDebug(false);
 
         return session;
@@ -79,8 +72,8 @@ public class MailTransport implements AuroraTransport {
             // Create message
             message = new MimeMessage(getSession(false));
             message.setFrom(new InternetAddress(
-                    db.getProperties().getProperty(LocalDB.SESSION_EMAIL_ADDRESS),
-                    db.getProperties().getProperty(LocalDB.ACCOUNT_NAME)));
+                    DBUtils.getProperties().getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
+                    DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
             message.setSubject("Aurora key");  // TODO: change
             message.setHeader(HEADER, HEADER_KEY);
@@ -119,8 +112,8 @@ public class MailTransport implements AuroraTransport {
             // Create message
             message = new MimeMessage(getSession(false));
             message.setFrom(new InternetAddress(
-                    db.getProperties().getProperty(LocalDB.SESSION_EMAIL_ADDRESS),
-                    db.getProperties().getProperty(LocalDB.ACCOUNT_NAME)));
+                    DBUtils.getProperties().getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
+                    DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject("Aurora message");  // TODO: change

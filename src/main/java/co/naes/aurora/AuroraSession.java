@@ -1,5 +1,6 @@
 package co.naes.aurora;
 
+import co.naes.aurora.db.DBUtils;
 import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
@@ -16,20 +17,20 @@ public class AuroraSession {
 
     private String emailAddress;
 
-    protected AuroraSession(LocalDB db) throws AuroraException {
+    protected AuroraSession() throws AuroraException {
 
         try {
 
-            Properties p = db.getProperties();
-            emailAddress = p.getProperty(LocalDB.SESSION_EMAIL_ADDRESS);
+            Properties p = DBUtils.getProperties();
+            emailAddress = p.getProperty(DBUtils.SESSION_EMAIL_ADDRESS);
 
             // load existing keys from DB
-            if (p.containsKey(LocalDB.SESSION_PUBLIC_KEY)) {
+            if (p.containsKey(DBUtils.SESSION_PUBLIC_KEY)) {
 
-                publicKey = Utils.baseXdecode(p.getProperty(LocalDB.SESSION_PUBLIC_KEY), Constants.ALPHABET_BASE62);
-                secretKey = Utils.baseXdecode(p.getProperty(LocalDB.SESSION_SECRET_KEY), Constants.ALPHABET_BASE62);
-                publicSignKey = Utils.baseXdecode(p.getProperty(LocalDB.SESSION_SIGN_PUBLIC_KEY), Constants.ALPHABET_BASE62);
-                secretSignKey = Utils.baseXdecode(p.getProperty(LocalDB.SESSION_SIGN_SECRET_KEY), Constants.ALPHABET_BASE62);
+                publicKey = Utils.baseXdecode(p.getProperty(DBUtils.SESSION_PUBLIC_KEY), Constants.ALPHABET_BASE62);
+                secretKey = Utils.baseXdecode(p.getProperty(DBUtils.SESSION_SECRET_KEY), Constants.ALPHABET_BASE62);
+                publicSignKey = Utils.baseXdecode(p.getProperty(DBUtils.SESSION_SIGN_PUBLIC_KEY), Constants.ALPHABET_BASE62);
+                secretSignKey = Utils.baseXdecode(p.getProperty(DBUtils.SESSION_SIGN_SECRET_KEY), Constants.ALPHABET_BASE62);
 
             } else {
 
@@ -44,11 +45,11 @@ public class AuroraSession {
                 Utils.generateSignKeypair(publicSignKey, secretSignKey);
 
                 // store keys
-                p.setProperty(LocalDB.SESSION_PUBLIC_KEY, Utils.baseXencode(publicKey, Constants.ALPHABET_BASE62));
-                p.setProperty(LocalDB.SESSION_SECRET_KEY, Utils.baseXencode(secretKey, Constants.ALPHABET_BASE62));
-                p.setProperty(LocalDB.SESSION_SIGN_PUBLIC_KEY, Utils.baseXencode(publicSignKey, Constants.ALPHABET_BASE62));
-                p.setProperty(LocalDB.SESSION_SIGN_SECRET_KEY, Utils.baseXencode(secretSignKey, Constants.ALPHABET_BASE62));
-                db.saveProperties();
+                p.setProperty(DBUtils.SESSION_PUBLIC_KEY, Utils.baseXencode(publicKey, Constants.ALPHABET_BASE62));
+                p.setProperty(DBUtils.SESSION_SECRET_KEY, Utils.baseXencode(secretKey, Constants.ALPHABET_BASE62));
+                p.setProperty(DBUtils.SESSION_SIGN_PUBLIC_KEY, Utils.baseXencode(publicSignKey, Constants.ALPHABET_BASE62));
+                p.setProperty(DBUtils.SESSION_SIGN_SECRET_KEY, Utils.baseXencode(secretSignKey, Constants.ALPHABET_BASE62));
+                DBUtils.saveProperties();
             }
 
         } catch (SaltpackException ex) {

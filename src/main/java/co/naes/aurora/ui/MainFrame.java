@@ -1,9 +1,10 @@
 package co.naes.aurora.ui;
 
 import co.naes.aurora.AuroraException;
-import co.naes.aurora.LocalDB;
 import co.naes.aurora.Messenger;
 import co.naes.aurora.PublicKeys;
+import co.naes.aurora.db.PublicKeysUtils;
+import co.naes.aurora.db.StatusUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
@@ -28,8 +29,6 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     private JButton sendKeysButton;
     private JButton addFileButton;
 
-    private final LocalDB db;
-
     private final DefaultTableModel incomingModel;
     private final DefaultTableModel outgoingModel;
 
@@ -41,11 +40,9 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
     private SendKeys sendKeys;
 
-    public MainFrame(LocalDB db) {
+    public MainFrame() {
 
         super("Aurora");
-
-        this.db = db;
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
@@ -120,7 +117,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             if (settings == null) {
 
-                settings = new Settings(mainPanel, db, (boolean saved) -> settings = null);
+                settings = new Settings(mainPanel, (boolean saved) -> settings = null);
 
             } else {
 
@@ -173,11 +170,11 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             try {
 
-                AddFile af = new AddFile(this, db.listPublicKeysAddresses());
+                AddFile af = new AddFile(this, PublicKeysUtils.listAddresses());
                 af.setVisible(true);
                 if (!af.isCanceled()) {
 
-                    PublicKeys recipient = db.getPublicKeys(af.getSelectedRecipient());
+                    PublicKeys recipient = PublicKeysUtils.get(af.getSelectedRecipient());
                     if (messenger.addFileToSend(recipient, af.getSelectedFile().getAbsolutePath())) {
 
                         updateTables();
@@ -204,14 +201,14 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         try {
 
             incomingModel.setRowCount(0);
-            for (IncomingFile iFile : db.getIncomingFiles()) {
+            for (IncomingFile iFile : StatusUtils.getIncomingFiles()) {
 
                 incomingModel.addRow(iFile.asRow());
             }
             incomingModel.fireTableDataChanged();
 
             outgoingModel.setRowCount(0);
-            for (OutgoingFile oFile : db.getOutgoingFiles()) {
+            for (OutgoingFile oFile : StatusUtils.getOutgoingFiles()) {
 
                 outgoingModel.addRow(oFile.asRow());
             }

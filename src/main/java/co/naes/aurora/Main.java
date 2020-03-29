@@ -1,5 +1,6 @@
 package co.naes.aurora;
 
+import co.naes.aurora.db.DBUtils;
 import co.naes.aurora.transport.AuroraTransport;
 import co.naes.aurora.transport.MailTransport;
 import co.naes.aurora.ui.MainFrame;
@@ -16,8 +17,6 @@ import java.util.logging.Logger;
 public class Main {  // NOPMD
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
-
-    private LocalDB db;
 
     private String confFolder;
 
@@ -42,7 +41,7 @@ public class Main {  // NOPMD
         }
 
         // ask for db password
-        boolean dbExists = LocalDB.exists(confFolder);
+        boolean dbExists = DBUtils.exists(confFolder);
         JPanel panel = new JPanel();
         JLabel label = new JLabel(dbExists ? "Password to unlock the DB:" : "New password for the DB:");
         JPasswordField pass = new JPasswordField(15);
@@ -58,7 +57,7 @@ public class Main {  // NOPMD
 
             try {
 
-                db = new LocalDB(confFolder, new String(pass.getPassword()));
+                DBUtils.initialise(confFolder, new String(pass.getPassword()));
 
             } catch (AuroraException ex) {
 
@@ -74,7 +73,7 @@ public class Main {  // NOPMD
             System.exit(-1);
         }
 
-        if (db.getProperties().containsKey(LocalDB.MAIL_INCOMING_PASSWORD)) {
+        if (DBUtils.getProperties().containsKey(DBUtils.MAIL_INCOMING_PASSWORD)) {
 
             // normal flow
             showApplication();
@@ -82,7 +81,7 @@ public class Main {  // NOPMD
         } else {
 
             // connection settings need to be entered before creating the other components
-            new Settings(null, db, saved -> {
+            new Settings(null, saved -> {
 
                 if (!saved) {
 
@@ -98,10 +97,10 @@ public class Main {  // NOPMD
 
         try {
 
-            AuroraSession session = new AuroraSession(db);
-            AuroraTransport transport = new MailTransport(db);
-            var mainFrame = new MainFrame(db);
-            new Messenger(db, transport, session, confFolder, mainFrame);
+            AuroraSession session = new AuroraSession();
+            AuroraTransport transport = new MailTransport();
+            var mainFrame = new MainFrame();
+            new Messenger(transport, session, confFolder, mainFrame);
 
         } catch (AuroraException ex) {
 
