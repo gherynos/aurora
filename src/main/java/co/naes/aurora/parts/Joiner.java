@@ -46,4 +46,17 @@ public class Joiner {
             throw new AuroraException("Unable to write part to file: " + ex.getMessage(), ex);
         }
     }
+
+    public void close() throws AuroraException {
+
+        try {
+
+            channel.close();
+            aFile.close();
+
+        } catch (IOException ex) {
+
+            throw new AuroraException("Unable to close file channel: " + ex.getMessage(), ex);
+        }
+    }
 }

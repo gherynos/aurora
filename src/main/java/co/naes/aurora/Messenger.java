@@ -99,6 +99,7 @@ public class Messenger implements IncomingMessageHandler  {
             Splitter sp = new Splitter(fileId, filePath);
             db.addOutgoingFile(fileId, filePath, recipient.getEmailAddress(), sp.getTotalParts());
             db.addPartsToSend(fileId, recipient.getEmailAddress(), sp.getTotalParts());
+            sp.close();
 
             return true;
 
@@ -167,6 +168,7 @@ public class Messenger implements IncomingMessageHandler  {
                         handler.unableToSendPart(sequenceNumber, fileId, recipient.getEmailAddress());
                     }
                 }
+                sp.close();
 
                 // mark parts as sent
                 db.markPartsAsSent(sent, fileId, recipient.getEmailAddress());
@@ -236,6 +238,7 @@ public class Messenger implements IncomingMessageHandler  {
                 handler.processingPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getEmailAddress());
                 Joiner joiner = new Joiner(incomingFile[1]);
                 joiner.putPart(part);
+                joiner.close();
 
                 // send confirmation
                 ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);

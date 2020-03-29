@@ -13,6 +13,7 @@ public class Splitter {
 
     private final String fileId;
 
+    private RandomAccessFile aFile;
     private FileChannel channel;
 
     private int totalParts;
@@ -23,8 +24,9 @@ public class Splitter {
 
         this.fileId = fileId;
 
-        try (RandomAccessFile aFile = new RandomAccessFile(filePath, "r")) {
+        try {
 
+            aFile = new RandomAccessFile(filePath, "r");
             channel = aFile.getChannel();
 
             totalParts = (int) Math.ceil(channel.size() / (float) PART_SIZE);
@@ -71,6 +73,19 @@ public class Splitter {
         } catch (IOException ex) {
 
             throw new AuroraException("Unable to read part from file: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void close() throws AuroraException {
+
+        try {
+
+            channel.close();
+            aFile.close();
+
+        } catch (IOException ex) {
+
+            throw new AuroraException("Unable to close file channel: " + ex.getMessage(), ex);
         }
     }
 }
