@@ -25,6 +25,9 @@ import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.InMessage;
 import co.naes.aurora.msg.key.OutKeyMessage;
 import co.naes.aurora.msg.OutMessage;
+import net.nharyes.libsaltpack.Constants;
+import net.nharyes.libsaltpack.SaltpackException;
+import net.nharyes.libsaltpack.Utils;
 
 import javax.mail.Authenticator;
 import javax.mail.Flags;
@@ -44,9 +47,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
+import java.util.Random;
 import java.util.logging.Logger;
 
-public class MailTransport implements AuroraTransport {  // NOPMD
+public class MailTransport implements AuroraTransport {
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
@@ -54,6 +58,29 @@ public class MailTransport implements AuroraTransport {  // NOPMD
     private static final String HEADER_KEY = "Key";
 
     private IncomingMessageHandler messageHandler;
+
+    private final String repository;
+
+    public MailTransport(String repository) {
+
+        this.repository = repository;
+    }
+
+    private String getRandomString() throws AuroraException  {
+
+        try {
+
+            Random r = new Random();
+            byte[] data = new byte[10];
+            r.nextBytes(data);
+
+            return Utils.baseXencode(data, Constants.ALPHABET_BASE62);
+
+        } catch (SaltpackException ex) {
+
+            throw new AuroraException("Unable to generate random string.", ex);
+        }
+    }
 
     private Session getSession(boolean incoming) {
 
@@ -104,12 +131,12 @@ public class MailTransport implements AuroraTransport {  // NOPMD
                     DBUtils.getProperties().getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
                     DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
-            message.setSubject("Aurora key");  // TODO: change
+            message.setSubject(String.format("Aurora key %s", getRandomString()));
             message.setHeader(HEADER, HEADER_KEY);
 
             // Content
-            String content = String.format("This is an Aurora key.\n\n%s\n",  // TODO: change
-                    new String(key.getCiphertext(), StandardCharsets.UTF_8));
+            String content = String.format("This is an Aurora key.\nPlease check %s for more info.\n\n%s\n",
+                    repository, new String(key.getCiphertext(), StandardCharsets.UTF_8));
             message.setContent(content, "text/plain");
 
         } catch (MessagingException | UnsupportedEncodingException ex) {
@@ -145,12 +172,12 @@ public class MailTransport implements AuroraTransport {  // NOPMD
                     DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
-            message.setSubject("Aurora message");  // TODO: change
+            message.setSubject(String.format("Aurora message %s", getRandomString()));
             message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
 
             // Content
-            String content = String.format("This is an Aurora message.\n\n%s\n",  // TODO: change
-                    new String(msg.getCiphertext(), StandardCharsets.UTF_8));
+            String content = String.format("This is an Aurora message.\nPlease check %s for more info.\n\n%s\n",
+                    repository, new String(msg.getCiphertext(), StandardCharsets.UTF_8));
             message.setContent(content, "text/plain");
 
         } catch (MessagingException | UnsupportedEncodingException ex) {
@@ -199,7 +226,7 @@ public class MailTransport implements AuroraTransport {  // NOPMD
             try (Folder inbox = store.getFolder("INBOX")) {
 
                 inbox.open(Folder.READ_WRITE);
-                Message[] messages = inbox.search(new SubjectTerm("Aurora"));  // TODO: change
+                Message[] messages = inbox.search(new SubjectTerm("Aurora"));
                 for (Message message : messages) {
 
                     String[] header = message.getHeader(HEADER);

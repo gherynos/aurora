@@ -26,9 +26,13 @@ import co.naes.aurora.ui.MainFrame;
 import co.naes.aurora.ui.RequestFocusListener;
 import co.naes.aurora.ui.Settings;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -116,12 +120,15 @@ public class Main {  // NOPMD
 
         try {
 
+            Properties p = new Properties();
+            p.load(Main.class.getResourceAsStream("/project.properties"));
+
             AuroraSession session = new AuroraSession();
-            AuroraTransport transport = new MailTransport();
-            var mainFrame = new MainFrame();
+            AuroraTransport transport = new MailTransport(p.getProperty("repository"));
+            var mainFrame = new MainFrame(p.getProperty("version"));
             new Messenger(transport, session, confFolder, mainFrame);
 
-        } catch (AuroraException ex) {
+        } catch (AuroraException | IOException ex) {
 
             JOptionPane.showMessageDialog(null, ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);

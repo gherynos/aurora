@@ -59,9 +59,9 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
     private SendKeys sendKeys;
 
-    public MainFrame() {
+    public MainFrame(String version) {
 
-        super("Aurora");
+        super("Aurora " + version);
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));

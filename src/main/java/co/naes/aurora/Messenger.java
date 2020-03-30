@@ -92,7 +92,7 @@ public class Messenger implements IncomingMessageHandler  {
         void keyMessageSent(char[] password);
 
         void keysStored(String emailAddress);
-    };
+    }
 
     protected Messenger(AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) throws AuroraException {
 
