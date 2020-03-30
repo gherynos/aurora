@@ -273,13 +273,13 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     @Override
     public void sendingPart(int sequenceNumber, String fileId, String emailAddress) {
 
-        updateStatus(String.format("Sending part #%d of %s for %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Sending part #%d of %s to %s", sequenceNumber, fileId, emailAddress));
     }
 
     @Override
     public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
 
-        showError(String.format("Unable to send part #%d of %s for %s", sequenceNumber, fileId, emailAddress));
+        showError(String.format("Unable to send part #%d of %s to %s", sequenceNumber, fileId, emailAddress));
     }
 
     @Override
@@ -297,7 +297,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     @Override
     public void processingConfirmation(int sequenceNumber, String fileId, String emailAddress) {
 
-        updateStatus(String.format("Processing confirmation #%d of %s to %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Processing confirmation #%d of %s from %s", sequenceNumber, fileId, emailAddress));
     }
 
     @Override
