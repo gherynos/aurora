@@ -1,8 +1,14 @@
 # Aurora
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 A simple software to send and receive big files in chunks using IMAP, SMTP and asymmetrical encryption.
 
-Refactoring of some old code that I wrote for my Bachelor's thesis, now using [libsaltpack-jni](https://github.com/gherynos/libsaltpack-jni).
+Refactoring of some old code that I wrote for my bachelor's thesis, now using [libsaltpack-jni](https://github.com/gherynos/libsaltpack-jni).
+
+![Main interface screenshot](screenshot.png)
+
+Icons made by [Pixel perfect](https://www.flaticon.com/authors/pixel-perfect) from [www.flaticon.com](http://www.flaticon.com/).
 
 ## Copyright and license
 

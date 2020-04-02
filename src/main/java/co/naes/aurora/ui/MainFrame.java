@@ -27,9 +27,22 @@ import co.naes.aurora.db.StatusUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
-import javax.swing.*;
+import org.openide.util.ImageUtilities;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,11 +76,14 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
         super("Aurora " + version);
 
+        setIconImage(ImageUtilities.loadImageIcon("icons/message.svg", false).getImage());
+
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
+        loadButtonIcons();
         setVisible(true);
 
         statusModal = new StatusModal(this, "Aurora");
@@ -213,6 +229,25 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                 showError("Unable to load recipients");
             }
         });
+    }
+
+    private void loadButtonIcons() {
+
+        sendAndReceiveButton.setIcon(ImageUtilities.loadImageIcon("icons/refresh.svg", false));
+        sendAndReceiveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        sendAndReceiveButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        settingsButton.setIcon(ImageUtilities.loadImageIcon("icons/settings.svg", false));
+        settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        sendKeysButton.setIcon(ImageUtilities.loadImageIcon("icons/lock.svg", false));
+        sendKeysButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        sendKeysButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        addFileButton.setIcon(ImageUtilities.loadImageIcon("icons/file.svg", false));
+        addFileButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
     private void updateTables() {

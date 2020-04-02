@@ -29,6 +29,7 @@ repos:
           - makefile
           - xml
           - css
+          - svg
         exclude: binary|\.bin$
   - repo: git://github.com/igorshubovych/markdownlint-cli
     rev: v0.22.0

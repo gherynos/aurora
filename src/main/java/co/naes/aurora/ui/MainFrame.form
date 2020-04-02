@@ -71,24 +71,32 @@
           <component id="753e0" class="javax.swing.JButton" binding="sendAndReceiveButton" default-binding="true">
             <constraints/>
             <properties>
+              <borderPainted value="false"/>
+              <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Send and Receive"/>
             </properties>
           </component>
           <component id="6902a" class="javax.swing.JButton" binding="settingsButton">
             <constraints/>
             <properties>
+              <borderPainted value="false"/>
+              <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Settings"/>
             </properties>
           </component>
           <component id="edff0" class="javax.swing.JButton" binding="sendKeysButton">
             <constraints/>
             <properties>
+              <borderPainted value="false"/>
+              <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Send Keys"/>
             </properties>
           </component>
           <component id="e11b3" class="javax.swing.JButton" binding="addFileButton">
             <constraints/>
             <properties>
+              <borderPainted value="false"/>
+              <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Add file"/>
             </properties>
           </component>

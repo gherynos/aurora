@@ -44,6 +44,18 @@
             <artifactId>forms_rt</artifactId>
             <version>7.0.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-ui</artifactId>
+            <version>RELEASE113</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-openide-util-ui-svg</artifactId>
+            <version>RELEASE113</version>
+        </dependency>
     </dependencies>
 
     <build>
