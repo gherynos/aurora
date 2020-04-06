@@ -178,6 +178,8 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
                             } catch (AuroraException ex) {
 
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
+
                                 showError("Unable to send keys to recipient");
 
                             } finally {

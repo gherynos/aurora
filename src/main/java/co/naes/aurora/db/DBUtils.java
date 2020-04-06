@@ -34,12 +34,20 @@ public final class DBUtils {
     public static final String SESSION_SECRET_KEY = "aurora.session.secretkey";
     public static final String SESSION_SIGN_PUBLIC_KEY = "aurora.session.sign.publickey";
     public static final String SESSION_SIGN_SECRET_KEY = "aurora.session.sign.secretkey";
+    public static final String MAIL_MODE = "aurora.mail.mode";
+    public static final String MAIL_MODE_GENERIC = "generic";
+    public static final String MAIL_MODE_GMAIL = "gmail";
     public static final String MAIL_INCOMING_USERNAME = "aurora.mail.incoming.username";
     public static final String MAIL_INCOMING_PASSWORD = "aurora.mail.incoming.password";
     public static final String MAIL_OUTGOING_USERNAME = "aurora.mail.outgoing.username";
     public static final String MAIL_OUTGOING_PASSWORD = "aurora.mail.outgoing.password";
     public static final String ACCOUNT_NAME = "aurora.account.name";
     public static final String INCOMING_DIRECTORY = "aurora.incoming.directory";
+    public static final String OAUTH_GMAIL_CLIENT_ID = "aurora.oauth.gmail.client_id";
+    public static final String OAUTH_GMAIL_CLIENT_SECRET = "aurora.oauth.gmail.client_secret";
+    public static final String OAUTH_GMAIL_ACCESS_TOKEN = "aurora.oauth.gmail.access_token";
+    public static final String OAUTH_GMAIL_REFRESH_TOKEN = "aurora.oauth.gmail.refresh_token";
+    public static final String OAUTH_GMAIL_TOKEN_EXPIRATION = "aurora.oauth.gmail.token_expiration";
 
     private static Properties properties = new Properties();
 

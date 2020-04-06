@@ -17,7 +17,7 @@
  * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package co.naes.aurora.transport;
+package co.naes.aurora.transport;  // NOPMD
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.db.DBUtils;
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
+import java.util.Properties;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -60,6 +61,10 @@ public class MailTransport implements AuroraTransport {
     private IncomingMessageHandler messageHandler;
 
     private final String repository;
+
+    private GmailOAuthUtils gmailOAuthUtils;
+
+    private final Properties main = DBUtils.getProperties();
 
     public MailTransport(String repository) {
 
@@ -82,7 +87,17 @@ public class MailTransport implements AuroraTransport {
         }
     }
 
-    private Session getSession(boolean incoming) {
+    private Session getSession(boolean incoming) throws AuroraException {
+
+        boolean isGMail = main.getProperty(DBUtils.MAIL_MODE).equals(DBUtils.MAIL_MODE_GMAIL);
+
+        if (gmailOAuthUtils == null && isGMail) {
+
+            gmailOAuthUtils = new GmailOAuthUtils();
+        }
+
+        String iPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_INCOMING_PASSWORD);  // NOPMD
+        String oPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_OUTGOING_PASSWORD);  // NOPMD
 
         Authenticator auth = new Authenticator() {  // NOPMD
 
@@ -90,15 +105,11 @@ public class MailTransport implements AuroraTransport {
 
                 if (incoming) {
 
-                    return new PasswordAuthentication(
-                            DBUtils.getProperties().getProperty(DBUtils.MAIL_INCOMING_USERNAME),
-                            DBUtils.getProperties().getProperty(DBUtils.MAIL_INCOMING_PASSWORD));
+                    return new PasswordAuthentication(main.getProperty(DBUtils.MAIL_INCOMING_USERNAME), iPassword);
 
                 } else {
 
-                    return new PasswordAuthentication(
-                            DBUtils.getProperties().getProperty(DBUtils.MAIL_OUTGOING_USERNAME),
-                            DBUtils.getProperties().getProperty(DBUtils.MAIL_OUTGOING_PASSWORD));
+                    return new PasswordAuthentication(main.getProperty(DBUtils.MAIL_OUTGOING_USERNAME), oPassword);
                 }
             }
         };
@@ -127,9 +138,8 @@ public class MailTransport implements AuroraTransport {
 
             // Create message
             message = new MimeMessage(getSession(false));
-            message.setFrom(new InternetAddress(
-                    DBUtils.getProperties().getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
-                    DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
+            message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
+                    main.getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
             message.setSubject(String.format("Aurora key %s", getRandomString()));
             message.setHeader(HEADER, HEADER_KEY);
@@ -167,9 +177,8 @@ public class MailTransport implements AuroraTransport {
 
             // Create message
             message = new MimeMessage(getSession(false));
-            message.setFrom(new InternetAddress(
-                    DBUtils.getProperties().getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
-                    DBUtils.getProperties().getProperty(DBUtils.ACCOUNT_NAME)));
+            message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
+                    main.getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(msg.getRecipient().getEmailAddress()));
             message.setSubject(String.format("Aurora message %s", getRandomString()));

@@ -96,7 +96,8 @@ public class Main {  // NOPMD
             System.exit(-1);
         }
 
-        if (DBUtils.getProperties().containsKey(DBUtils.MAIL_INCOMING_PASSWORD)) {
+        if (DBUtils.getProperties().containsKey(DBUtils.MAIL_INCOMING_PASSWORD) ||
+                DBUtils.getProperties().containsKey(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN)) {
 
             // normal flow
             showApplication();
