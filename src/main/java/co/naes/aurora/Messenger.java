@@ -326,7 +326,7 @@ public class Messenger implements IncomingMessageHandler  {
         try {
 
             char[] password = handler.keyMessageReceived(keyMessage.getSender());
-            if (password == null) {
+            if (password.length == 0) {
 
                 return true;
             }

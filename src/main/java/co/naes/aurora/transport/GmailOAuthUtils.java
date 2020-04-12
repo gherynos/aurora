@@ -14,8 +14,11 @@ import com.google.api.services.gmail.GmailScopes;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 public class GmailOAuthUtils {
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
 
@@ -84,7 +87,17 @@ public class GmailOAuthUtils {
 
             if (credential.getExpirationTimeMilliseconds() <= System.currentTimeMillis()) {
 
+                logger.finer("Refreshing Gmail access token");
+
                 credential.refreshToken();
+
+                // save refreshed tokens to DB
+                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, credential.getAccessToken());
+                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, credential.getRefreshToken());
+                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
+                        credential.getExpirationTimeMilliseconds().toString());
+
+                DBUtils.saveProperties();
             }
 
             return credential.getAccessToken();

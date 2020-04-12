@@ -42,7 +42,7 @@ public class KeysReceived extends JDialog {
     private JButton cancelButton;
     private JTextField senderTextField;
 
-    private char[] password;
+    private char[] password = new char[0];
 
     public KeysReceived(Frame owner, String sender) {
 
