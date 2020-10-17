@@ -161,6 +161,7 @@ public class SendKeys extends JFrame {
         setLocationRelativeTo(relativeTo);
         addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowClosing(WindowEvent e) {
 
                 statusHandler.sendKeysClosed();

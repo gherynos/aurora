@@ -101,6 +101,7 @@ public class MailTransport implements AuroraTransport {
 
         Authenticator auth = new Authenticator() {  // NOPMD
 
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
 
                 if (incoming) {

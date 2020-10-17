@@ -325,6 +325,7 @@ public class Settings extends JFrame {  // NOPMD
         setLocationRelativeTo(relativeTo);
         addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowClosing(WindowEvent e) {
 
                 statusHandler.settingsClosed(false);

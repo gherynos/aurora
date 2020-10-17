@@ -24,9 +24,9 @@ import co.naes.aurora.Messenger;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.db.StatusUtils;
+
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-
 import org.openide.util.ImageUtilities;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;

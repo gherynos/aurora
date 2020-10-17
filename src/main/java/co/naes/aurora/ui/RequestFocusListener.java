@@ -25,6 +25,7 @@ import javax.swing.event.AncestorListener;
 
 public class RequestFocusListener implements AncestorListener {  // NOPMD
 
+    @Override
     public void ancestorAdded(final AncestorEvent e) {
 
         final AncestorListener al= this;
@@ -36,6 +37,9 @@ public class RequestFocusListener implements AncestorListener {  // NOPMD
         });
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent e) { }
+
+    @Override
     public void ancestorRemoved(AncestorEvent e) { }
 }

@@ -41,7 +41,7 @@ public class Main {  // NOPMD
 
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
-    private String confFolder;
+    private final String confFolder;
 
     private Main(String cf) {
 
