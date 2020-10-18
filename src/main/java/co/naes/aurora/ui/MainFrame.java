@@ -25,9 +25,12 @@ import co.naes.aurora.PublicKeys;
 import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.db.StatusUtils;
 
+import co.naes.aurora.ui.icons.FileIcon;
+import co.naes.aurora.ui.icons.KeyIcon;
+import co.naes.aurora.ui.icons.RefreshIcon;
+import co.naes.aurora.ui.icons.SettingsIcon;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import org.openide.util.ImageUtilities;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -76,8 +79,6 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     public MainFrame(String version) {
 
         super("Aurora " + version);
-
-        setIconImage(ImageUtilities.loadImageIcon("icons/message.svg", false).getImage());
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
@@ -236,19 +237,19 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
     private void loadButtonIcons() {
 
-        sendAndReceiveButton.setIcon(ImageUtilities.loadImageIcon("icons/refresh.svg", false));
+        sendAndReceiveButton.setIcon(new RefreshIcon());
         sendAndReceiveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         sendAndReceiveButton.setHorizontalTextPosition(SwingConstants.CENTER);
 
-        settingsButton.setIcon(ImageUtilities.loadImageIcon("icons/settings.svg", false));
+        settingsButton.setIcon(new SettingsIcon());
         settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
 
-        sendKeysButton.setIcon(ImageUtilities.loadImageIcon("icons/lock.svg", false));
+        sendKeysButton.setIcon(new KeyIcon());
         sendKeysButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         sendKeysButton.setHorizontalTextPosition(SwingConstants.CENTER);
 
-        addFileButton.setIcon(ImageUtilities.loadImageIcon("icons/file.svg", false));
+        addFileButton.setIcon(new FileIcon());
         addFileButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
     }
