@@ -53,9 +53,21 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-gmail</artifactId>
-            <version>v1-rev20200919-1.30.10</version>
+            <groupId>org.dmfs</groupId>
+            <artifactId>oauth2-essentials</artifactId>
+            <version>0.18</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dmfs</groupId>
+            <artifactId>oauth2-providers</artifactId>
+            <version>0.18</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dmfs</groupId>
+            <artifactId>httpurlconnection-executor</artifactId>
+            <version>0.20</version>
         </dependency>
     </dependencies>
 

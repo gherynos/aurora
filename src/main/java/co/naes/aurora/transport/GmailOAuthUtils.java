@@ -2,19 +2,29 @@ package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.db.DBUtils;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.gmail.GmailScopes;
+import org.dmfs.httpessentials.exceptions.ProtocolError;
+import org.dmfs.httpessentials.exceptions.ProtocolException;
+import org.dmfs.httpessentials.httpurlconnection.HttpUrlConnectionExecutor;
+import org.dmfs.oauth2.client.BasicOAuth2Client;
+import org.dmfs.oauth2.client.BasicOAuth2ClientCredentials;
+import org.dmfs.oauth2.client.OAuth2AccessToken;
+import org.dmfs.oauth2.client.OAuth2Client;
+import org.dmfs.oauth2.client.OAuth2ClientCredentials;
+import org.dmfs.oauth2.client.OAuth2InteractiveGrant;
+import org.dmfs.oauth2.client.grants.AuthorizationCodeGrant;
+import org.dmfs.oauth2.client.grants.TokenRefreshGrant;
+import org.dmfs.oauth2.client.scope.BasicScope;
+import org.dmfs.oauth2.providers.GoogleAuthorizationProvider;
+import org.dmfs.rfc3986.encoding.Precoded;
+import org.dmfs.rfc3986.parameters.adapters.TextParameter;
+import org.dmfs.rfc3986.parameters.adapters.XwfueParameterList;
+import org.dmfs.rfc3986.uris.LazyUri;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.net.URI;
 import java.util.logging.Logger;
+
+import static org.dmfs.oauth2.client.utils.Parameters.STATE;
 
 public class GmailOAuthUtils {
 
@@ -22,49 +32,65 @@ public class GmailOAuthUtils {
 
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
 
-    private final HttpTransport httpTransport;
-    private final JsonFactory jsonFactory;
+    private static final BasicScope SCOPE = new BasicScope("https://mail.google.com");
 
-    private GoogleAuthorizationCodeFlow flow;
+    private final HttpUrlConnectionExecutor executor;
+
+    private OAuth2InteractiveGrant grant;
+
+    private String state;
 
     public GmailOAuthUtils() {
 
-        httpTransport = new NetHttpTransport();
-        jsonFactory = new JacksonFactory();
+        executor = new HttpUrlConnectionExecutor();
+    }
+
+    private OAuth2Client getClient() {
+
+        OAuth2ClientCredentials credentials = new BasicOAuth2ClientCredentials(
+                DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID),
+                DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET));
+
+        return new BasicOAuth2Client(new GoogleAuthorizationProvider(), credentials,
+                new LazyUri(new Precoded(REDIRECT_URI)));
     }
 
     public String getAuthorisationUrl(String clientId, String clientSecret) {
 
-        flow = new GoogleAuthorizationCodeFlow.Builder(
-                httpTransport, jsonFactory,
-                clientId, clientSecret,
-                Collections.singletonList(GmailScopes.MAIL_GOOGLE_COM)
-        ).build();
-
         DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID, clientId);
         DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET, clientSecret);
 
-        return flow.newAuthorizationUrl().setRedirectUri(REDIRECT_URI).build();
+        grant = new AuthorizationCodeGrant(getClient(), SCOPE);
+
+        URI authorizationUrl = grant.authorizationUrl();
+        state = new TextParameter(STATE, new XwfueParameterList(
+                new LazyUri(new Precoded(authorizationUrl.toString())).query().value())).toString();
+
+        return authorizationUrl.toString();
     }
 
     public void authorise(String code) throws AuroraException {
 
-        if (flow == null) {
+        if (grant == null) {
 
             throw new AuroraException("Please get the authorisation URL first.");
         }
 
         try {
 
-            GoogleTokenResponse response = flow.newTokenRequest(code).setRedirectUri(REDIRECT_URI).execute();
-            Credential credential = flow.createAndStoreCredential(response, null);
+            String url = String.format("http://localhost?state=%s&code=%s", state, code);
 
-            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, credential.getAccessToken());
-            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, credential.getRefreshToken());
+            OAuth2AccessToken token = grant.withRedirect(
+                    new LazyUri(new Precoded(url))).accessToken(executor);
+
+            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, token.accessToken().toString());
+            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, token.refreshToken().toString());
             DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
-                    credential.getExpirationTimeMilliseconds().toString());
+                    Long.toString(token.expirationDate().getTimestamp()));
 
-        } catch (IOException ex) {
+            DBUtils.saveProperties();
+
+        } catch (ProtocolException | ProtocolError | IOException ex) {
 
             throw new AuroraException("Unable to authorise access to Gmail", ex);
         }
@@ -74,35 +100,34 @@ public class GmailOAuthUtils {
 
         try {
 
-            GoogleCredential credential = new GoogleCredential.Builder()
-                    .setClientSecrets(
-                            DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID),
-                            DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET)
-                    )
-                    .setJsonFactory(jsonFactory).setTransport(httpTransport).build()
-                    .setRefreshToken(DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN))
-                    .setAccessToken(DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN))
-                    .setExpirationTimeMilliseconds(
-                            Long.parseLong(DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION)));
-
-            if (credential.getExpirationTimeMilliseconds() <= System.currentTimeMillis()) {
+            long exp = Long.parseLong(DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION));
+            if (exp <= System.currentTimeMillis()) {
 
                 logger.finer("Refreshing Gmail access token");
 
-                credential.refreshToken();
+                OAuth2AccessToken token = new OAuthToken(
+                        DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN),
+                        DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN),
+                        exp, SCOPE);
+
+                OAuth2AccessToken newToken = new TokenRefreshGrant(getClient(), token).accessToken(executor);
 
                 // save refreshed tokens to DB
-                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, credential.getAccessToken());
-                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, credential.getRefreshToken());
+                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN,
+                        newToken.accessToken().toString());
                 DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
-                        credential.getExpirationTimeMilliseconds().toString());
+                        Long.toString(newToken.expirationDate().getTimestamp()));
+                if (newToken.hasRefreshToken()) {
+                    DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN,
+                            newToken.refreshToken().toString());
+                }
 
                 DBUtils.saveProperties();
             }
 
-            return credential.getAccessToken();
+            return DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN);
 
-        } catch (IOException ex) {
+        } catch (ProtocolException | ProtocolError | IOException ex) {
 
             throw new AuroraException("Unable to get/refresh Gmail access token", ex);
         }
