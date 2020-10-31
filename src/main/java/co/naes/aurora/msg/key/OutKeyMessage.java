@@ -34,9 +34,9 @@ import java.io.IOException;
 
 public class OutKeyMessage extends KeyMessage {
 
-    private String recipientIdentifier;
+    private final String recipientIdentifier;
 
-    private char[] password;
+    private final char[] password;
 
     public OutKeyMessage(AuroraSession session, String recipientIdentifier, boolean armored) throws AuroraException {
 

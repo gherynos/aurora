@@ -19,6 +19,8 @@
 
 package co.naes.aurora.parts;
 
+import java.security.InvalidParameterException;
+
 public class Part {  // NOPMD
 
     private final PartId id;
@@ -30,6 +32,11 @@ public class Part {  // NOPMD
     private final byte[] data;
 
     public Part(PartId id, int total, long totalSize, byte[] data) {
+
+        if (data.length > totalSize / total) {
+
+            throw new InvalidParameterException("Part content bigger than expected");
+        }
 
         this.id = id;
         this.total = total;
