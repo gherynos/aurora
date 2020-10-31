@@ -28,13 +28,13 @@ import java.util.Properties;
 
 public class AuroraSession {
 
-    private byte[] secretKey;
-    private byte[] publicKey;
+    private final byte[] secretKey;
+    private final byte[] publicKey;
 
-    private byte[] secretSignKey;
-    private byte[] publicSignKey;
+    private final byte[] secretSignKey;
+    private final byte[] publicSignKey;
 
-    private String emailAddress;
+    private final String emailAddress;
 
     protected AuroraSession() throws AuroraException {
 

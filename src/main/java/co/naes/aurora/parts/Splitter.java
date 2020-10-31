@@ -28,19 +28,22 @@ import java.nio.channels.FileChannel;
 
 public class Splitter {
 
-    public static final int PART_SIZE = 1024 * (1024 + 256);
+    public static final int DEFAULT_PART_SIZE = 1024 * (1024 + 256);
 
     private final String fileId;
 
-    private RandomAccessFile aFile;
-    private FileChannel channel;
+    private final RandomAccessFile aFile;
+    private final FileChannel channel;
 
-    private int totalParts;
+    private final int totalParts;
 
-    private boolean lastPartSmaller;
+    private final boolean lastPartSmaller;
 
-    public Splitter(String fileId, String filePath) throws AuroraException {
+    private final int partSize;
 
+    public Splitter(int partSize, String fileId, String filePath) throws AuroraException {
+
+        this.partSize = partSize;
         this.fileId = fileId;
 
         try {
@@ -48,13 +51,18 @@ public class Splitter {
             aFile = new RandomAccessFile(filePath, "r");
             channel = aFile.getChannel();
 
-            totalParts = (int) Math.ceil(channel.size() / (float) PART_SIZE);
-            lastPartSmaller = channel.size() % PART_SIZE != 0;
+            totalParts = (int) Math.ceil(channel.size() / (float) partSize);
+            lastPartSmaller = channel.size() % partSize != 0;
 
         } catch (IOException ex) {
 
             throw new AuroraException("Unable to open input file: " + ex.getMessage(), ex);
         }
+    }
+
+    public Splitter(String fileId, String filePath) throws AuroraException {
+
+        this(DEFAULT_PART_SIZE, fileId, filePath);
     }
 
     public int getTotalParts() {
@@ -72,14 +80,14 @@ public class Splitter {
         try {
 
             ByteBuffer data;
-            channel.position(PART_SIZE * sequenceNumber);
+            channel.position(partSize * sequenceNumber);
             if (sequenceNumber == totalParts - 1 && lastPartSmaller) {
 
-                data = ByteBuffer.allocate((int) channel.size() - PART_SIZE * (totalParts - 1));
+                data = ByteBuffer.allocate((int) channel.size() - partSize * (totalParts - 1));
 
             } else {
 
-                data = ByteBuffer.allocate(PART_SIZE);
+                data = ByteBuffer.allocate(partSize);
             }
 
             if (channel.read(data) != data.capacity()) {

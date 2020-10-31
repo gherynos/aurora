@@ -28,8 +28,8 @@ import java.nio.channels.FileChannel;
 
 public class Joiner {
 
-    private RandomAccessFile aFile;
-    private FileChannel channel;
+    private final RandomAccessFile aFile;
+    private final FileChannel channel;
 
     public Joiner(String filePath) throws AuroraException {
 
@@ -53,7 +53,7 @@ public class Joiner {
                 aFile.setLength(part.getTotalSize());
             }
 
-            channel.position(part.getId().getSequenceNumber() * Splitter.PART_SIZE);
+            channel.position(part.getId().getSequenceNumber() * part.getPartSize());
 
             if (channel.write(ByteBuffer.wrap(part.getData())) != part.getData().length) {
 
