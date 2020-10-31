@@ -56,6 +56,7 @@ class StringMessageTest {
 
         String sC = new String(ciphertext, StandardCharsets.UTF_8);
         assertTrue(sC.startsWith("BEGIN AURORA"));
+        assertTrue(out.isArmored());
 
         StringInMessage in = new StringInMessage(ciphertext);
         in.decrypt(session);
@@ -77,6 +78,7 @@ class StringMessageTest {
 
         String sC = new String(ciphertext, StandardCharsets.UTF_8);
         assertFalse(sC.startsWith("BEGIN AURORA"));
+        assertFalse(out.isArmored());
 
         StringInMessage in = new StringInMessage(ciphertext);
         in.decrypt(session);

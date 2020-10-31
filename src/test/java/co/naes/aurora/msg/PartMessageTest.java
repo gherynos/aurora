@@ -132,10 +132,12 @@ class PartMessageTest {
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
         assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
 
         PartInMessage in = new PartInMessage(ciphertext);
+        assertFalse(in.isArmored());
 
         Exception exception = assertThrows(AuroraException.class, () -> {
 
@@ -157,6 +159,7 @@ class PartMessageTest {
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
         assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertTrue(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -164,6 +167,7 @@ class PartMessageTest {
         assertTrue(sC.startsWith("BEGIN AURORA"));
 
         PartInMessage in = new PartInMessage(ciphertext);
+        assertTrue(in.isArmored());
         in.decrypt(session);
 
         assertArrayEquals(in.getSender().getPublicKey(), pk.getPublicKey());

@@ -6,8 +6,6 @@ import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
 import co.naes.aurora.msg.out.ConfOutMessage;
-import co.naes.aurora.msg.out.PartOutMessage;
-import co.naes.aurora.parts.Part;
 import co.naes.aurora.parts.PartId;
 import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.Utils;
@@ -18,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -61,6 +58,7 @@ class ConfMessageTest {
 
         String sC = new String(ciphertext, StandardCharsets.UTF_8);
         assertTrue(sC.startsWith("BEGIN AURORA"));
+        assertTrue(out.isArmored());
 
         ConfInMessage in = new ConfInMessage(ciphertext);
         in.decrypt(session);
@@ -80,6 +78,7 @@ class ConfMessageTest {
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
         assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
 
