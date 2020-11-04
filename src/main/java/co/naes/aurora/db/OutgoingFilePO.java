@@ -27,6 +27,8 @@ import java.util.List;
 
 public class OutgoingFilePO {
 
+    private final DBUtils db;
+
     private final String fileId;
 
     private final String path;
@@ -35,16 +37,16 @@ public class OutgoingFilePO {
 
     private final int totalParts;
 
-    public static List<OutgoingFilePO> getPending() throws AuroraException {
+    public static List<OutgoingFilePO> getPending(DBUtils db) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             List<OutgoingFilePO> out = new ArrayList<>();
             var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.EMAIL = OF.EMAIL) > 0;");
             while (res.next()) {
 
-                out.add(new OutgoingFilePO(res.getString(1),  // NOPMD
+                out.add(new OutgoingFilePO(db, res.getString(1),  // NOPMD
                         res.getString(2), res.getString(3), res.getInt(4)));
             }
 
@@ -56,8 +58,9 @@ public class OutgoingFilePO {
         }
     }
 
-    public OutgoingFilePO(String fileId, String path, String emailAddress, int totalParts) {
+    public OutgoingFilePO(DBUtils db, String fileId, String path, String emailAddress, int totalParts) {
 
+        this.db = db;
         this.fileId = fileId;
         this.path = path;
         this.emailAddress = emailAddress;
@@ -66,7 +69,7 @@ public class OutgoingFilePO {
 
     public void save() throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?, ?)")) {
 
             st.setString(1, fileId);

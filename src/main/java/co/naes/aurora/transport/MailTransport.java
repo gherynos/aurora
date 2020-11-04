@@ -64,11 +64,19 @@ public class MailTransport implements AuroraTransport {
 
     private GmailOAuthUtils gmailOAuthUtils;
 
-    private final Properties main = DBUtils.getProperties();
+    private final DBUtils db;
 
-    public MailTransport(String repository) {
+    private final Properties main;
 
+    private final Properties mail;
+
+    public MailTransport(DBUtils db, String repository) {
+
+        this.db = db;
         this.repository = repository;
+
+        main = db.getProperties();
+        mail = db.getMailProperties();
     }
 
     private String getRandomString() throws AuroraException  {
@@ -93,7 +101,7 @@ public class MailTransport implements AuroraTransport {
 
         if (gmailOAuthUtils == null && isGMail) {
 
-            gmailOAuthUtils = new GmailOAuthUtils();
+            gmailOAuthUtils = new GmailOAuthUtils(db);
         }
 
         String iPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_INCOMING_PASSWORD);  // NOPMD
@@ -114,7 +122,7 @@ public class MailTransport implements AuroraTransport {
                 }
             }
         };
-        Session session = Session.getInstance(DBUtils.getMailProperties(), auth);
+        Session session = Session.getInstance(mail, auth);
         session.setDebug(false);
 
         return session;

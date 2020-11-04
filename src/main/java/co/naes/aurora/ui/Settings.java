@@ -86,6 +86,7 @@ public class Settings extends JFrame {  // NOPMD
     private JTextField codeTextField;
     private JButton authoriseButton;
 
+    private final DBUtils db;
     private final Properties main;
     private final Properties mail;
 
@@ -301,12 +302,13 @@ public class Settings extends JFrame {  // NOPMD
         void settingsClosed(boolean saved);
     }
 
-    public Settings(Component relativeTo, SettingsStatusHandler statusHandler) {
+    public Settings(DBUtils db, Component relativeTo, SettingsStatusHandler statusHandler) {
 
         super("Settings");
 
-        main = DBUtils.getProperties();
-        mail = DBUtils.getMailProperties();
+        this.db = db;
+        main = db.getProperties();
+        mail = db.getMailProperties();
 
         populate();
 
@@ -382,7 +384,7 @@ public class Settings extends JFrame {  // NOPMD
 
                 if (gmailOAuthUtils == null) {
 
-                    gmailOAuthUtils = new GmailOAuthUtils();
+                    gmailOAuthUtils = new GmailOAuthUtils(db);
                 }
 
                 String url = gmailOAuthUtils.getAuthorisationUrl(clientIdTextField.getText(),
@@ -591,7 +593,7 @@ public class Settings extends JFrame {  // NOPMD
                 }
                 mail.setProperty(SMTP_FROM, emailTextField.getText());
 
-                DBUtils.saveProperties();
+                db.saveProperties();
 
                 dispose();
                 statusHandler.settingsClosed(true);
@@ -637,7 +639,7 @@ public class Settings extends JFrame {  // NOPMD
                 mail.setProperty(SMTP_AUTH, TRUE);
                 main.setProperty(DBUtils.MAIL_OUTGOING_USERNAME, emailTextField.getText());
 
-                DBUtils.saveProperties();
+                db.saveProperties();
 
                 dispose();
                 statusHandler.settingsClosed(true);

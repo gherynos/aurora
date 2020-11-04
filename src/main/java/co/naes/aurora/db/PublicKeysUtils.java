@@ -31,9 +31,9 @@ import java.util.List;
 
 public final class PublicKeysUtils {
 
-    public static void store(PublicKeys keys) throws AuroraException {
+    public static void store(DBUtils db, PublicKeys keys) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("MERGE INTO PUBLIC_KEYS KEY(EMAIL) VALUES(?, ?, ?)")) {
 
             st.setString(1, keys.getEmailAddress());
@@ -48,9 +48,9 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static PublicKeys get(String emailAddress) throws AuroraException {
+    public static PublicKeys get(DBUtils db, String emailAddress) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE EMAIL = ?")) {
 
             st.setString(1, emailAddress);
@@ -73,9 +73,9 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static PublicKeys get(byte[] encryptionKey) throws AuroraException {
+    public static PublicKeys get(DBUtils db, byte[] encryptionKey) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE ENCRYPTION = ?")) {
 
             st.setString(1, Utils.baseXencode(encryptionKey, Constants.ALPHABET_BASE62));
@@ -98,9 +98,9 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static List<String> listAddresses() throws AuroraException {
+    public static List<String> listAddresses(DBUtils db) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             List<String> out = new ArrayList<>();

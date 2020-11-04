@@ -25,15 +25,17 @@ import java.sql.SQLException;
 
 public class PartToReceivePO {
 
+    private final DBUtils db;
+
     private final int sequenceNumber;
 
     private final String fileId;
 
     private final String emailAddress;
 
-    public static void addAll(String fileId, String emailAddress, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, String emailAddress, int totalParts) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_RECEIVE VALUES(?, ?, ?)")) {
 
             conn.setAutoCommit(false);
@@ -60,8 +62,9 @@ public class PartToReceivePO {
         }
     }
 
-    public PartToReceivePO(int sequenceNumber, String fileId, String emailAddress) {
+    public PartToReceivePO(DBUtils db, int sequenceNumber, String fileId, String emailAddress) {
 
+        this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
         this.emailAddress = emailAddress;
@@ -69,7 +72,7 @@ public class PartToReceivePO {
 
     public void delete() throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("DELETE FROM PARTS_TO_RECEIVE WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             st.setInt(1, sequenceNumber);

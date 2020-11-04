@@ -76,11 +76,12 @@ public class Main {  // NOPMD
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, options, options[0]);
 
+        DBUtils db = null;
         if (option == 0) {
 
             try {
 
-                DBUtils.initialise(confFolder, new String(pass.getPassword()));
+                db = new DBUtils(confFolder, new String(pass.getPassword()));
 
             } catch (AuroraException ex) {
 
@@ -96,36 +97,37 @@ public class Main {  // NOPMD
             System.exit(-1);
         }
 
-        if (DBUtils.getProperties().containsKey(DBUtils.MAIL_INCOMING_PASSWORD) ||
-                DBUtils.getProperties().containsKey(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN)) {
+        if (db.getProperties().containsKey(DBUtils.MAIL_INCOMING_PASSWORD) ||
+                db.getProperties().containsKey(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN)) {
 
             // normal flow
-            showApplication();
+            showApplication(db);
 
         } else {
 
             // connection settings need to be entered before creating the other components
-            new Settings(null, saved -> {
+            final DBUtils fdb = db;
+            new Settings(db, null, saved -> {
 
                 if (!saved) {
 
                     System.exit(-1);
                 }
 
-                showApplication();
+                showApplication(fdb);
             });
         }
     }
 
-    private void showApplication() {
+    private void showApplication(DBUtils db) {
 
         try {
 
             Properties p = new Properties();
             p.load(Main.class.getResourceAsStream("/project.properties"));
 
-            AuroraSession session = new AuroraSession();
-            AuroraTransport transport = new MailTransport(p.getProperty("repository"));
+            AuroraSession session = new AuroraSession(db);
+            AuroraTransport transport = new MailTransport(db, p.getProperty("repository"));
             var mainFrame = new MainFrame(p.getProperty("version"));
             new Messenger(transport, session, confFolder, mainFrame);
 

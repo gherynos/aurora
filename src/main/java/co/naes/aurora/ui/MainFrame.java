@@ -126,9 +126,6 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         outgoingModel.setColumnIdentifiers(new String[]{"File ID", "Recipient", "Confirmed parts", "Parts to send", "Total parts"});
         outgoingTable.setModel(outgoingModel);
 
-        // load current status
-        updateTables();
-
         // buttons actions
         final JFrame me = this;
         sendAndReceiveButton.addActionListener(e -> new Thread(() -> {
@@ -154,7 +151,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             if (settings == null) {
 
-                settings = new Settings(mainPanel, (boolean saved) -> settings = null);
+                settings = new Settings(messenger.getDBUtils(), mainPanel, (boolean saved) -> settings = null);
 
             } else {
 
@@ -209,11 +206,11 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             try {
 
-                AddFile af = new AddFile(this, PublicKeysUtils.listAddresses());
+                AddFile af = new AddFile(this, PublicKeysUtils.listAddresses(messenger.getDBUtils()));
                 af.setVisible(true);
                 if (!af.isCanceled()) {
 
-                    PublicKeys recipient = PublicKeysUtils.get(af.getSelectedRecipient());
+                    PublicKeys recipient = PublicKeysUtils.get(messenger.getDBUtils(), af.getSelectedRecipient());
                     if (messenger.addFileToSend(recipient, af.getSelectedFile().getAbsolutePath())) {
 
                         updateTables();
@@ -259,14 +256,14 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         try {
 
             incomingModel.setRowCount(0);
-            for (IncomingFile iFile : StatusUtils.getIncomingFiles()) {
+            for (IncomingFile iFile : StatusUtils.getIncomingFiles(messenger.getDBUtils())) {
 
                 incomingModel.addRow(iFile.asRow());
             }
             incomingModel.fireTableDataChanged();
 
             outgoingModel.setRowCount(0);
-            for (OutgoingFile oFile : StatusUtils.getOutgoingFiles()) {
+            for (OutgoingFile oFile : StatusUtils.getOutgoingFiles(messenger.getDBUtils())) {
 
                 outgoingModel.addRow(oFile.asRow());
             }
@@ -307,6 +304,9 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     public void self(Messenger messenger) {
 
         this.messenger = messenger;
+
+        // load current status
+        updateTables();
     }
 
     @Override

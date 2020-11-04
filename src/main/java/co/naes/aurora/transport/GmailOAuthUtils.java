@@ -22,6 +22,7 @@ import org.dmfs.rfc3986.uris.LazyUri;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.dmfs.oauth2.client.utils.Parameters.STATE;
@@ -40,7 +41,14 @@ public class GmailOAuthUtils {
 
     private String state;
 
-    public GmailOAuthUtils() {
+    private final DBUtils db;
+
+    private final Properties main;
+
+    public GmailOAuthUtils(DBUtils db) {
+
+        this.db = db;
+        main = db.getProperties();
 
         executor = new HttpUrlConnectionExecutor();
     }
@@ -48,8 +56,8 @@ public class GmailOAuthUtils {
     private OAuth2Client getClient() {
 
         OAuth2ClientCredentials credentials = new BasicOAuth2ClientCredentials(
-                DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID),
-                DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET));
+                main.getProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID),
+                main.getProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET));
 
         return new BasicOAuth2Client(new GoogleAuthorizationProvider(), credentials,
                 new LazyUri(new Precoded(REDIRECT_URI)));
@@ -57,8 +65,8 @@ public class GmailOAuthUtils {
 
     public String getAuthorisationUrl(String clientId, String clientSecret) {
 
-        DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID, clientId);
-        DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET, clientSecret);
+        main.setProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID, clientId);
+        main.setProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET, clientSecret);
 
         grant = new AuthorizationCodeGrant(getClient(), SCOPE);
 
@@ -83,12 +91,12 @@ public class GmailOAuthUtils {
             OAuth2AccessToken token = grant.withRedirect(
                     new LazyUri(new Precoded(url))).accessToken(executor);
 
-            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, token.accessToken().toString());
-            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, token.refreshToken().toString());
-            DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
+            main.setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, token.accessToken().toString());
+            main.setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, token.refreshToken().toString());
+            main.setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
                     Long.toString(token.expirationDate().getTimestamp()));
 
-            DBUtils.saveProperties();
+            db.saveProperties();
 
         } catch (ProtocolException | ProtocolError | IOException ex) {
 
@@ -100,32 +108,31 @@ public class GmailOAuthUtils {
 
         try {
 
-            long exp = Long.parseLong(DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION));
+            long exp = Long.parseLong(main.getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION));
             if (exp <= System.currentTimeMillis()) {
 
                 logger.finer("Refreshing Gmail access token");
 
                 OAuth2AccessToken token = new OAuthToken(
-                        DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN),
-                        DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN),
+                        main.getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN),
+                        main.getProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN),
                         exp, SCOPE);
 
                 OAuth2AccessToken newToken = new TokenRefreshGrant(getClient(), token).accessToken(executor);
 
                 // save refreshed tokens to DB
-                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN,
-                        newToken.accessToken().toString());
-                DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
+                main.setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, newToken.accessToken().toString());
+                main.setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
                         Long.toString(newToken.expirationDate().getTimestamp()));
                 if (newToken.hasRefreshToken()) {
-                    DBUtils.getProperties().setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN,
-                            newToken.refreshToken().toString());
+
+                    main.setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, newToken.refreshToken().toString());
                 }
 
-                DBUtils.saveProperties();
+                db.saveProperties();
             }
 
-            return DBUtils.getProperties().getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN);
+            return main.getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN);
 
         } catch (ProtocolException | ProtocolError | IOException ex) {
 

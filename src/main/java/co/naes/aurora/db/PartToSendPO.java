@@ -29,6 +29,8 @@ public class PartToSendPO {
 
     private static final int COUNTER = 5;
 
+    private final DBUtils db;
+
     private final int sequenceNumber;
 
     private final String fileId;
@@ -39,9 +41,9 @@ public class PartToSendPO {
 
     private final int counter;
 
-    public static void addAll(String fileId, String emailAddress, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, String emailAddress, int totalParts) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_SEND VALUES(?, ?, ?, FALSE, ?)")) {
 
             conn.setAutoCommit(false);
@@ -69,9 +71,9 @@ public class PartToSendPO {
         }
     }
 
-    public static List<PartToSendPO> getNeverSent(String fileId, String emailAddress) throws AuroraException {
+    public static List<PartToSendPO> getNeverSent(DBUtils db, String fileId, String emailAddress) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM PARTS_TO_SEND WHERE FILE_ID = ? AND EMAIL = ? AND SENT_ONCE = FALSE")) {
 
             List<PartToSendPO> out = new ArrayList<>();
@@ -80,7 +82,7 @@ public class PartToSendPO {
             var res = st.executeQuery();
             while (res.next()) {
 
-                out.add(new PartToSendPO(res.getInt(1), res.getString(2),  // NOPMD
+                out.add(new PartToSendPO(db, res.getInt(1), res.getString(2),  // NOPMD
                         res.getString(3), res.getBoolean(4), res.getInt(5)));
             }
 
@@ -92,9 +94,9 @@ public class PartToSendPO {
         }
     }
 
-    public static void markAsSent(List<Integer> sequenceNumbers, String fileId, String emailAddress) throws AuroraException {
+    public static void markAsSent(DBUtils db, List<Integer> sequenceNumbers, String fileId, String emailAddress) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("UPDATE PARTS_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             conn.setAutoCommit(false);
@@ -122,9 +124,9 @@ public class PartToSendPO {
         }
     }
 
-    public static void decreaseCounters() throws AuroraException {
+    public static void decreaseCounters(DBUtils db) throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             st.execute("UPDATE PARTS_TO_SEND SET COUNTER = COUNTER - 1 WHERE SENT_ONCE = TRUE;");
@@ -136,8 +138,9 @@ public class PartToSendPO {
         }
     }
 
-    public PartToSendPO(int sequenceNumber, String fileId, String emailAddress, boolean sentOnce, int counter) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String emailAddress, boolean sentOnce, int counter) {
 
+        this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
         this.emailAddress = emailAddress;
@@ -145,8 +148,9 @@ public class PartToSendPO {
         this.counter = counter;
     }
 
-    public PartToSendPO(int sequenceNumber, String fileId, String emailAddress) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String emailAddress) {
 
+        this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
         this.emailAddress = emailAddress;
@@ -156,7 +160,7 @@ public class PartToSendPO {
 
     public void delete() throws AuroraException {
 
-        try (var conn = DBUtils.getConnection();
+        try (var conn = db.getConnection();
              var st = conn.prepareStatement("DELETE FROM PARTS_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
 
             st.setInt(1, sequenceNumber);

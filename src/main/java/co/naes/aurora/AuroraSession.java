@@ -28,6 +28,8 @@ import java.util.Properties;
 
 public class AuroraSession {
 
+    private final DBUtils db;
+
     private final byte[] secretKey;
     private final byte[] publicKey;
 
@@ -36,11 +38,13 @@ public class AuroraSession {
 
     private final String emailAddress;
 
-    protected AuroraSession() throws AuroraException {
+    protected AuroraSession(DBUtils db) throws AuroraException {
+
+        this.db = db;
 
         try {
 
-            Properties p = DBUtils.getProperties();
+            Properties p = db.getProperties();
             emailAddress = p.getProperty(DBUtils.SESSION_EMAIL_ADDRESS);
 
             // load existing keys from DB
@@ -68,7 +72,7 @@ public class AuroraSession {
                 p.setProperty(DBUtils.SESSION_SECRET_KEY, Utils.baseXencode(secretKey, Constants.ALPHABET_BASE62));
                 p.setProperty(DBUtils.SESSION_SIGN_PUBLIC_KEY, Utils.baseXencode(publicSignKey, Constants.ALPHABET_BASE62));
                 p.setProperty(DBUtils.SESSION_SIGN_SECRET_KEY, Utils.baseXencode(secretSignKey, Constants.ALPHABET_BASE62));
-                DBUtils.saveProperties();
+                db.saveProperties();
             }
 
         } catch (SaltpackException ex) {
@@ -100,5 +104,10 @@ public class AuroraSession {
     public String getEmailAddress() {
 
         return emailAddress;
+    }
+
+    public DBUtils getDBUtils() {
+
+        return db;
     }
 }

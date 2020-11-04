@@ -49,20 +49,20 @@ public final class DBUtils {
     public static final String OAUTH_GMAIL_REFRESH_TOKEN = "aurora.oauth.gmail.refresh_token";
     public static final String OAUTH_GMAIL_TOKEN_EXPIRATION = "aurora.oauth.gmail.token_expiration";
 
-    private static Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
-    private static Properties mailProperties = new Properties();
+    private final Properties mailProperties = new Properties();
 
-    private static String sConfFolder;
+    private final String sConfFolder;
 
-    private static String sPassword;
+    private final String sPassword;
 
     public static boolean exists(String confFolder) {
 
         return new File(String.format("%s%saurora.mv.db", confFolder, File.separator)).exists();
     }
 
-    public static void initialise(String confFolder, String password) throws AuroraException {
+    public DBUtils(String confFolder, String password) throws AuroraException {
 
         sConfFolder = confFolder;
         sPassword = password;
@@ -105,7 +105,7 @@ public final class DBUtils {
         }
     }
 
-    public static Connection getConnection() throws AuroraException {
+    public Connection getConnection() throws AuroraException {
 
         if (sConfFolder == null || sPassword == null) {
 
@@ -126,7 +126,7 @@ public final class DBUtils {
         }
     }
 
-    public static void saveProperties() throws AuroraException {
+    public void saveProperties() throws AuroraException {
 
         try (var conn = getConnection();
              var st = conn.createStatement()) {
@@ -149,15 +149,13 @@ public final class DBUtils {
         }
     }
 
-    public static Properties getProperties() {
+    public Properties getProperties() {
 
         return properties;
     }
 
-    public static Properties getMailProperties() {
+    public Properties getMailProperties() {
 
         return mailProperties;
     }
-
-    private DBUtils() { }
 }
