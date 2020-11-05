@@ -1,6 +1,7 @@
 package co.naes.aurora;
 
 import co.naes.aurora.db.DBUtils;
+import co.naes.aurora.db.PartToSendPO;
 import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.db.StatusUtils;
 import co.naes.aurora.parts.Splitter;
@@ -92,14 +93,14 @@ class MessengerTest {
     private void exchangeKeys() throws Exception {
 
         m1.sendKeys("user2@test.com");
-        assertEquals(1, t2.getKeysSize());
+        assertEquals(1, t2.getKeys().size());
 
         h2.setPasswordReceived(h1.getPasswordSent());
         m2.receive();
         assertTrue(PublicKeysUtils.listAddresses(db2).contains("user1@test.com"));
 
         m2.sendKeys("user1@test.com");
-        assertEquals(1, t1.getKeysSize());
+        assertEquals(1, t1.getKeys().size());
 
         h1.setPasswordReceived(h2.getPasswordSent());
         m1.receive();
@@ -111,7 +112,10 @@ class MessengerTest {
 
         exchangeKeys();
 
-        int len = Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2 * Splitter.DEFAULT_PART_SIZE;
+        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
+        int totalParts = maxParts + 3;
+
+        int len = totalParts * Splitter.DEFAULT_PART_SIZE;
         byte[] content = new byte[len];
         Random r = new Random();
         r.nextBytes(content);
@@ -121,37 +125,29 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0,
-                Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2, Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2},
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
-
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0,
-                Messenger.MAX_PARTS_TO_SEND_PER_FILE, Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2},
-                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m2.receive();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin",
-                        Messenger.MAX_PARTS_TO_SEND_PER_FILE, Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2},
+        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
-        assertEquals(Messenger.MAX_PARTS_TO_SEND_PER_FILE, t1.getConfsSize());
+        assertEquals(maxParts, t1.getConfs().size());
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", Messenger.MAX_PARTS_TO_SEND_PER_FILE,
-                        Messenger.MAX_PARTS_TO_SEND_PER_FILE, Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2},
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 3, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", Messenger.MAX_PARTS_TO_SEND_PER_FILE,
-                        0, Messenger.MAX_PARTS_TO_SEND_PER_FILE * 2},
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
-        assertEquals(Messenger.MAX_PARTS_TO_SEND_PER_FILE, t2.getPartsSize());
+        assertEquals(3, t2.getParts().size());
 
         m2.receive();
 
@@ -162,13 +158,207 @@ class MessengerTest {
 
         assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
 
-        assertEquals(0, t1.getPartsSize());
-        assertEquals(0, t1.getConfsSize());
-        assertEquals(0, t1.getKeysSize());
+        assertEquals(0, t1.getParts().size());
+        assertEquals(0, t1.getConfs().size());
+        assertEquals(0, t1.getKeys().size());
 
-        assertEquals(0, t2.getPartsSize());
-        assertEquals(0, t2.getConfsSize());
-        assertEquals(0, t2.getKeysSize());
+        assertEquals(0, t2.getParts().size());
+        assertEquals(0, t2.getConfs().size());
+        assertEquals(0, t2.getKeys().size());
+
+        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
+        byte[] data = new byte[fin.available()];
+        fin.read(data);
+        fin.close();
+
+        assertArrayEquals(content, data);
+    }
+
+    @Test
+    void missingParts() throws Exception {
+
+        exchangeKeys();
+
+        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
+        int totalParts = maxParts + 4;
+
+        int len = totalParts * Splitter.DEFAULT_PART_SIZE;
+        byte[] content = new byte[len];
+        Random r = new Random();
+        r.nextBytes(content);
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write(content);
+        fout.close();
+
+        assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        t2.getParts().remove(maxParts-1);
+        t2.getParts().remove(0);
+
+        m2.receive();
+
+        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts - 2, totalParts},
+                StatusUtils.getIncomingFiles(db2).get(0).asRow());
+
+        assertEquals(maxParts - 2, t1.getConfs().size());
+
+        m1.receive();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 4, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 0, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        assertEquals(4, t2.getParts().size());
+
+        m2.receive();
+
+        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", totalParts - 2, totalParts},
+                StatusUtils.getIncomingFiles(db2).get(0).asRow());
+
+        m2.send();
+
+        assertEquals(4, t1.getConfs().size());
+
+        m1.receive();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", totalParts - 2, 0, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        for (int i = 0; i < PartToSendPO.COUNTER - 1; i++) {
+
+            m1.receive();
+        }
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", totalParts - 2, 2, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        assertEquals(2, t2.getParts().size());
+
+        m2.receive();
+
+        assertEquals(0, StatusUtils.getIncomingFiles(db2).size());
+
+        m2.send();
+        m1.receive();
+
+        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
+
+        assertEquals(0, t1.getParts().size());
+        assertEquals(0, t1.getConfs().size());
+        assertEquals(0, t1.getKeys().size());
+
+        assertEquals(0, t2.getParts().size());
+        assertEquals(0, t2.getConfs().size());
+        assertEquals(0, t2.getKeys().size());
+
+        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
+        byte[] data = new byte[fin.available()];
+        fin.read(data);
+        fin.close();
+
+        assertArrayEquals(content, data);
+    }
+
+    @Test
+    void missingConfirmations() throws Exception {
+
+        exchangeKeys();
+
+        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
+        int totalParts = maxParts + 2;
+
+        int len = totalParts * Splitter.DEFAULT_PART_SIZE;
+        byte[] content = new byte[len];
+        Random r = new Random();
+        r.nextBytes(content);
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write(content);
+        fout.close();
+
+        assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        m2.receive();
+
+        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
+                StatusUtils.getIncomingFiles(db2).get(0).asRow());
+
+        assertEquals(maxParts, t1.getConfs().size());
+
+        t1.getConfs().remove(2);
+        t1.getConfs().remove(2);
+
+        m1.receive();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 2, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 0, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        assertEquals(2, t2.getParts().size());
+
+        m2.receive();
+
+        assertEquals(0, StatusUtils.getIncomingFiles(db2).size());
+
+        m2.send();
+
+        assertEquals(2, t1.getConfs().size());
+
+        m1.receive();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        for (int i = 0; i < PartToSendPO.COUNTER - 1; i++) {
+
+            m1.receive();
+        }
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 2, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        assertEquals(2, t2.getParts().size());
+
+        m2.receive();
+        m2.send();
+
+        assertEquals(2, t1.getConfs().size());
+
+        m1.receive();
+
+        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
+
+
+        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
+
+        assertEquals(0, t1.getParts().size());
+        assertEquals(0, t1.getConfs().size());
+        assertEquals(0, t1.getKeys().size());
+
+        assertEquals(0, t2.getParts().size());
+        assertEquals(0, t2.getConfs().size());
+        assertEquals(0, t2.getKeys().size());
 
         FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
         byte[] data = new byte[fin.available()];

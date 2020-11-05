@@ -275,9 +275,12 @@ public class Messenger implements IncomingMessageHandler  {
                 // part discarded
                 logger.fine(String.format("Discarded part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId()));
                 handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getEmailAddress());
-                return true;
 
-                // TODO: send confirmation regardless
+                // send confirmation regardless
+                ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
+                transport.sendMessage(conf);
+
+                return true;
             }
         }
 

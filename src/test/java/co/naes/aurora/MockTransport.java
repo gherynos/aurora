@@ -111,18 +111,18 @@ public class MockTransport implements AuroraTransport {
         }
     }
 
-    protected int getPartsSize() {
+    protected List<byte[]> getParts() {
 
-        return parts.size();
+        return parts;
     }
 
-    protected int getConfsSize() {
+    protected List<byte[]> getConfs() {
 
-        return confs.size();
+        return confs;
     }
 
-    protected int getKeysSize() {
+    protected List<byte[]> getKeys() {
 
-        return keys.size();
+        return keys;
     }
 }

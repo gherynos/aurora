@@ -27,7 +27,7 @@ import java.util.List;
 
 public class PartToSendPO {
 
-    private static final int COUNTER = 5;
+    public static final int COUNTER = 5;
 
     private final DBUtils db;
 
