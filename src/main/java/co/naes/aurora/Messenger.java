@@ -115,7 +115,11 @@ public class Messenger implements IncomingMessageHandler  {
 
     public boolean addFileToSend(PublicKeys recipient, String filePath) throws AuroraException {
 
-        // TODO: check recipient existence
+        if (!PublicKeysUtils.listAddresses(session.getDBUtils()).contains(recipient.getEmailAddress())) {
+
+            // recipient not found
+            throw new AuroraException(String.format("Recipient '%s' not found", recipient.getEmailAddress()));
+        }
 
         String fileId = new File(filePath).getName();
         try {
@@ -335,8 +339,6 @@ public class Messenger implements IncomingMessageHandler  {
         logger.fine(String.format("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId()));
         handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getEmailAddress());
         new PartToSendPO(session.getDBUtils(), partId.getSequenceNumber(), partId.getFileId(), sender.getEmailAddress()).delete();
-
-        // TODO: discarded confirmation workflow
 
         // message processed successfully
         return true;

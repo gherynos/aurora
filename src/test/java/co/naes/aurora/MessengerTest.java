@@ -107,6 +107,31 @@ class MessengerTest {
         assertTrue(PublicKeysUtils.listAddresses(db1).contains("user2@test.com"));
     }
 
+    private void finalState(byte[] content) throws Exception {
+
+        assertEquals(0, StatusUtils.getIncomingFiles(db2).size());
+
+        m2.send();
+        m1.receive();
+
+        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
+
+        assertEquals(0, t1.getParts().size());
+        assertEquals(0, t1.getConfs().size());
+        assertEquals(0, t1.getKeys().size());
+
+        assertEquals(0, t2.getParts().size());
+        assertEquals(0, t2.getConfs().size());
+        assertEquals(0, t2.getKeys().size());
+
+        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
+        byte[] data = new byte[fin.available()];
+        fin.read(data);
+        fin.close();
+
+        assertArrayEquals(content, data);
+    }
+
     @Test
     void happyPath() throws Exception {
 
@@ -151,27 +176,7 @@ class MessengerTest {
 
         m2.receive();
 
-        assertEquals(0, StatusUtils.getIncomingFiles(db2).size());
-
-        m2.send();
-        m1.receive();
-
-        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
-
-        assertEquals(0, t1.getParts().size());
-        assertEquals(0, t1.getConfs().size());
-        assertEquals(0, t1.getKeys().size());
-
-        assertEquals(0, t2.getParts().size());
-        assertEquals(0, t2.getConfs().size());
-        assertEquals(0, t2.getKeys().size());
-
-        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
-        byte[] data = new byte[fin.available()];
-        fin.read(data);
-        fin.close();
-
-        assertArrayEquals(content, data);
+        finalState(content);
     }
 
     @Test
@@ -247,27 +252,7 @@ class MessengerTest {
 
         m2.receive();
 
-        assertEquals(0, StatusUtils.getIncomingFiles(db2).size());
-
-        m2.send();
-        m1.receive();
-
-        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
-
-        assertEquals(0, t1.getParts().size());
-        assertEquals(0, t1.getConfs().size());
-        assertEquals(0, t1.getKeys().size());
-
-        assertEquals(0, t2.getParts().size());
-        assertEquals(0, t2.getConfs().size());
-        assertEquals(0, t2.getKeys().size());
-
-        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
-        byte[] data = new byte[fin.available()];
-        fin.read(data);
-        fin.close();
-
-        assertArrayEquals(content, data);
+        finalState(content);
     }
 
     @Test
@@ -347,24 +332,82 @@ class MessengerTest {
 
         m1.receive();
 
+        finalState(content);
+    }
+
+    @Test
+    void fileAlreadyAdded() throws Exception {
+
+        exchangeKeys();
+
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write("test".getBytes());
+        fout.close();
+
+        assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+
+        assertFalse(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+    }
+
+    @Test
+    void recipientNotFound() throws Exception {
+
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write("test".getBytes());
+        fout.close();
+
+        Exception exception = assertThrows(AuroraException.class, () -> {
+
+            m2.addFileToSend(k1, tempDirUser1.resolve("sample.bin").toString());
+        });
+        assertTrue(exception.getMessage().contains("Recipient 'user1@test.com' not found"));
+    }
+
+    @Test
+    void duplicateConfirmation() throws Exception {
+
+        exchangeKeys();
+
+        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
+        int totalParts = 2;
+
+        int len = totalParts * Splitter.DEFAULT_PART_SIZE;
+        byte[] content = new byte[len];
+        Random r = new Random();
+        r.nextBytes(content);
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write(content);
+        fout.close();
+
+        assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        m1.send();
+
+        assertEquals(totalParts, t2.getParts().size());
+
+        m2.receive();
+
+        assertEquals(totalParts, t1.getConfs().size());
+
+        byte[] conf = t1.getConfs().get(0).clone();
+
+        m1.receive();
+
         assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
 
+        m1.send();
 
         assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
 
-        assertEquals(0, t1.getParts().size());
-        assertEquals(0, t1.getConfs().size());
-        assertEquals(0, t1.getKeys().size());
+        t1.getConfs().add(conf);
 
-        assertEquals(0, t2.getParts().size());
-        assertEquals(0, t2.getConfs().size());
-        assertEquals(0, t2.getKeys().size());
+        m1.receive();
 
-        FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
-        byte[] data = new byte[fin.available()];
-        fin.read(data);
-        fin.close();
+        assertEquals(0, StatusUtils.getOutgoingFiles(db1).size());
 
-        assertArrayEquals(content, data);
+        finalState(content);
     }
 }
