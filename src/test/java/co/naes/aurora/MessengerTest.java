@@ -429,4 +429,79 @@ class MessengerTest {
 
         finalState(content);
     }
+
+    @Test
+    void exceptions() throws Exception {
+
+        exchangeKeys();
+
+        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
+        int totalParts = maxParts + 3;
+
+        int len = totalParts * Splitter.DEFAULT_PART_SIZE;
+        byte[] content = new byte[len];
+        Random r = new Random();
+        r.nextBytes(content);
+        FileOutputStream fout = new FileOutputStream(tempDirUser1.resolve("sample.bin").toFile());
+        fout.write(content);
+        fout.close();
+
+        assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        t1.setRaiseException(true);
+        m1.send();
+
+        assertTrue(h1.hasErrorsWhileSendingMessages());
+        assertFalse(h1.hasErrorsWhileReceivingMessages());
+        h1.resetErrors();
+
+        t1.setRaiseException(false);
+        m1.send();
+
+        assertFalse(h1.hasErrorsWhileSendingMessages());
+        assertFalse(h1.hasErrorsWhileReceivingMessages());
+        h1.resetErrors();
+
+        t2.setRaiseException(true);
+        m2.receive();
+
+        assertFalse(h2.hasErrorsWhileSendingMessages());
+        assertTrue(h2.hasErrorsWhileReceivingMessages());
+        h2.resetErrors();
+
+        t2.setRaiseException(false);
+        m2.receive();
+
+        assertFalse(h2.hasErrorsWhileSendingMessages());
+        assertFalse(h2.hasErrorsWhileReceivingMessages());
+        h2.resetErrors();
+
+        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
+                StatusUtils.getIncomingFiles(db2).get(0).asRow());
+
+        assertEquals(maxParts, t1.getConfs().size());
+
+        m1.receive();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 3, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        t1.setRaiseException(true);
+        m1.send();
+
+        t1.setRaiseException(false);
+        m1.send();
+
+        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
+                StatusUtils.getOutgoingFiles(db1).get(0).asRow());
+
+        assertEquals(3, t2.getParts().size());
+
+        m2.receive();
+
+        finalState(content);
+    }
 }

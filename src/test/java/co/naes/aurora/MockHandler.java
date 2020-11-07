@@ -8,6 +8,10 @@ public class MockHandler implements Messenger.StatusHandler {
 
     private String keyMessage = "";
 
+    private boolean errorsWhileSendingMessages = false;
+
+    private boolean errorsWhileReceivingMessages = false;
+
     @Override
     public void self(Messenger messenger) {
 
@@ -21,6 +25,7 @@ public class MockHandler implements Messenger.StatusHandler {
     @Override
     public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
 
+        errorsWhileSendingMessages = true;
     }
 
     @Override
@@ -41,20 +46,25 @@ public class MockHandler implements Messenger.StatusHandler {
     @Override
     public void errorsWhileSendingMessages(String message) {
 
+        errorsWhileSendingMessages = true;
     }
 
     @Override
     public void errorsWhileReceivingMessages(String message) {
 
+        errorsWhileReceivingMessages = true;
     }
 
     @Override
     public void errorsWhileProcessingReceivedMessage(String message) {
 
+        errorsWhileReceivingMessages = true;
     }
 
     @Override
     public void errorsWhileProcessingKeyMessage(String message) {
+
+        errorsWhileReceivingMessages = true;
 
         keyMessage = message;
     }
@@ -94,5 +104,21 @@ public class MockHandler implements Messenger.StatusHandler {
     protected String getKeyMessage() {
 
         return keyMessage;
+    }
+
+    protected void resetErrors() {
+
+        errorsWhileSendingMessages = false;
+        errorsWhileReceivingMessages = false;
+    }
+
+    protected boolean hasErrorsWhileSendingMessages() {
+
+        return errorsWhileSendingMessages;
+    }
+
+    protected boolean hasErrorsWhileReceivingMessages() {
+
+        return errorsWhileReceivingMessages;
     }
 }

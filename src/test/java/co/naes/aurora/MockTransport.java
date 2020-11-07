@@ -25,6 +25,8 @@ public class MockTransport implements AuroraTransport {
 
     private final String sender;
 
+    private boolean raiseException = false;
+
     protected MockTransport(String sender) {
 
         this.sender = sender;
@@ -44,17 +46,32 @@ public class MockTransport implements AuroraTransport {
     @Override
     public void sendKeyMessage(OutKeyMessage key) throws AuroraException {
 
+        if (raiseException) {
+
+            throw new AuroraException("unable to send");
+        }
+
         destination.addKey(key);
     }
 
     @Override
     public void sendMessage(OutMessage<?> message) throws AuroraException {
 
+        if (raiseException) {
+
+            throw new AuroraException("unable to send");
+        }
+
         destination.addMessage(message);
     }
 
     @Override
     public void checkForMessages() throws AuroraException {
+
+        if (raiseException) {
+
+            throw new AuroraException("unable to receive");
+        }
 
         List<byte[]> toRemove = new ArrayList<>();
         for (byte[] msg: keys) {
@@ -124,5 +141,10 @@ public class MockTransport implements AuroraTransport {
     protected List<byte[]> getKeys() {
 
         return keys;
+    }
+
+    public void setRaiseException(boolean raiseException) {
+
+        this.raiseException = raiseException;
     }
 }
