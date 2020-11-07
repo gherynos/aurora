@@ -133,6 +133,26 @@ class MessengerTest {
     }
 
     @Test
+    void wrongKeyPassword() throws Exception {
+
+        m1.sendKeys("user2@test.com");
+        assertEquals(1, t2.getKeys().size());
+
+        h2.setPasswordReceived("wrong".toCharArray());
+        m2.receive();
+        assertFalse(PublicKeysUtils.listAddresses(db2).contains("user1@test.com"));
+
+        assertTrue(h2.getKeyMessage().contains("Wrong password"));
+
+        m2.sendKeys("user1@test.com");
+        assertEquals(1, t1.getKeys().size());
+
+        h1.setPasswordReceived("".toCharArray());
+        m1.receive();
+        assertFalse(PublicKeysUtils.listAddresses(db1).contains("user2@test.com"));
+    }
+
+    @Test
     void happyPath() throws Exception {
 
         exchangeKeys();
@@ -368,7 +388,6 @@ class MessengerTest {
 
         exchangeKeys();
 
-        int maxParts = Messenger.MAX_PARTS_TO_SEND_PER_FILE;
         int totalParts = 2;
 
         int len = totalParts * Splitter.DEFAULT_PART_SIZE;

@@ -363,7 +363,6 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
             handler.errorsWhileProcessingKeyMessage("Wrong password");
         }
 

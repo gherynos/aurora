@@ -6,6 +6,8 @@ public class MockHandler implements Messenger.StatusHandler {
 
     private char[] passwordReceived;
 
+    private String keyMessage = "";
+
     @Override
     public void self(Messenger messenger) {
 
@@ -54,6 +56,7 @@ public class MockHandler implements Messenger.StatusHandler {
     @Override
     public void errorsWhileProcessingKeyMessage(String message) {
 
+        keyMessage = message;
     }
 
     @Override
@@ -86,5 +89,10 @@ public class MockHandler implements Messenger.StatusHandler {
     protected void setPasswordReceived(char[] password) {
 
         passwordReceived = password;
+    }
+
+    protected String getKeyMessage() {
+
+        return keyMessage;
     }
 }
