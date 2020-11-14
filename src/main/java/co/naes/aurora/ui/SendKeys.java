@@ -145,7 +145,7 @@ public class SendKeys extends JFrame {
 
     public interface SendKeysStatusHandler {
 
-        void sendKeys(String email);
+        void sendKeys(String identifier);
 
         void sendKeysClosed();
     }

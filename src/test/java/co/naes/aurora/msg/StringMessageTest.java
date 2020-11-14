@@ -50,7 +50,7 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "aTestString", true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -72,7 +72,7 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "thisIsAnotherString to Send €‹!`~", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -94,7 +94,7 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "thisIsAnotherString to Send €‹!`~", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -119,7 +119,7 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, wrong, "thisIsAnotherString to Send !!!", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -147,7 +147,7 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, input, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 

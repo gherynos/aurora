@@ -33,7 +33,7 @@ public class OutgoingFilePO {
 
     private final String path;
 
-    private final String emailAddress;
+    private final String identifier;
 
     private final int totalParts;
 
@@ -43,7 +43,7 @@ public class OutgoingFilePO {
              var st = conn.createStatement()) {
 
             List<OutgoingFilePO> out = new ArrayList<>();
-            var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.EMAIL = OF.EMAIL) > 0;");
+            var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.IDENTIFIER = OF.IDENTIFIER) > 0;");
             while (res.next()) {
 
                 out.add(new OutgoingFilePO(db, res.getString(1),  // NOPMD
@@ -58,12 +58,12 @@ public class OutgoingFilePO {
         }
     }
 
-    public OutgoingFilePO(DBUtils db, String fileId, String path, String emailAddress, int totalParts) {
+    public OutgoingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts) {
 
         this.db = db;
         this.fileId = fileId;
         this.path = path;
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
         this.totalParts = totalParts;
     }
 
@@ -74,7 +74,7 @@ public class OutgoingFilePO {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setString(3, emailAddress);
+            st.setString(3, identifier);
             st.setInt(4, totalParts);
 
             st.execute();
@@ -95,9 +95,9 @@ public class OutgoingFilePO {
         return path;
     }
 
-    public String getEmailAddress() {
+    public String getIdentifier() {
 
-        return emailAddress;
+        return identifier;
     }
 
     public int getTotalParts() {

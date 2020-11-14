@@ -25,19 +25,19 @@ public class PublicKeys {
 
     private byte[] publicSignKey;
 
-    private final String emailAddress;
+    private final String identifier;
 
-    public PublicKeys(byte[] publicKey, String emailAddress) {
+    public PublicKeys(byte[] publicKey, String identifier) {
 
         this.publicKey = publicKey.clone();
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
     }
 
-    public PublicKeys(byte[] publicKey, byte[] publicSignKey, String emailAddress) {
+    public PublicKeys(byte[] publicKey, byte[] publicSignKey, String identifier) {
 
         this.publicKey = publicKey.clone();
         this.publicSignKey = publicSignKey.clone();
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
     }
 
     public byte[] getPublicKey() {
@@ -50,14 +50,14 @@ public class PublicKeys {
         return publicSignKey.clone();
     }
 
-    public String getEmailAddress() {
+    public String getIdentifier() {
 
-        return emailAddress;
+        return identifier;
     }
 
     @Override
     public String toString() {
 
-        return emailAddress;
+        return identifier;
     }
 }

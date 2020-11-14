@@ -31,9 +31,9 @@ public class PartToReceivePO {
 
     private final String fileId;
 
-    private final String emailAddress;
+    private final String identifier;
 
-    public static void addAll(DBUtils db, String fileId, String emailAddress, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, String identifier, int totalParts) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_RECEIVE VALUES(?, ?, ?)")) {
@@ -44,7 +44,7 @@ public class PartToReceivePO {
 
                 st.setInt(1, i);
                 st.setString(2, fileId);
-                st.setString(3, emailAddress);
+                st.setString(3, identifier);
                 st.addBatch();
             }
 
@@ -62,22 +62,22 @@ public class PartToReceivePO {
         }
     }
 
-    public PartToReceivePO(DBUtils db, int sequenceNumber, String fileId, String emailAddress) {
+    public PartToReceivePO(DBUtils db, int sequenceNumber, String fileId, String identifier) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
     }
 
     public void delete() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("DELETE FROM PARTS_TO_RECEIVE WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("DELETE FROM PARTS_TO_RECEIVE WHERE SEQUENCE = ? AND FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
-            st.setString(3, emailAddress);
+            st.setString(3, identifier);
 
             st.execute();
 
@@ -97,8 +97,8 @@ public class PartToReceivePO {
         return fileId;
     }
 
-    public String getEmailAddress() {
+    public String getIdentifier() {
 
-        return emailAddress;
+        return identifier;
     }
 }

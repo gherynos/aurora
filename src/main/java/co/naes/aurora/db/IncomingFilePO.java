@@ -31,19 +31,19 @@ public class IncomingFilePO {
 
     private final String path;
 
-    private final String emailAddress;
+    private final String identifier;
 
     private final int totalParts;
 
     private boolean complete;
 
-    public static IncomingFilePO get(DBUtils db, String fileId, String emailAddress) throws AuroraException {
+    public static IncomingFilePO get(DBUtils db, String fileId, String identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("SELECT * FROM INCOMING_FILES WHERE FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("SELECT * FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setString(1, fileId);
-            st.setString(2, emailAddress);
+            st.setString(2, identifier);
             var res = st.executeQuery();
 
             if (!res.next()) {
@@ -65,7 +65,7 @@ public class IncomingFilePO {
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            st.execute("UPDATE INCOMING_FILES INC SET COMPLETE = TRUE WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.EMAIL = PS.EMAIL LIMIT 1);");
+            st.execute("UPDATE INCOMING_FILES INC SET COMPLETE = TRUE WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.IDENTIFIER = PS.IDENTIFIER LIMIT 1);");
 
         } catch (SQLException ex) {
 
@@ -73,19 +73,19 @@ public class IncomingFilePO {
         }
     }
 
-    private IncomingFilePO(DBUtils db, String fileId, String path, String emailAddress, int totalParts, boolean complete) {
+    private IncomingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts, boolean complete) {
 
         this.db = db;
         this.fileId = fileId;
         this.path = path;
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
         this.totalParts = totalParts;
         this.complete = complete;
     }
 
-    public IncomingFilePO(DBUtils db, String fileId, String path, String emailAddress, int totalParts) {
+    public IncomingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts) {
 
-        this(db, fileId, path, emailAddress, totalParts, false);
+        this(db, fileId, path, identifier, totalParts, false);
     }
 
     public void save() throws AuroraException {
@@ -95,7 +95,7 @@ public class IncomingFilePO {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setString(3, emailAddress);
+            st.setString(3, identifier);
             st.setInt(4, totalParts);
             st.setBoolean(5, complete);
 
@@ -110,10 +110,10 @@ public class IncomingFilePO {
     public void refreshCompleteStatus() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("SELECT COMPLETE FROM INCOMING_FILES WHERE FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("SELECT COMPLETE FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setString(1, fileId);
-            st.setString(2, emailAddress);
+            st.setString(2, identifier);
             var res = st.executeQuery();
             if (!res.next()) {
 
@@ -138,9 +138,9 @@ public class IncomingFilePO {
         return path;
     }
 
-    public String getEmailAddress() {
+    public String getIdentifier() {
 
-        return emailAddress;
+        return identifier;
     }
 
     public int getTotalParts() {

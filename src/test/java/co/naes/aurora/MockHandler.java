@@ -18,28 +18,28 @@ public class MockHandler implements Messenger.StatusHandler {
     }
 
     @Override
-    public void sendingPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void sendingPart(int sequenceNumber, String fileId, String identifier) {
 
     }
 
     @Override
-    public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void unableToSendPart(int sequenceNumber, String fileId, String identifier) {
 
         errorsWhileSendingMessages = true;
     }
 
     @Override
-    public void processingPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void processingPart(int sequenceNumber, String fileId, String identifier) {
 
     }
 
     @Override
-    public void discardedPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void discardedPart(int sequenceNumber, String fileId, String identifier) {
 
     }
 
     @Override
-    public void processingConfirmation(int sequenceNumber, String fileId, String emailAddress) {
+    public void processingConfirmation(int sequenceNumber, String fileId, String identifier) {
 
     }
 
@@ -70,7 +70,7 @@ public class MockHandler implements Messenger.StatusHandler {
     }
 
     @Override
-    public void fileComplete(String fileId, String emailAddress, String path) {
+    public void fileComplete(String fileId, String identifier, String path) {
 
     }
 
@@ -87,7 +87,7 @@ public class MockHandler implements Messenger.StatusHandler {
     }
 
     @Override
-    public void keysStored(String emailAddress) {
+    public void keysStored(String identifier) {
 
     }
 

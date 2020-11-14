@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.UIManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -140,6 +141,15 @@ public class Main {  // NOPMD
     }
 
     public static void main(String[] args) {
+
+        try {
+
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+        } catch (Exception ex) {  // NOPMD
+
+            /* not an issue if unable to change the look and feel */
+        }
 
         new Main(args.length > 0 ? args[0] : null);  // NOPMD
     }

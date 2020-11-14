@@ -52,7 +52,7 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -77,7 +77,7 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
         assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
@@ -99,7 +99,7 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -126,7 +126,7 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, wrong, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
-        assertEquals(out.getRecipient().getEmailAddress(), "sample4@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample4@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 

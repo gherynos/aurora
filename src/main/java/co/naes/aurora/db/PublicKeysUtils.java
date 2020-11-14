@@ -34,9 +34,9 @@ public final class PublicKeysUtils {
     public static void store(DBUtils db, PublicKeys keys) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("MERGE INTO PUBLIC_KEYS KEY(EMAIL) VALUES(?, ?, ?)")) {
+             var st = conn.prepareStatement("MERGE INTO PUBLIC_KEYS KEY(IDENTIFIER) VALUES(?, ?, ?)")) {
 
-            st.setString(1, keys.getEmailAddress());
+            st.setString(1, keys.getIdentifier());
             st.setString(2, Utils.baseXencode(keys.getPublicKey(), Constants.ALPHABET_BASE62));
             st.setString(3, Utils.baseXencode(keys.getPublicSignKey(), Constants.ALPHABET_BASE62));
 
@@ -48,16 +48,16 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static PublicKeys get(DBUtils db, String emailAddress) throws AuroraException {
+    public static PublicKeys get(DBUtils db, String identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE EMAIL = ?")) {
+             var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE IDENTIFIER = ?")) {
 
-            st.setString(1, emailAddress);
+            st.setString(1, identifier);
             var res = st.executeQuery();
             if (!res.next()) {
 
-                throw new AuroraException(String.format("Key for '%s' not found.", emailAddress));
+                throw new AuroraException(String.format("Key for '%s' not found.", identifier));
             }
 
             String id = res.getString(1);
@@ -98,13 +98,13 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static List<String> listAddresses(DBUtils db) throws AuroraException {
+    public static List<String> listIdentifiers(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             List<String> out = new ArrayList<>();
-            var res = st.executeQuery("SELECT EMAIL FROM PUBLIC_KEYS");
+            var res = st.executeQuery("SELECT IDENTIFIER FROM PUBLIC_KEYS");
             while (res.next()) {
 
                 out.add(res.getString(1));
@@ -114,7 +114,7 @@ public final class PublicKeysUtils {
 
         } catch (SQLException ex) {
 
-            throw new AuroraException("Error while loading keys addresses from the DB: " + ex.getMessage(), ex);
+            throw new AuroraException("Error while loading keys identifiers from the DB: " + ex.getMessage(), ex);
         }
     }
 

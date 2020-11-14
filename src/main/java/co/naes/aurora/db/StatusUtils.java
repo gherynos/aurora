@@ -34,7 +34,7 @@ public final class StatusUtils {
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            var res = st.executeQuery("SELECT INC.FILE_ID, INC.EMAIL, INC.TOTAL_PARTS, COUNT(P.SEQUENCE) FROM INCOMING_FILES INC, PARTS_TO_RECEIVE P WHERE P.FILE_ID = INC.FILE_ID GROUP BY P.FILE_ID");
+            var res = st.executeQuery("SELECT INC.FILE_ID, INC.IDENTIFIER, INC.TOTAL_PARTS, COUNT(P.SEQUENCE) FROM INCOMING_FILES INC, PARTS_TO_RECEIVE P WHERE P.FILE_ID = INC.FILE_ID GROUP BY P.FILE_ID");
 
             List<IncomingFile> out = new ArrayList<>();
             while (res.next()) {
@@ -56,7 +56,7 @@ public final class StatusUtils {
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            var res = st.executeQuery("SELECT OF.FILE_ID, OF.EMAIL, OF.TOTAL_PARTS, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=TRUE GROUP BY FILE_ID) AS SENT, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=FALSE GROUP BY FILE_ID) AS TO_SEND FROM OUTGOING_FILES OF");
+            var res = st.executeQuery("SELECT OF.FILE_ID, OF.IDENTIFIER, OF.TOTAL_PARTS, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=TRUE GROUP BY FILE_ID) AS SENT, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=FALSE GROUP BY FILE_ID) AS TO_SEND FROM OUTGOING_FILES OF");
 
             List<OutgoingFile> out = new ArrayList<>();
             while (res.next()) {

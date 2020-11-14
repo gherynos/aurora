@@ -164,7 +164,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                 sendKeys = new SendKeys(mainPanel, new SendKeys.SendKeysStatusHandler() {
 
                     @Override
-                    public void sendKeys(String email) {
+                    public void sendKeys(String identifier) {
 
                         new Thread(() -> {
 
@@ -173,7 +173,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
                             try {
 
-                                messenger.sendKeys(email);
+                                messenger.sendKeys(identifier);
 
                             } catch (AuroraException ex) {
 
@@ -206,7 +206,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             try {
 
-                AddFile af = new AddFile(this, PublicKeysUtils.listAddresses(messenger.getDBUtils()));
+                AddFile af = new AddFile(this, PublicKeysUtils.listIdentifiers(messenger.getDBUtils()));
                 af.setVisible(true);
                 if (!af.isCanceled()) {
 
@@ -310,33 +310,33 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void sendingPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void sendingPart(int sequenceNumber, String fileId, String identifier) {
 
-        updateStatus(String.format("Sending part #%d of %s to %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Sending part #%d of %s to %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void unableToSendPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void unableToSendPart(int sequenceNumber, String fileId, String identifier) {
 
-        showError(String.format("Unable to send part #%d of %s to %s", sequenceNumber, fileId, emailAddress));
+        showError(String.format("Unable to send part #%d of %s to %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void processingPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void processingPart(int sequenceNumber, String fileId, String identifier) {
 
-        updateStatus(String.format("Processing part #%d of %s from %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Processing part #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void discardedPart(int sequenceNumber, String fileId, String emailAddress) {
+    public void discardedPart(int sequenceNumber, String fileId, String identifier) {
 
-        updateStatus(String.format("Discarded part #%d of %s from %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Discarded part #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void processingConfirmation(int sequenceNumber, String fileId, String emailAddress) {
+    public void processingConfirmation(int sequenceNumber, String fileId, String identifier) {
 
-        updateStatus(String.format("Processing confirmation #%d of %s from %s", sequenceNumber, fileId, emailAddress));
+        updateStatus(String.format("Processing confirmation #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
@@ -364,10 +364,10 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void fileComplete(String fileId, String emailAddress, String path) {
+    public void fileComplete(String fileId, String identifier, String path) {
 
         JOptionPane.showMessageDialog(this, String.format("File %s successfully received\nfrom %s",
-                fileId, emailAddress), "File received", JOptionPane.INFORMATION_MESSAGE);
+                fileId, identifier), "File received", JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
@@ -393,9 +393,9 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void keysStored(String emailAddress) {
+    public void keysStored(String identifier) {
 
-        JOptionPane.showMessageDialog(this, String.format("Keys for %s successfully stored", emailAddress),
+        JOptionPane.showMessageDialog(this, String.format("Keys for %s successfully stored", identifier),
                 "Keys stored", JOptionPane.INFORMATION_MESSAGE);
     }
 

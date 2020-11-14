@@ -60,7 +60,7 @@ class KeyMessageTest {
 
         assertArrayEquals(received.getPublicKey(), session.getPublicKey());
         assertArrayEquals(received.getPublicSignKey(), publicSignKey);
-        assertEquals(received.getEmailAddress(), "sample4@test.com");
+        assertEquals(received.getIdentifier(), "sample4@test.com");
     }
 
     @Test
@@ -79,7 +79,7 @@ class KeyMessageTest {
 
         assertArrayEquals(received.getPublicKey(), session.getPublicKey());
         assertArrayEquals(received.getPublicSignKey(), publicSignKey);
-        assertEquals(received.getEmailAddress(), "sample4@test.com");
+        assertEquals(received.getIdentifier(), "sample4@test.com");
     }
 
     @Test

@@ -17,6 +17,8 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,14 +99,14 @@ class MessengerTest {
 
         h2.setPasswordReceived(h1.getPasswordSent());
         m2.receive();
-        assertTrue(PublicKeysUtils.listAddresses(db2).contains("user1@test.com"));
+        assertTrue(PublicKeysUtils.listIdentifiers(db2).contains("user1@test.com"));
 
         m2.sendKeys("user1@test.com");
         assertEquals(1, t1.getKeys().size());
 
         h1.setPasswordReceived(h2.getPasswordSent());
         m1.receive();
-        assertTrue(PublicKeysUtils.listAddresses(db1).contains("user2@test.com"));
+        assertTrue(PublicKeysUtils.listIdentifiers(db1).contains("user2@test.com"));
     }
 
     private void finalState(byte[] content) throws Exception {
@@ -140,7 +142,7 @@ class MessengerTest {
 
         h2.setPasswordReceived("wrong".toCharArray());
         m2.receive();
-        assertFalse(PublicKeysUtils.listAddresses(db2).contains("user1@test.com"));
+        assertFalse(PublicKeysUtils.listIdentifiers(db2).contains("user1@test.com"));
 
         assertTrue(h2.getKeyMessage().contains("Wrong password"));
 
@@ -149,7 +151,7 @@ class MessengerTest {
 
         h1.setPasswordReceived("".toCharArray());
         m1.receive();
-        assertFalse(PublicKeysUtils.listAddresses(db1).contains("user2@test.com"));
+        assertFalse(PublicKeysUtils.listIdentifiers(db1).contains("user2@test.com"));
     }
 
     @Test
@@ -432,6 +434,8 @@ class MessengerTest {
 
     @Test
     void exceptions() throws Exception {
+
+        Logger.getLogger("co.naes.aurora").setLevel(Level.OFF);
 
         exchangeKeys();
 

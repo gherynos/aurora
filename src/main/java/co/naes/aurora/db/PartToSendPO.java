@@ -35,13 +35,13 @@ public class PartToSendPO {
 
     private final String fileId;
 
-    private final String emailAddress;
+    private final String identifier;
 
     private final boolean sentOnce;
 
     private final int counter;
 
-    public static void addAll(DBUtils db, String fileId, String emailAddress, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, String identifier, int totalParts) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_SEND VALUES(?, ?, ?, FALSE, ?)")) {
@@ -52,7 +52,7 @@ public class PartToSendPO {
 
                 st.setInt(1, i);
                 st.setString(2, fileId);
-                st.setString(3, emailAddress);
+                st.setString(3, identifier);
                 st.setInt(4, COUNTER);
                 st.addBatch();
             }
@@ -71,14 +71,14 @@ public class PartToSendPO {
         }
     }
 
-    public static List<PartToSendPO> getNeverSent(DBUtils db, String fileId, String emailAddress) throws AuroraException {
+    public static List<PartToSendPO> getNeverSent(DBUtils db, String fileId, String identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("SELECT * FROM PARTS_TO_SEND WHERE FILE_ID = ? AND EMAIL = ? AND SENT_ONCE = FALSE")) {
+             var st = conn.prepareStatement("SELECT * FROM PARTS_TO_SEND WHERE FILE_ID = ? AND IDENTIFIER = ? AND SENT_ONCE = FALSE")) {
 
             List<PartToSendPO> out = new ArrayList<>();
             st.setString(1, fileId);
-            st.setString(2, emailAddress);
+            st.setString(2, identifier);
             var res = st.executeQuery();
             while (res.next()) {
 
@@ -94,10 +94,10 @@ public class PartToSendPO {
         }
     }
 
-    public static void markAsSent(DBUtils db, List<Integer> sequenceNumbers, String fileId, String emailAddress) throws AuroraException {
+    public static void markAsSent(DBUtils db, List<Integer> sequenceNumbers, String fileId, String identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("UPDATE PARTS_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("UPDATE PARTS_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND IDENTIFIER = ?")) {
 
             conn.setAutoCommit(false);
 
@@ -106,7 +106,7 @@ public class PartToSendPO {
                 st.setInt(1, COUNTER);
                 st.setInt(2, sequenceNumber);
                 st.setString(3, fileId);
-                st.setString(4, emailAddress);
+                st.setString(4, identifier);
                 st.addBatch();
             }
 
@@ -138,22 +138,22 @@ public class PartToSendPO {
         }
     }
 
-    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String emailAddress, boolean sentOnce, int counter) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String identifier, boolean sentOnce, int counter) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
         this.sentOnce = sentOnce;
         this.counter = counter;
     }
 
-    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String emailAddress) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String identifier) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
         this.fileId = fileId;
-        this.emailAddress = emailAddress;
+        this.identifier = identifier;
         this.sentOnce = false;
         this.counter = COUNTER;
     }
@@ -161,11 +161,11 @@ public class PartToSendPO {
     public void delete() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("DELETE FROM PARTS_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ? AND EMAIL = ?")) {
+             var st = conn.prepareStatement("DELETE FROM PARTS_TO_SEND WHERE SEQUENCE = ? AND FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
-            st.setString(3, emailAddress);
+            st.setString(3, identifier);
 
             st.execute();
 
@@ -185,9 +185,9 @@ public class PartToSendPO {
         return fileId;
     }
 
-    public String getEmailAddress() {
+    public String getIdentifier() {
 
-        return emailAddress;
+        return identifier;
     }
 
     public boolean wasSentOnce() {

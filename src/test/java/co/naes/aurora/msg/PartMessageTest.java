@@ -53,7 +53,7 @@ class PartMessageTest {
         PartOutMessage out = new PartOutMessage(session, pk, p, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -80,7 +80,7 @@ class PartMessageTest {
         PartOutMessage out = new PartOutMessage(session, pk, p, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -104,7 +104,7 @@ class PartMessageTest {
         PartOutMessage out = new PartOutMessage(session, pk, p, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -131,7 +131,7 @@ class PartMessageTest {
         PartOutMessage out = new PartOutMessage(session, wrong, p, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
-        assertEquals(out.getRecipient().getEmailAddress(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
         assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
@@ -158,7 +158,7 @@ class PartMessageTest {
         PartOutMessage out = new PartOutMessage(session, pk, p, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getEmailAddress(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
         assertTrue(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();

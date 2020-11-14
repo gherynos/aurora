@@ -57,7 +57,7 @@ public class OutKeyMessage extends KeyMessage {
             try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
 
                 // pack key
-                packer.packString(session.getEmailAddress())
+                packer.packString(session.getEmailAddress())  // TODO: CHANGE
                         .packBinaryHeader(session.getPublicKey().length)
                         .writePayload(session.getPublicKey());
 
