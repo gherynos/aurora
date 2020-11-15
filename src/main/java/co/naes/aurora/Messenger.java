@@ -67,15 +67,15 @@ public class Messenger implements IncomingMessageHandler  {
 
         void self(Messenger messenger);
 
-        void sendingPart(int sequenceNumber, String fileId, String identifier);
+        void sendingPart(int sequenceNumber, String fileId, Identifier identifier);
 
-        void unableToSendPart(int sequenceNumber, String fileId, String identifier);
+        void unableToSendPart(int sequenceNumber, String fileId, Identifier identifier);
 
-        void processingPart(int sequenceNumber, String fileId, String identifier);
+        void processingPart(int sequenceNumber, String fileId, Identifier identifier);
 
-        void discardedPart(int sequenceNumber, String fileId, String identifier);
+        void discardedPart(int sequenceNumber, String fileId, Identifier identifier);
 
-        void processingConfirmation(int sequenceNumber, String fileId, String identifier);
+        void processingConfirmation(int sequenceNumber, String fileId, Identifier identifier);
 
         void errorsWhileSendingMessages(String message);
 
@@ -85,13 +85,13 @@ public class Messenger implements IncomingMessageHandler  {
 
         void errorsWhileProcessingKeyMessage(String message);
 
-        void fileComplete(String fileId, String identifier, String path);
+        void fileComplete(String fileId, Identifier identifier, String path);
 
         char[] keyMessageReceived(String sender);
 
         void keyMessageSent(char[] password);
 
-        void keysStored(String identifier);
+        void keysStored(Identifier identifier);
     }
 
     protected Messenger(AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) throws AuroraException {
@@ -147,11 +147,11 @@ public class Messenger implements IncomingMessageHandler  {
         }
     }
 
-    public void sendKeys(String recipientIdentifier) throws AuroraException {
+    public void sendKeys(Identifier recipientIdentifier) throws AuroraException {
 
         logger.fine("Sending key message...");
 
-        OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, false);
+        OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, true);
         transport.sendKeyMessage(km);
 
         handler.keyMessageSent(km.getPassword());
@@ -185,7 +185,7 @@ public class Messenger implements IncomingMessageHandler  {
                         // send part message
                         logger.fine(String.format("Sending part %d for %s", partToSend.getSequenceNumber(), pendingFile.getFileId()));
                         handler.sendingPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
-                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()), false);  // NOPMD
+                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()), true);  // NOPMD
                         transport.sendMessage(msg);
                         sent.add(partToSend.getSequenceNumber());
 
@@ -281,7 +281,7 @@ public class Messenger implements IncomingMessageHandler  {
                 handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
 
                 // send confirmation regardless
-                ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), false);
+                ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
                 transport.sendMessage(conf);
 
                 return true;
@@ -296,7 +296,7 @@ public class Messenger implements IncomingMessageHandler  {
         joiner.close();
 
         // send confirmation
-        ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), false);
+        ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
         transport.sendMessage(conf);
 
         // remove pending part to receive

@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.PublicKeys;
 import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
@@ -36,7 +37,7 @@ public final class PublicKeysUtils {
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("MERGE INTO PUBLIC_KEYS KEY(IDENTIFIER) VALUES(?, ?, ?)")) {
 
-            st.setString(1, keys.getIdentifier());
+            st.setString(1, keys.getIdentifier().serialise());
             st.setString(2, Utils.baseXencode(keys.getPublicKey(), Constants.ALPHABET_BASE62));
             st.setString(3, Utils.baseXencode(keys.getPublicSignKey(), Constants.ALPHABET_BASE62));
 
@@ -48,12 +49,12 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static PublicKeys get(DBUtils db, String identifier) throws AuroraException {
+    public static PublicKeys get(DBUtils db, Identifier identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM PUBLIC_KEYS WHERE IDENTIFIER = ?")) {
 
-            st.setString(1, identifier);
+            st.setString(1, identifier.serialise());
             var res = st.executeQuery();
             if (!res.next()) {
 
@@ -65,7 +66,7 @@ public final class PublicKeysUtils {
             String signature = res.getString(3);
 
             return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
-                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), id);
+                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), new Identifier(id));
 
         } catch (SQLException | SaltpackException ex) {
 
@@ -90,7 +91,7 @@ public final class PublicKeysUtils {
             String signature = res.getString(3);
 
             return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
-                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), id);
+                    Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), new Identifier(id));
 
         } catch (SQLException | SaltpackException ex) {
 
@@ -98,16 +99,16 @@ public final class PublicKeysUtils {
         }
     }
 
-    public static List<String> listIdentifiers(DBUtils db) throws AuroraException {
+    public static List<Identifier> listIdentifiers(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            List<String> out = new ArrayList<>();
+            List<Identifier> out = new ArrayList<>();
             var res = st.executeQuery("SELECT IDENTIFIER FROM PUBLIC_KEYS");
             while (res.next()) {
 
-                out.add(res.getString(1));
+                out.add(new Identifier(res.getString(1)));  // NOPMD
             }
 
             return out;

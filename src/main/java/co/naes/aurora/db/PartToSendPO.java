@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,13 +36,13 @@ public class PartToSendPO {
 
     private final String fileId;
 
-    private final String identifier;
+    private final Identifier identifier;
 
     private final boolean sentOnce;
 
     private final int counter;
 
-    public static void addAll(DBUtils db, String fileId, String identifier, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, Identifier identifier, int totalParts) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_SEND VALUES(?, ?, ?, FALSE, ?)")) {
@@ -52,7 +53,7 @@ public class PartToSendPO {
 
                 st.setInt(1, i);
                 st.setString(2, fileId);
-                st.setString(3, identifier);
+                st.setString(3, identifier.serialise());
                 st.setInt(4, COUNTER);
                 st.addBatch();
             }
@@ -71,19 +72,19 @@ public class PartToSendPO {
         }
     }
 
-    public static List<PartToSendPO> getNeverSent(DBUtils db, String fileId, String identifier) throws AuroraException {
+    public static List<PartToSendPO> getNeverSent(DBUtils db, String fileId, Identifier identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM PARTS_TO_SEND WHERE FILE_ID = ? AND IDENTIFIER = ? AND SENT_ONCE = FALSE")) {
 
             List<PartToSendPO> out = new ArrayList<>();
             st.setString(1, fileId);
-            st.setString(2, identifier);
+            st.setString(2, identifier.serialise());
             var res = st.executeQuery();
             while (res.next()) {
 
                 out.add(new PartToSendPO(db, res.getInt(1), res.getString(2),  // NOPMD
-                        res.getString(3), res.getBoolean(4), res.getInt(5)));
+                        new Identifier(res.getString(3)), res.getBoolean(4), res.getInt(5)));
             }
 
             return out;
@@ -94,7 +95,7 @@ public class PartToSendPO {
         }
     }
 
-    public static void markAsSent(DBUtils db, List<Integer> sequenceNumbers, String fileId, String identifier) throws AuroraException {
+    public static void markAsSent(DBUtils db, List<Integer> sequenceNumbers, String fileId, Identifier identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("UPDATE PARTS_TO_SEND SET SENT_ONCE = TRUE, COUNTER = ? WHERE SEQUENCE = ? AND FILE_ID = ? AND IDENTIFIER = ?")) {
@@ -106,7 +107,7 @@ public class PartToSendPO {
                 st.setInt(1, COUNTER);
                 st.setInt(2, sequenceNumber);
                 st.setString(3, fileId);
-                st.setString(4, identifier);
+                st.setString(4, identifier.serialise());
                 st.addBatch();
             }
 
@@ -138,7 +139,7 @@ public class PartToSendPO {
         }
     }
 
-    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String identifier, boolean sentOnce, int counter) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, Identifier identifier, boolean sentOnce, int counter) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
@@ -148,7 +149,7 @@ public class PartToSendPO {
         this.counter = counter;
     }
 
-    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, String identifier) {
+    public PartToSendPO(DBUtils db, int sequenceNumber, String fileId, Identifier identifier) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
@@ -165,7 +166,7 @@ public class PartToSendPO {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
-            st.setString(3, identifier);
+            st.setString(3, identifier.serialise());
 
             st.execute();
 
@@ -185,7 +186,7 @@ public class PartToSendPO {
         return fileId;
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
 
         return identifier;
     }

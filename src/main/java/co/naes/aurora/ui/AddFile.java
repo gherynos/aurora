@@ -19,6 +19,7 @@
 
 package co.naes.aurora.ui;
 
+import co.naes.aurora.Identifier;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -34,20 +35,20 @@ public class AddFile extends JDialog {
     private static final long serialVersionUID = 142871230210913L;
 
     private JPanel mainPanel;
-    private JList<String> recipientList;
+    private JList<Identifier> recipientList;
     private JButton browseButton;
     private JTextField fileTextField;
     private JButton okButton;
     private JButton cancelButton;
 
-    private final List<String> recipients;
+    private final List<Identifier> recipients;
 
-    private String selectedRecipient;
+    private Identifier selectedRecipient;
     private File selectedFile;
 
     private boolean canceled = true;
 
-    public AddFile(Frame owner, List<String> recipients) {
+    public AddFile(Frame owner, List<Identifier> recipients) {
 
         super(owner, "Add file to send", true);
 
@@ -101,7 +102,7 @@ public class AddFile extends JDialog {
 
     private void createUIComponents() {
 
-        recipientList = new JList<>(recipients.toArray(new String[]{}));
+        recipientList = new JList<>(recipients.toArray(new Identifier[]{}));
     }
 
     public File getSelectedFile() {
@@ -109,7 +110,7 @@ public class AddFile extends JDialog {
         return selectedFile;
     }
 
-    public String getSelectedRecipient() {
+    public Identifier getSelectedRecipient() {
 
         return selectedRecipient;
     }

@@ -39,6 +39,11 @@
         <exclude name="LoosePackageCoupling" />
         <exclude name="DataClass" />
     </rule>
+    <rule ref="category/java/design.xml/ExcessiveImports">
+        <properties>
+            <property name="minimum" value="35.0" />
+        </properties>
+    </rule>
     <rule ref="category/java/design.xml/NcssCount">
         <properties>
             <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />

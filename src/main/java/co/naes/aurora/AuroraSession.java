@@ -31,12 +31,10 @@ public class AuroraSession {
     private final DBUtils db;
 
     private final byte[] secretKey;
-    private final byte[] publicKey;
 
     private final byte[] secretSignKey;
-    private final byte[] publicSignKey;
 
-    private final String emailAddress;
+    private final PublicKeys publicKeys;
 
     protected AuroraSession(DBUtils db) throws AuroraException {
 
@@ -45,9 +43,10 @@ public class AuroraSession {
         try {
 
             Properties p = db.getProperties();
-            emailAddress = p.getProperty(DBUtils.SESSION_EMAIL_ADDRESS);
 
             // load existing keys from DB
+            byte[] publicKey;
+            byte[] publicSignKey;
             if (p.containsKey(DBUtils.SESSION_PUBLIC_KEY)) {
 
                 publicKey = Utils.baseXdecode(p.getProperty(DBUtils.SESSION_PUBLIC_KEY), Constants.ALPHABET_BASE62);
@@ -75,6 +74,9 @@ public class AuroraSession {
                 db.saveProperties();
             }
 
+            publicKeys = new PublicKeys(publicKey, publicSignKey, new Identifier(p.getProperty(DBUtils.ACCOUNT_NAME),
+                    p.getProperty(DBUtils.SESSION_EMAIL_ADDRESS)));
+
         } catch (SaltpackException ex) {
 
             throw new AuroraException("Unable to generate keys: " + ex.getMessage(), ex);
@@ -86,24 +88,14 @@ public class AuroraSession {
         return secretKey.clone();
     }
 
-    public byte[] getPublicKey() {
-
-        return publicKey.clone();
-    }
-
     public byte[] getSignSecretKey() {
 
         return secretSignKey.clone();
     }
 
-    public byte[] getPublicSignKey() {
+    public PublicKeys getPublicKeys() {
 
-        return publicSignKey.clone();
-    }
-
-    public String getEmailAddress() {
-
-        return emailAddress;
+        return publicKeys;
     }
 
     public DBUtils getDBUtils() {

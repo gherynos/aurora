@@ -2,6 +2,7 @@ package co.naes.aurora.msg;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.key.OutKeyMessage;
@@ -36,17 +37,20 @@ class KeyMessageTest {
         Utils.generateKeypair(publicKey, secretKey);
         Utils.generateSignKeypair(publicSignKey, secretSignKey);
 
-        when(session.getPublicKey()).thenReturn(publicKey);
+        when(session.getPublicKeys()).thenReturn(new PublicKeys(publicKey, publicSignKey,
+                new Identifier("sample4", "sample4@test.com")));
         when(session.getSignSecretKey()).thenReturn(secretSignKey);
-        when(session.getEmailAddress()).thenReturn("sample4@test.com");
     }
 
     @Test
     void armored() throws Exception {
 
-        OutKeyMessage out = new OutKeyMessage(session, "theRecipient", true);
+        Identifier id = new Identifier("theRecipient", "aaa@bbb.com");
 
-        assertEquals(out.getRecipientIdentifier(), "theRecipient");
+        OutKeyMessage out = new OutKeyMessage(session, id, true);
+
+        assertEquals(out.getRecipientIdentifier().getName(), id.getName());
+        assertEquals(out.getRecipientIdentifier().getEmail(), id.getEmail());
         assertTrue(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
@@ -58,17 +62,20 @@ class KeyMessageTest {
 
         PublicKeys received = in.getPublicKeys(out.getPassword());
 
-        assertArrayEquals(received.getPublicKey(), session.getPublicKey());
+        assertArrayEquals(received.getPublicKey(), session.getPublicKeys().getPublicKey());
         assertArrayEquals(received.getPublicSignKey(), publicSignKey);
-        assertEquals(received.getIdentifier(), "sample4@test.com");
+        assertEquals(received.getIdentifier().getEmail(), "sample4@test.com");
     }
 
     @Test
     void binary() throws Exception {
 
-        OutKeyMessage out = new OutKeyMessage(session, "theRecipient2", false);
+        Identifier id = new Identifier("theRecipient2", "aaa2@bbb.com");
 
-        assertEquals(out.getRecipientIdentifier(), "theRecipient2");
+        OutKeyMessage out = new OutKeyMessage(session, id, false);
+
+        assertEquals(out.getRecipientIdentifier().getName(), id.getName());
+        assertEquals(out.getRecipientIdentifier().getEmail(), id.getEmail());
         assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
@@ -77,17 +84,20 @@ class KeyMessageTest {
 
         PublicKeys received = in.getPublicKeys(out.getPassword());
 
-        assertArrayEquals(received.getPublicKey(), session.getPublicKey());
+        assertArrayEquals(received.getPublicKey(), session.getPublicKeys().getPublicKey());
         assertArrayEquals(received.getPublicSignKey(), publicSignKey);
-        assertEquals(received.getIdentifier(), "sample4@test.com");
+        assertEquals(received.getIdentifier().getEmail(), "sample4@test.com");
     }
 
     @Test
     void wrongPassword() throws Exception {
 
-        OutKeyMessage out = new OutKeyMessage(session, "theRecipient2", false);
+        Identifier id = new Identifier("theRecipient2", "aaa2@bbb.com");
 
-        assertEquals(out.getRecipientIdentifier(), "theRecipient2");
+        OutKeyMessage out = new OutKeyMessage(session, id, false);
+
+        assertEquals(out.getRecipientIdentifier().getName(), id.getName());
+        assertEquals(out.getRecipientIdentifier().getEmail(), id.getEmail());
         assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();

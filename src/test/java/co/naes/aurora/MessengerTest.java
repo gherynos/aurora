@@ -34,6 +34,9 @@ class MessengerTest {
     private MockTransport t1;
     private MockTransport t2;
 
+    private Identifier i1;
+    private Identifier i2;
+
     private PublicKeys k1;
     private PublicKeys k2;
 
@@ -52,10 +55,12 @@ class MessengerTest {
         db1 = new DBUtils(tempDirUser1.toString(), "samplepass1");
         db2 = new DBUtils(tempDirUser2.toString(), "samplepass2");
 
+        db1.getProperties().setProperty(DBUtils.ACCOUNT_NAME, "user1");
         db1.getProperties().setProperty(DBUtils.SESSION_EMAIL_ADDRESS, "user1@test.com");
         db1.getProperties().setProperty(DBUtils.INCOMING_DIRECTORY, tempDirUser1.toString());
         db1.saveProperties();
 
+        db2.getProperties().setProperty(DBUtils.ACCOUNT_NAME, "user2");
         db2.getProperties().setProperty(DBUtils.SESSION_EMAIL_ADDRESS, "user2@test.com");
         db2.getProperties().setProperty(DBUtils.INCOMING_DIRECTORY, tempDirUser2.toString());
         db2.saveProperties();
@@ -69,8 +74,11 @@ class MessengerTest {
         AuroraSession s1 = new AuroraSession(db1);
         AuroraSession s2 = new AuroraSession(db2);
 
-        k1 = new PublicKeys(s1.getPublicKey(), s1.getPublicSignKey(), "user1@test.com");
-        k2 = new PublicKeys(s2.getPublicKey(), s2.getPublicSignKey(), "user2@test.com");
+        i1 = s1.getPublicKeys().getIdentifier();
+        i2 = s2.getPublicKeys().getIdentifier();
+
+        k1 = s1.getPublicKeys();
+        k2 = s2.getPublicKeys();
 
         h1 = new MockHandler();
         h2 = new MockHandler();
@@ -94,19 +102,19 @@ class MessengerTest {
 
     private void exchangeKeys() throws Exception {
 
-        m1.sendKeys("user2@test.com");
+        m1.sendKeys(i2);
         assertEquals(1, t2.getKeys().size());
 
         h2.setPasswordReceived(h1.getPasswordSent());
         m2.receive();
-        assertTrue(PublicKeysUtils.listIdentifiers(db2).contains("user1@test.com"));
+        assertTrue(PublicKeysUtils.listIdentifiers(db2).contains(i1));
 
-        m2.sendKeys("user1@test.com");
+        m2.sendKeys(i1);
         assertEquals(1, t1.getKeys().size());
 
         h1.setPasswordReceived(h2.getPasswordSent());
         m1.receive();
-        assertTrue(PublicKeysUtils.listIdentifiers(db1).contains("user2@test.com"));
+        assertTrue(PublicKeysUtils.listIdentifiers(db1).contains(i2));
     }
 
     private void finalState(byte[] content) throws Exception {
@@ -137,21 +145,21 @@ class MessengerTest {
     @Test
     void wrongKeyPassword() throws Exception {
 
-        m1.sendKeys("user2@test.com");
+        m1.sendKeys(i2);
         assertEquals(1, t2.getKeys().size());
 
         h2.setPasswordReceived("wrong".toCharArray());
         m2.receive();
-        assertFalse(PublicKeysUtils.listIdentifiers(db2).contains("user1@test.com"));
+        assertFalse(PublicKeysUtils.listIdentifiers(db2).contains(i1));
 
         assertTrue(h2.getKeyMessage().contains("Wrong password"));
 
-        m2.sendKeys("user1@test.com");
+        m2.sendKeys(i1);
         assertEquals(1, t1.getKeys().size());
 
         h1.setPasswordReceived("".toCharArray());
         m1.receive();
-        assertFalse(PublicKeysUtils.listIdentifiers(db1).contains("user2@test.com"));
+        assertFalse(PublicKeysUtils.listIdentifiers(db1).contains(i2));
     }
 
     @Test
@@ -172,26 +180,26 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
         m2.receive();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
+        assertArrayEquals(new Object[]{i1, "sample.bin", maxParts, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
         assertEquals(maxParts, t1.getConfs().size());
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 3, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 3, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         assertEquals(3, t2.getParts().size());
@@ -219,7 +227,7 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
@@ -229,26 +237,26 @@ class MessengerTest {
 
         m2.receive();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts - 2, totalParts},
+        assertArrayEquals(new Object[]{i1, "sample.bin", maxParts - 2, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
         assertEquals(maxParts - 2, t1.getConfs().size());
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 4, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts - 2, 4, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts - 2, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         assertEquals(4, t2.getParts().size());
 
         m2.receive();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", totalParts - 2, totalParts},
+        assertArrayEquals(new Object[]{i1, "sample.bin", totalParts - 2, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
         m2.send();
@@ -257,7 +265,7 @@ class MessengerTest {
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", totalParts - 2, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, totalParts - 2, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         for (int i = 0; i < PartToSendPO.COUNTER - 1; i++) {
@@ -265,7 +273,7 @@ class MessengerTest {
             m1.receive();
         }
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", totalParts - 2, 2, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, totalParts - 2, 2, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
@@ -295,14 +303,14 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
         m2.receive();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
+        assertArrayEquals(new Object[]{i1, "sample.bin", maxParts, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
         assertEquals(maxParts, t1.getConfs().size());
@@ -312,12 +320,12 @@ class MessengerTest {
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 2, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts - 2, 2, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts - 2, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts - 2, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         assertEquals(2, t2.getParts().size());
@@ -332,7 +340,7 @@ class MessengerTest {
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         for (int i = 0; i < PartToSendPO.COUNTER - 1; i++) {
@@ -340,7 +348,7 @@ class MessengerTest {
             m1.receive();
         }
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 2, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 2, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
@@ -382,7 +390,7 @@ class MessengerTest {
 
             m2.addFileToSend(k1, tempDirUser1.resolve("sample.bin").toString());
         });
-        assertTrue(exception.getMessage().contains("Recipient 'user1@test.com' not found"));
+        assertTrue(exception.getMessage().contains("Recipient 'user1 <user1@test.com>' not found"));
     }
 
     @Test
@@ -402,7 +410,7 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         m1.send();
@@ -452,7 +460,7 @@ class MessengerTest {
 
         assertTrue(m1.addFileToSend(k2, tempDirUser1.resolve("sample.bin").toString()));
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", 0, totalParts, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, 0, totalParts, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         t1.setRaiseException(true);
@@ -483,14 +491,14 @@ class MessengerTest {
         assertFalse(h2.hasErrorsWhileReceivingMessages());
         h2.resetErrors();
 
-        assertArrayEquals(new Object[]{"user1@test.com", "sample.bin", maxParts, totalParts},
+        assertArrayEquals(new Object[]{i1, "sample.bin", maxParts, totalParts},
                 StatusUtils.getIncomingFiles(db2).get(0).asRow());
 
         assertEquals(maxParts, t1.getConfs().size());
 
         m1.receive();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 3, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 3, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         t1.setRaiseException(true);
@@ -499,7 +507,7 @@ class MessengerTest {
         t1.setRaiseException(false);
         m1.send();
 
-        assertArrayEquals(new Object[]{"sample.bin", "user2@test.com", maxParts, 0, totalParts},
+        assertArrayEquals(new Object[]{"sample.bin", i2, maxParts, 0, totalParts},
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         assertEquals(3, t2.getParts().size());

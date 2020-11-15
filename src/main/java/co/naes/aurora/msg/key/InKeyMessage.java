@@ -20,6 +20,7 @@
 package co.naes.aurora.msg.key;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.KeyMessage;
 import net.nharyes.libsaltpack.InputParameters;
@@ -73,7 +74,7 @@ public class InKeyMessage extends KeyMessage {
 
             // unpack key
             MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msg.toByteArray());  // NOPMD
-            String identifier = unpacker.unpackString();
+            Identifier identifier = new Identifier(unpacker.unpackString());
             Value v = unpacker.unpackValue();
             byte[] publicKey = v.asBinaryValue().asByteArray();
 

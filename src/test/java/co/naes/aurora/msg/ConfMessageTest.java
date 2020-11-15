@@ -2,6 +2,7 @@ package co.naes.aurora.msg;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
@@ -41,7 +42,7 @@ class ConfMessageTest {
 
         when(session.getSecretKey()).thenReturn(secretKey);
 
-        pk = new PublicKeys(publicKey, "sample3@test.com");
+        pk = new PublicKeys(publicKey, new Identifier("sample3", "sample3@test.com"));
     }
 
     @Test
@@ -52,7 +53,8 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample3");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample3@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -77,7 +79,8 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample3");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample3@test.com");
         assertFalse(out.isArmored());
 
         byte[] ciphertext = out.getCiphertext();
@@ -99,7 +102,8 @@ class ConfMessageTest {
         ConfOutMessage out = new ConfOutMessage(session, pk, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample3@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample3");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample3@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -119,14 +123,15 @@ class ConfMessageTest {
         byte[] secretKey = new byte[Constants.CRYPTO_BOX_SECRETKEYBYTES];
         Utils.generateKeypair(publicKey, secretKey);
 
-        PublicKeys wrong = new PublicKeys(publicKey, "sample4@test.com");
+        PublicKeys wrong = new PublicKeys(publicKey, new Identifier("sample4", "sample4@test.com"));
 
         PartId id = new PartId("anotherTestFile", 12);
 
         ConfOutMessage out = new ConfOutMessage(session, wrong, id, false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
-        assertEquals(out.getRecipient().getIdentifier(), "sample4@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample4");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample4@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 

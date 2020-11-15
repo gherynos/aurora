@@ -20,6 +20,7 @@
 package co.naes.aurora.ui;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.Messenger;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.db.PublicKeysUtils;
@@ -164,7 +165,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                 sendKeys = new SendKeys(mainPanel, new SendKeys.SendKeysStatusHandler() {
 
                     @Override
-                    public void sendKeys(String identifier) {
+                    public void sendKeys(Identifier identifier) {
 
                         new Thread(() -> {
 
@@ -310,31 +311,31 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void sendingPart(int sequenceNumber, String fileId, String identifier) {
+    public void sendingPart(int sequenceNumber, String fileId, Identifier identifier) {
 
         updateStatus(String.format("Sending part #%d of %s to %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void unableToSendPart(int sequenceNumber, String fileId, String identifier) {
+    public void unableToSendPart(int sequenceNumber, String fileId, Identifier identifier) {
 
         showError(String.format("Unable to send part #%d of %s to %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void processingPart(int sequenceNumber, String fileId, String identifier) {
+    public void processingPart(int sequenceNumber, String fileId, Identifier identifier) {
 
         updateStatus(String.format("Processing part #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void discardedPart(int sequenceNumber, String fileId, String identifier) {
+    public void discardedPart(int sequenceNumber, String fileId, Identifier identifier) {
 
         updateStatus(String.format("Discarded part #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
 
     @Override
-    public void processingConfirmation(int sequenceNumber, String fileId, String identifier) {
+    public void processingConfirmation(int sequenceNumber, String fileId, Identifier identifier) {
 
         updateStatus(String.format("Processing confirmation #%d of %s from %s", sequenceNumber, fileId, identifier));
     }
@@ -364,7 +365,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void fileComplete(String fileId, String identifier, String path) {
+    public void fileComplete(String fileId, Identifier identifier, String path) {
 
         JOptionPane.showMessageDialog(this, String.format("File %s successfully received\nfrom %s",
                 fileId, identifier), "File received", JOptionPane.INFORMATION_MESSAGE);
@@ -393,7 +394,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     }
 
     @Override
-    public void keysStored(String identifier) {
+    public void keysStored(Identifier identifier) {
 
         JOptionPane.showMessageDialog(this, String.format("Keys for %s successfully stored", identifier),
                 "Keys stored", JOptionPane.INFORMATION_MESSAGE);

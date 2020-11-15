@@ -19,17 +19,19 @@
 
 package co.naes.aurora.ui;
 
+import co.naes.aurora.Identifier;
+
 public class IncomingFile {
 
     private final String fileId;
 
-    private final String sender;
+    private final Identifier sender;
 
     private final int missing;
 
     private final int total;
 
-    public IncomingFile(String fileId, String sender, int missing, int total) {
+    public IncomingFile(String fileId, Identifier sender, int missing, int total) {
 
         this.fileId = fileId;
         this.sender = sender;

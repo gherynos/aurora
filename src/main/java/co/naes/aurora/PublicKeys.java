@@ -25,15 +25,15 @@ public class PublicKeys {
 
     private byte[] publicSignKey;
 
-    private final String identifier;
+    private final Identifier identifier;
 
-    public PublicKeys(byte[] publicKey, String identifier) {
+    public PublicKeys(byte[] publicKey, Identifier identifier) {
 
         this.publicKey = publicKey.clone();
         this.identifier = identifier;
     }
 
-    public PublicKeys(byte[] publicKey, byte[] publicSignKey, String identifier) {
+    public PublicKeys(byte[] publicKey, byte[] publicSignKey, Identifier identifier) {
 
         this.publicKey = publicKey.clone();
         this.publicSignKey = publicSignKey.clone();
@@ -50,7 +50,7 @@ public class PublicKeys {
         return publicSignKey.clone();
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
 
         return identifier;
     }
@@ -58,6 +58,6 @@ public class PublicKeys {
     @Override
     public String toString() {
 
-        return identifier;
+        return identifier.toString();
     }
 }

@@ -33,7 +33,7 @@ public class Part {  // NOPMD
 
     public Part(PartId id, int total, long totalSize, byte[] data) {
 
-        if (data.length > getPartSize(totalSize, total)) {
+        if (data.length > Splitter.getPartSize(totalSize, total)) {
 
             throw new InvalidParameterException("Part content bigger than expected");
         }
@@ -64,13 +64,8 @@ public class Part {  // NOPMD
         return data.clone();
     }
 
-    public static int getPartSize(long totalFileSize, int totalParts) {
-
-        return (int) Math.ceil((float) totalFileSize / totalParts);
-    }
-
     public int getPartSize() {
 
-        return getPartSize(totalSize, total);
+        return Splitter.getPartSize(totalSize, total);
     }
 }

@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 
 import java.sql.SQLException;
 
@@ -31,19 +32,19 @@ public class IncomingFilePO {
 
     private final String path;
 
-    private final String identifier;
+    private final Identifier identifier;
 
     private final int totalParts;
 
     private boolean complete;
 
-    public static IncomingFilePO get(DBUtils db, String fileId, String identifier) throws AuroraException {
+    public static IncomingFilePO get(DBUtils db, String fileId, Identifier identifier) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("SELECT * FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setString(1, fileId);
-            st.setString(2, identifier);
+            st.setString(2, identifier.serialise());
             var res = st.executeQuery();
 
             if (!res.next()) {
@@ -52,7 +53,7 @@ public class IncomingFilePO {
             }
 
             return new IncomingFilePO(db, res.getString(1), res.getString(2),
-                    res.getString(3), res.getInt(4), res.getBoolean(5));
+                    new Identifier(res.getString(3)), res.getInt(4), res.getBoolean(5));
 
         } catch (SQLException ex) {
 
@@ -73,7 +74,7 @@ public class IncomingFilePO {
         }
     }
 
-    private IncomingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts, boolean complete) {
+    private IncomingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts, boolean complete) {
 
         this.db = db;
         this.fileId = fileId;
@@ -83,7 +84,7 @@ public class IncomingFilePO {
         this.complete = complete;
     }
 
-    public IncomingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts) {
+    public IncomingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts) {
 
         this(db, fileId, path, identifier, totalParts, false);
     }
@@ -95,7 +96,7 @@ public class IncomingFilePO {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setString(3, identifier);
+            st.setString(3, identifier.serialise());
             st.setInt(4, totalParts);
             st.setBoolean(5, complete);
 
@@ -113,7 +114,7 @@ public class IncomingFilePO {
              var st = conn.prepareStatement("SELECT COMPLETE FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setString(1, fileId);
-            st.setString(2, identifier);
+            st.setString(2, identifier.serialise());
             var res = st.executeQuery();
             if (!res.next()) {
 
@@ -138,7 +139,7 @@ public class IncomingFilePO {
         return path;
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
 
         return identifier;
     }

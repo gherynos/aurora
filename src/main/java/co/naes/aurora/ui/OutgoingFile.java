@@ -19,11 +19,13 @@
 
 package co.naes.aurora.ui;
 
+import co.naes.aurora.Identifier;
+
 public class OutgoingFile {
 
     private final String fileId;
 
-    private final String recipient;
+    private final Identifier recipient;
 
     private final int sent;
 
@@ -31,7 +33,7 @@ public class OutgoingFile {
 
     private final int total;
 
-    public OutgoingFile(String fileId, String recipient, int sent, int toSend, int total) {
+    public OutgoingFile(String fileId, Identifier recipient, int sent, int toSend, int total) {
 
         this.fileId = fileId;
         this.recipient = recipient;

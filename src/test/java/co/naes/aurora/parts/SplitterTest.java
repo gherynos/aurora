@@ -220,4 +220,48 @@ class SplitterTest {
             file.deleteOnExit();
         }
     }
+
+    @Test
+    void defaultPartSize() throws Exception {
+
+        File file = File.createTempFile("temp6", null);
+
+        try {
+
+            byte[] random = new byte[2966582];
+            new Random().nextBytes(random);
+
+            FileOutputStream fout = new FileOutputStream(file);
+            fout.write(random);
+            fout.close();
+
+            Splitter sp = new Splitter("aRandomFile", file.getAbsolutePath());
+
+            int partSize = (int) Math.ceil(2966582 / 3.0);
+
+            Part zero = sp.getPart(0);
+            assertEquals(zero.getId().getFileId(), "aRandomFile");
+            assertEquals(zero.getId().getSequenceNumber(), 0);
+            assertEquals(zero.getTotal(), 3);
+            assertEquals(zero.getTotalSize(), 2966582);
+            assertEquals(zero.getPartSize(), partSize);
+            byte[] block = new byte[partSize];
+            System.arraycopy(random, 0, block, 0, partSize);
+            assertArrayEquals(zero.getData(), block);
+
+            Part last = sp.getPart(2);
+            assertEquals(last.getId().getFileId(), "aRandomFile");
+            assertEquals(last.getId().getSequenceNumber(), 2);
+            assertEquals(last.getTotal(), 3);
+            assertEquals(last.getTotalSize(), 2966582);
+            assertEquals(last.getPartSize(), partSize);
+            block = new byte[partSize - 1];
+            System.arraycopy(random, partSize * 2, block, 0, partSize - 1);
+            assertArrayEquals(last.getData(), block);
+
+        } finally {
+
+            file.deleteOnExit();
+        }
+    }
 }

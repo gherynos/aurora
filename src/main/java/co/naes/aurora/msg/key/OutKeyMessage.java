@@ -22,6 +22,7 @@ package co.naes.aurora.msg.key;
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
 import co.naes.aurora.ConstellationsHelper;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.msg.KeyMessage;
 import net.nharyes.libsaltpack.MessageWriter;
 import net.nharyes.libsaltpack.OutputParameters;
@@ -34,11 +35,11 @@ import java.io.IOException;
 
 public class OutKeyMessage extends KeyMessage {
 
-    private final String recipientIdentifier;
+    private final Identifier recipientIdentifier;
 
     private final char[] password;
 
-    public OutKeyMessage(AuroraSession session, String recipientIdentifier, boolean armored) throws AuroraException {
+    public OutKeyMessage(AuroraSession session, Identifier recipientIdentifier, boolean armored) throws AuroraException {
 
         super();
 
@@ -57,9 +58,9 @@ public class OutKeyMessage extends KeyMessage {
             try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
 
                 // pack key
-                packer.packString(session.getEmailAddress())  // TODO: CHANGE
-                        .packBinaryHeader(session.getPublicKey().length)
-                        .writePayload(session.getPublicKey());
+                packer.packString(session.getPublicKeys().getIdentifier().serialise())
+                        .packBinaryHeader(session.getPublicKeys().getPublicKey().length)
+                        .writePayload(session.getPublicKeys().getPublicKey());
 
                 // signcrypt public key
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -87,7 +88,7 @@ public class OutKeyMessage extends KeyMessage {
         }
     }
 
-    public String getRecipientIdentifier() {
+    public Identifier getRecipientIdentifier() {
 
         return recipientIdentifier;
     }

@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 
 import java.sql.SQLException;
 
@@ -31,9 +32,9 @@ public class PartToReceivePO {
 
     private final String fileId;
 
-    private final String identifier;
+    private final Identifier identifier;
 
-    public static void addAll(DBUtils db, String fileId, String identifier, int totalParts) throws AuroraException {
+    public static void addAll(DBUtils db, String fileId, Identifier identifier, int totalParts) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.prepareStatement("INSERT INTO PARTS_TO_RECEIVE VALUES(?, ?, ?)")) {
@@ -44,7 +45,7 @@ public class PartToReceivePO {
 
                 st.setInt(1, i);
                 st.setString(2, fileId);
-                st.setString(3, identifier);
+                st.setString(3, identifier.serialise());
                 st.addBatch();
             }
 
@@ -62,7 +63,7 @@ public class PartToReceivePO {
         }
     }
 
-    public PartToReceivePO(DBUtils db, int sequenceNumber, String fileId, String identifier) {
+    public PartToReceivePO(DBUtils db, int sequenceNumber, String fileId, Identifier identifier) {
 
         this.db = db;
         this.sequenceNumber = sequenceNumber;
@@ -77,7 +78,7 @@ public class PartToReceivePO {
 
             st.setInt(1, sequenceNumber);
             st.setString(2, fileId);
-            st.setString(3, identifier);
+            st.setString(3, identifier.serialise());
 
             st.execute();
 
@@ -97,7 +98,7 @@ public class PartToReceivePO {
         return fileId;
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
 
         return identifier;
     }

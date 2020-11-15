@@ -20,6 +20,7 @@
 package co.naes.aurora.ui;
 
 import co.naes.aurora.ConstellationsHelper;
+import co.naes.aurora.Identifier;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -145,7 +146,7 @@ public class SendKeys extends JFrame {
 
     public interface SendKeysStatusHandler {
 
-        void sendKeys(String identifier);
+        void sendKeys(Identifier identifier);
 
         void sendKeysClosed();
     }
@@ -173,7 +174,7 @@ public class SendKeys extends JFrame {
             if (emailTextField.getText().contains("@")) {
 
                 sendKeysButton.setEnabled(false);
-                statusHandler.sendKeys(emailTextField.getText());
+                statusHandler.sendKeys(new Identifier("", emailTextField.getText()));
 
             } else {
 

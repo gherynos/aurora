@@ -149,7 +149,7 @@ public class MailTransport implements AuroraTransport {
             message = new MimeMessage(getSession(false));
             message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
                     main.getProperty(DBUtils.ACCOUNT_NAME)));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier()));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier().getEmail()));
             message.setSubject(String.format("Aurora key %s", getRandomString()));
             message.setHeader(HEADER, HEADER_KEY);
 
@@ -189,7 +189,7 @@ public class MailTransport implements AuroraTransport {
             message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
                     main.getProperty(DBUtils.ACCOUNT_NAME)));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(msg.getRecipient().getIdentifier()));  // TODO: CHANGE
+                    InternetAddress.parse(msg.getRecipient().getIdentifier().getEmail()));
             message.setSubject(String.format("Aurora message %s", getRandomString()));
             message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
 

@@ -41,9 +41,13 @@ public class Splitter {
 
     private final int partSize;
 
-    public Splitter(int partSize, String fileId, String filePath) throws AuroraException {
+    public static int getPartSize(long totalFileSize, int totalParts) {
 
-        this.partSize = partSize;
+        return (int) Math.ceil((float) totalFileSize / totalParts);
+    }
+
+    public Splitter(int maxPartSize, String fileId, String filePath) throws AuroraException {
+
         this.fileId = fileId;
 
         try {
@@ -51,8 +55,10 @@ public class Splitter {
             aFile = new RandomAccessFile(filePath, "r");
             channel = aFile.getChannel();
 
-            totalParts = (int) Math.ceil(channel.size() / (float) partSize);
-            lastPartSmaller = channel.size() % partSize != 0;
+            totalParts = (int) Math.ceil(channel.size() / (float) maxPartSize);
+            lastPartSmaller = channel.size() % maxPartSize != 0;
+
+            partSize = getPartSize(channel.size(), totalParts);
 
         } catch (IOException ex) {
 

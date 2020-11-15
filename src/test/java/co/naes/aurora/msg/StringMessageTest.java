@@ -2,6 +2,7 @@ package co.naes.aurora.msg;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.AuroraSession;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.in.StringInMessage;
 import co.naes.aurora.msg.out.StringOutMessage;
@@ -41,7 +42,7 @@ class StringMessageTest {
 
         when(session.getSecretKey()).thenReturn(secretKey);
 
-        pk = new PublicKeys(publicKey, "sample2@test.com");
+        pk = new PublicKeys(publicKey, new Identifier("sample2", "sample2@test.com"));
     }
 
     @Test
@@ -50,7 +51,8 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "aTestString", true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample2");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -72,7 +74,8 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "thisIsAnotherString to Send €‹!`~", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample2");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -94,7 +97,8 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, "thisIsAnotherString to Send €‹!`~", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample2");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -114,12 +118,13 @@ class StringMessageTest {
         byte[] secretKey = new byte[Constants.CRYPTO_BOX_SECRETKEYBYTES];
         Utils.generateKeypair(publicKey, secretKey);
 
-        PublicKeys wrong = new PublicKeys(publicKey, "sample2@test.com");
+        PublicKeys wrong = new PublicKeys(publicKey, new Identifier("sample2", "sample2@test.com"));
 
         StringOutMessage out = new StringOutMessage(session, wrong, "thisIsAnotherString to Send !!!", false);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), publicKey);
-        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample2");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 
@@ -147,7 +152,8 @@ class StringMessageTest {
         StringOutMessage out = new StringOutMessage(session, pk, input, true);
 
         assertArrayEquals(out.getRecipient().getPublicKey(), pk.getPublicKey());
-        assertEquals(out.getRecipient().getIdentifier(), "sample2@test.com");
+        assertEquals(out.getRecipient().getIdentifier().getName(), "sample2");
+        assertEquals(out.getRecipient().getIdentifier().getEmail(), "sample2@test.com");
 
         byte[] ciphertext = out.getCiphertext();
 

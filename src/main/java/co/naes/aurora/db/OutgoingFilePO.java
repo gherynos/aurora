@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class OutgoingFilePO {
 
     private final String path;
 
-    private final String identifier;
+    private final Identifier identifier;
 
     private final int totalParts;
 
@@ -47,7 +48,7 @@ public class OutgoingFilePO {
             while (res.next()) {
 
                 out.add(new OutgoingFilePO(db, res.getString(1),  // NOPMD
-                        res.getString(2), res.getString(3), res.getInt(4)));
+                        res.getString(2), new Identifier(res.getString(3)), res.getInt(4)));
             }
 
             return out;
@@ -58,7 +59,7 @@ public class OutgoingFilePO {
         }
     }
 
-    public OutgoingFilePO(DBUtils db, String fileId, String path, String identifier, int totalParts) {
+    public OutgoingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts) {
 
         this.db = db;
         this.fileId = fileId;
@@ -74,7 +75,7 @@ public class OutgoingFilePO {
 
             st.setString(1, fileId);
             st.setString(2, path);
-            st.setString(3, identifier);
+            st.setString(3, identifier.serialise());
             st.setInt(4, totalParts);
 
             st.execute();
@@ -95,7 +96,7 @@ public class OutgoingFilePO {
         return path;
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
 
         return identifier;
     }

@@ -20,6 +20,7 @@
 package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.Identifier;
 import co.naes.aurora.ui.IncomingFile;
 import co.naes.aurora.ui.OutgoingFile;
 
@@ -40,7 +41,7 @@ public final class StatusUtils {
             while (res.next()) {
 
                 out.add(new IncomingFile(res.getString(1),  // NOPMD
-                        res.getString(2), res.getInt(4), res.getInt(3)));
+                        new Identifier(res.getString(2)), res.getInt(4), res.getInt(3)));
             }
 
             return out;
@@ -63,7 +64,7 @@ public final class StatusUtils {
 
                 if (res.getObject(4) != null || res.getObject(5) != null) {
 
-                    out.add(new OutgoingFile(res.getString(1), res.getString(2),  // NOPMD
+                    out.add(new OutgoingFile(res.getString(1), new Identifier(res.getString(2)),  // NOPMD
                             res.getInt(4), res.getInt(5), res.getInt(3)));
                 }
             }
