@@ -151,7 +151,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         logger.fine("Sending key message...");
 
-        OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, true);
+        OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, transport.requiresArmoredMessages());
         transport.sendKeyMessage(km);
 
         handler.keyMessageSent(km.getPassword());
@@ -185,7 +185,8 @@ public class Messenger implements IncomingMessageHandler  {
                         // send part message
                         logger.fine(String.format("Sending part %d for %s", partToSend.getSequenceNumber(), pendingFile.getFileId()));
                         handler.sendingPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
-                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()), true);  // NOPMD
+                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()),   // NOPMD
+                                transport.requiresArmoredMessages());
                         transport.sendMessage(msg);
                         sent.add(partToSend.getSequenceNumber());
 
@@ -281,7 +282,7 @@ public class Messenger implements IncomingMessageHandler  {
                 handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
 
                 // send confirmation regardless
-                ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
+                ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), transport.requiresArmoredMessages());
                 transport.sendMessage(conf);
 
                 return true;
@@ -296,7 +297,7 @@ public class Messenger implements IncomingMessageHandler  {
         joiner.close();
 
         // send confirmation
-        ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), true);
+        ConfOutMessage conf = new ConfOutMessage(session, sender, part.getId(), transport.requiresArmoredMessages());
         transport.sendMessage(conf);
 
         // remove pending part to receive

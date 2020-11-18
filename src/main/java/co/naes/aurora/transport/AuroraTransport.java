@@ -32,4 +32,6 @@ public interface AuroraTransport {
     void sendMessage(OutMessage<?> message) throws AuroraException;
 
     void checkForMessages() throws AuroraException;
+
+    boolean requiresArmoredMessages();
 }

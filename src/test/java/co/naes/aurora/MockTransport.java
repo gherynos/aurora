@@ -105,6 +105,12 @@ public class MockTransport implements AuroraTransport {
         toRemove.clear();
     }
 
+    @Override
+    public boolean requiresArmoredMessages() {
+
+        return false;
+    }
+
     protected void addKey(OutKeyMessage key) {
 
         keys.add(key.getCiphertext());

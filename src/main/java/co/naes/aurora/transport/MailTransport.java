@@ -304,4 +304,10 @@ public class MailTransport implements AuroraTransport {
             throw new AuroraException("Unable to connect to the server: " + ex.getMessage(), ex);
         }
     }
+
+    @Override
+    public boolean requiresArmoredMessages() {
+
+        return true;
+    }
 }
