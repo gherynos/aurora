@@ -54,7 +54,6 @@ public class OutKeyMessage extends KeyMessage {
             byte[][][] symmetricKeys = {deriveKeyFromPassword(password)};
             byte[][] recipients = {};
 
-
             try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
 
                 // pack key

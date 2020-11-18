@@ -26,6 +26,9 @@ import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class KeysReceived extends JDialog {
 
@@ -56,20 +59,33 @@ public class KeysReceived extends JDialog {
 
         unlockButton.addActionListener(e -> {
 
-            String sb = block1ComboBox.getSelectedItem() +
-                    ConstellationsHelper.SEPARATOR +
-                    block2ComboBox.getSelectedItem() +
-                    ConstellationsHelper.SEPARATOR +
-                    block3ComboBox.getSelectedItem() +
-                    ConstellationsHelper.SEPARATOR +
-                    block4ComboBox.getSelectedItem() +
-                    ConstellationsHelper.SEPARATOR +
-                    block5ComboBox.getSelectedItem() +
-                    ConstellationsHelper.SEPARATOR +
-                    block6ComboBox.getSelectedItem();
-            password = sb.toCharArray();
+            if (Objects.equals(block1ComboBox.getSelectedItem(), "--") ||
+                    Objects.equals(block2ComboBox.getSelectedItem(), "--") ||
+                    Objects.equals(block3ComboBox.getSelectedItem(), "--") ||
+                    Objects.equals(block4ComboBox.getSelectedItem(), "--") ||
+                    Objects.equals(block5ComboBox.getSelectedItem(), "--") ||
+                    Objects.equals(block6ComboBox.getSelectedItem(), "--")) {
 
-            dispose();
+                JOptionPane.showMessageDialog(this, "Please insert all the values",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+
+                String sb = block1ComboBox.getSelectedItem() +
+                        ConstellationsHelper.SEPARATOR +
+                        block2ComboBox.getSelectedItem() +
+                        ConstellationsHelper.SEPARATOR +
+                        block3ComboBox.getSelectedItem() +
+                        ConstellationsHelper.SEPARATOR +
+                        block4ComboBox.getSelectedItem() +
+                        ConstellationsHelper.SEPARATOR +
+                        block5ComboBox.getSelectedItem() +
+                        ConstellationsHelper.SEPARATOR +
+                        block6ComboBox.getSelectedItem();
+                password = sb.toCharArray();
+
+                dispose();
+            }
         });
 
         cancelButton.addActionListener(e -> {
@@ -89,12 +105,14 @@ public class KeysReceived extends JDialog {
 
     private void createUIComponents() {
 
-        block1ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
-        block2ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
-        block3ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
-        block4ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
-        block5ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
-        block6ComboBox = new JComboBox<>(ConstellationsHelper.LIST);
+        String[] items = Stream.concat(Arrays.stream(new String[]{"--"}),
+                Arrays.stream(ConstellationsHelper.LIST)).toArray(String[]::new);
+        block1ComboBox = new JComboBox<>(items);
+        block2ComboBox = new JComboBox<>(items);
+        block3ComboBox = new JComboBox<>(items);
+        block4ComboBox = new JComboBox<>(items);
+        block5ComboBox = new JComboBox<>(items);
+        block6ComboBox = new JComboBox<>(items);
     }
 
     public char[] getPassword() {

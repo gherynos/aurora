@@ -109,10 +109,6 @@ class MessengerTest {
         m2.receive();
         assertTrue(PublicKeysUtils.listIdentifiers(db2).contains(i1));
 
-        m2.sendKeys(i1);
-        assertEquals(1, t1.getKeys().size());
-
-        h1.setPasswordReceived(h2.getPasswordSent());
         m1.receive();
         assertTrue(PublicKeysUtils.listIdentifiers(db1).contains(i2));
     }

@@ -24,6 +24,7 @@ import co.naes.aurora.AuroraSession;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
+import co.naes.aurora.msg.in.PublicKeysInMessage;
 import co.naes.aurora.msg.in.StringInMessage;
 import net.nharyes.libsaltpack.InputParameters;
 import net.nharyes.libsaltpack.MessageReader;
@@ -55,6 +56,7 @@ public abstract class InMessage<T> extends CiphertextMessage {
         MAP.put("Text", StringInMessage.class);
         MAP.put("Part", PartInMessage.class);
         MAP.put("Conf", ConfInMessage.class);
+        MAP.put("PK", PublicKeysInMessage.class);
     }
 
     public static Class<? extends InMessage<?>> getClass(String identifier) throws AuroraException {

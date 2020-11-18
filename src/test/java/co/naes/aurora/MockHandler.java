@@ -91,6 +91,12 @@ public class MockHandler implements Messenger.StatusHandler {
 
     }
 
+    @Override
+    public boolean publicKeysReceived(Identifier identifier) {
+
+        return true;
+    }
+
     protected char[] getPasswordSent() {
 
         return passwordSent;

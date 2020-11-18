@@ -28,10 +28,12 @@ import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.msg.InMessage;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
+import co.naes.aurora.msg.in.PublicKeysInMessage;
 import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.key.OutKeyMessage;
 import co.naes.aurora.msg.out.ConfOutMessage;
 import co.naes.aurora.msg.out.PartOutMessage;
+import co.naes.aurora.msg.out.PublicKeysOutMessage;
 import co.naes.aurora.parts.Joiner;
 import co.naes.aurora.parts.Part;
 import co.naes.aurora.parts.PartId;
@@ -92,6 +94,8 @@ public class Messenger implements IncomingMessageHandler  {
         void keyMessageSent(char[] password);
 
         void keysStored(Identifier identifier);
+
+        boolean publicKeysReceived(Identifier identifier);
     }
 
     protected Messenger(AuroraTransport transport, AuroraSession session, String confFolder, StatusHandler handler) throws AuroraException {
@@ -240,10 +244,14 @@ public class Messenger implements IncomingMessageHandler  {
 
                 return processConfInMessage((ConfInMessage) message);
 
+            } else if (message instanceof PublicKeysInMessage) {
+
+                return processPublicKeysInMessage((PublicKeysInMessage) message);
+
             } else {
 
-                // unknown part type
-                logger.warning(String.format("Unknown part type '%s'", message.getClass()));
+                // unknown message type
+                logger.warning(String.format("Unknown message type '%s'", message.getClass()));
                 return false;
             }
 
@@ -345,6 +353,19 @@ public class Messenger implements IncomingMessageHandler  {
         return true;
     }
 
+    private boolean processPublicKeysInMessage(PublicKeysInMessage message) throws AuroraException {
+
+        if (handler.publicKeysReceived(message.getData().getIdentifier())) {
+
+            PublicKeysUtils.store(session.getDBUtils(), message.getData());
+
+            handler.keysStored(message.getData().getIdentifier());
+        }
+
+        // remove keys message in any case
+        return true;
+    }
+
     @Override
     public boolean keyMessageReceived(InKeyMessage keyMessage) {
 
@@ -361,6 +382,10 @@ public class Messenger implements IncomingMessageHandler  {
             PublicKeysUtils.store(session.getDBUtils(), keys);
 
             handler.keysStored(keys.getIdentifier());
+
+            PublicKeysOutMessage km = new PublicKeysOutMessage(session, keys, session.getPublicKeys(),
+                    transport.requiresArmoredMessages());
+            transport.sendMessage(km);
 
         } catch (AuroraException ex) {
 

@@ -3,6 +3,7 @@ package co.naes.aurora;
 import co.naes.aurora.msg.OutMessage;
 import co.naes.aurora.msg.in.ConfInMessage;
 import co.naes.aurora.msg.in.PartInMessage;
+import co.naes.aurora.msg.in.PublicKeysInMessage;
 import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.key.OutKeyMessage;
 import co.naes.aurora.transport.AuroraTransport;
@@ -18,6 +19,8 @@ public class MockTransport implements AuroraTransport {
     private final List<byte[]> parts = new ArrayList<>();
 
     private final List<byte[]> confs = new ArrayList<>();
+
+    private final List<byte[]> publicKeys = new ArrayList<>();
 
     private MockTransport destination;
 
@@ -103,6 +106,16 @@ public class MockTransport implements AuroraTransport {
         }
         confs.removeAll(toRemove);
         toRemove.clear();
+
+        for (byte[] msg: publicKeys) {
+
+            if (messageHandler.messageReceived(new PublicKeysInMessage(msg))) {
+
+                toRemove.add(msg);
+            }
+        }
+        publicKeys.removeAll(toRemove);
+        toRemove.clear();
     }
 
     @Override
@@ -129,6 +142,12 @@ public class MockTransport implements AuroraTransport {
             case "Conf": {
 
                 confs.add(message.getCiphertext());
+
+            } break;
+
+            case "PK": {
+
+                publicKeys.add(message.getCiphertext());
 
             } break;
         }
