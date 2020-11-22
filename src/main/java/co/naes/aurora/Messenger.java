@@ -59,6 +59,8 @@ public class Messenger implements IncomingMessageHandler  {
 
     private final AuroraSession session;
 
+    private final DBUtils db;
+
     private final StatusHandler handler;
 
     private final String incomingTempPath;
@@ -104,6 +106,8 @@ public class Messenger implements IncomingMessageHandler  {
         this.session = session;
         this.handler = handler;
 
+        db = session.getDBUtils();
+
         incomingTempPath = confFolder + File.separator + "incoming";
 
         handler.self(this);
@@ -119,7 +123,7 @@ public class Messenger implements IncomingMessageHandler  {
 
     public boolean addFileToSend(PublicKeys recipient, String filePath) throws AuroraException {
 
-        if (!PublicKeysUtils.listIdentifiers(session.getDBUtils()).contains(recipient.getIdentifier())) {
+        if (!PublicKeysUtils.listIdentifiers(db).contains(recipient.getIdentifier())) {
 
             // recipient not found
             throw new AuroraException(String.format("Recipient '%s' not found", recipient.getIdentifier()));
@@ -129,9 +133,9 @@ public class Messenger implements IncomingMessageHandler  {
         try {
 
             Splitter sp = new Splitter(fileId, filePath);
-            OutgoingFilePO outgoingFile = new OutgoingFilePO(session.getDBUtils(), fileId, filePath, recipient.getIdentifier(), sp.getTotalParts());
+            OutgoingFilePO outgoingFile = new OutgoingFilePO(db, fileId, filePath, recipient.getIdentifier(), sp.getTotalParts());
             outgoingFile.save();
-            PartToSendPO.addAll(session.getDBUtils(), fileId, recipient.getIdentifier(), sp.getTotalParts());
+            PartToSendPO.addAll(db, fileId, recipient.getIdentifier(), sp.getTotalParts());
             sp.close();
 
             return true;
@@ -168,12 +172,12 @@ public class Messenger implements IncomingMessageHandler  {
         try {
 
             // load pending files
-            for (OutgoingFilePO pendingFile : OutgoingFilePO.getPending(session.getDBUtils())) {
+            for (OutgoingFilePO pendingFile : OutgoingFilePO.getPending(db)) {
 
-                PublicKeys recipient = PublicKeysUtils.get(session.getDBUtils(), pendingFile.getIdentifier());
+                PublicKeys recipient = PublicKeysUtils.get(db, pendingFile.getIdentifier());
 
                 // load parts to send
-                List<PartToSendPO> partsToSend = PartToSendPO.getNeverSent(session.getDBUtils(), pendingFile.getFileId(), recipient.getIdentifier());
+                List<PartToSendPO> partsToSend = PartToSendPO.getNeverSent(db, pendingFile.getFileId(), recipient.getIdentifier());
                 if (partsToSend.size() > MAX_PARTS_TO_SEND_PER_FILE) {
 
                     partsToSend = partsToSend.subList(0, MAX_PARTS_TO_SEND_PER_FILE);
@@ -203,7 +207,7 @@ public class Messenger implements IncomingMessageHandler  {
                 sp.close();
 
                 // mark parts as sent
-                PartToSendPO.markAsSent(session.getDBUtils(), sent, pendingFile.getFileId(), recipient.getIdentifier());
+                PartToSendPO.markAsSent(db, sent, pendingFile.getFileId(), recipient.getIdentifier());
             }
 
         } catch (AuroraException ex) {
@@ -219,7 +223,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         try {
 
-            PartToSendPO.decreaseCounters(session.getDBUtils());
+            PartToSendPO.decreaseCounters(db);
             transport.checkForMessages();
 
         } catch (AuroraException ex) {
@@ -267,19 +271,19 @@ public class Messenger implements IncomingMessageHandler  {
     private boolean processPartInMessage(PartInMessage message) throws AuroraException {
 
         Part part = message.getData();
-        PublicKeys sender = PublicKeysUtils.get(session.getDBUtils(), message.getSender().getPublicKey());
+        PublicKeys sender = PublicKeysUtils.get(db, message.getSender().getPublicKey());
 
         // check incoming file existence
-        IncomingFilePO incomingFile = IncomingFilePO.get(session.getDBUtils(), part.getId().getFileId(), sender.getIdentifier());
+        IncomingFilePO incomingFile = IncomingFilePO.get(db, part.getId().getFileId(), sender.getIdentifier());
         if (incomingFile == null) {
 
-            incomingFile = new IncomingFilePO(session.getDBUtils(), part.getId().getFileId(),
+            incomingFile = new IncomingFilePO(db, part.getId().getFileId(),
                     incomingTempPath + File.separator + part.getId().getFileId() + ".temp" ,
                     sender.getIdentifier(), part.getTotal());
             incomingFile.save();
 
             // track parts to come
-            PartToReceivePO.addAll(session.getDBUtils(), part.getId().getFileId(), sender.getIdentifier(), part.getTotal());
+            PartToReceivePO.addAll(db, part.getId().getFileId(), sender.getIdentifier(), part.getTotal());
 
         } else {
 
@@ -309,9 +313,9 @@ public class Messenger implements IncomingMessageHandler  {
         transport.sendMessage(conf);
 
         // remove pending part to receive
-        new PartToReceivePO(session.getDBUtils(), part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier()).delete();
+        new PartToReceivePO(db, part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier()).delete();
 
-        IncomingFilePO.markFilesAsComplete(session.getDBUtils());
+        IncomingFilePO.markFilesAsComplete(db);
         incomingFile.refreshCompleteStatus();
         if (incomingFile.isComplete()) {
 
@@ -319,7 +323,7 @@ public class Messenger implements IncomingMessageHandler  {
 
                 // move file to incoming directory
                 String newPath = String.format("%s%s%s",
-                        session.getDBUtils().getProperties().get(DBUtils.INCOMING_DIRECTORY), File.separator, part.getId().getFileId());
+                        db.getProperties().get(DBUtils.INCOMING_DIRECTORY), File.separator, part.getId().getFileId());
                 Files.move(
                         Paths.get(String.format("%s%s%s.temp", incomingTempPath, File.separator, part.getId().getFileId())),
                         Paths.get(newPath)
@@ -343,11 +347,11 @@ public class Messenger implements IncomingMessageHandler  {
 
         // confirm part in DB
         PartId partId = message.getData();
-        PublicKeys sender = PublicKeysUtils.get(session.getDBUtils(), message.getSender().getPublicKey());
+        PublicKeys sender = PublicKeysUtils.get(db, message.getSender().getPublicKey());
 
         logger.fine(String.format("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId()));
         handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier());
-        new PartToSendPO(session.getDBUtils(), partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier()).delete();
+        new PartToSendPO(db, partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier()).delete();
 
         // message processed successfully
         return true;
@@ -357,7 +361,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         if (handler.publicKeysReceived(message.getData().getIdentifier())) {
 
-            PublicKeysUtils.store(session.getDBUtils(), message.getData());
+            PublicKeysUtils.store(db, message.getData());
 
             handler.keysStored(message.getData().getIdentifier());
         }
@@ -379,7 +383,7 @@ public class Messenger implements IncomingMessageHandler  {
 
             PublicKeys keys = keyMessage.getPublicKeys(password);
 
-            PublicKeysUtils.store(session.getDBUtils(), keys);
+            PublicKeysUtils.store(db, keys);
 
             handler.keysStored(keys.getIdentifier());
 
@@ -398,6 +402,6 @@ public class Messenger implements IncomingMessageHandler  {
 
     public DBUtils getDBUtils() {
 
-        return session.getDBUtils();
+        return db;
     }
 }
