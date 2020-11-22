@@ -21,8 +21,10 @@ package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
+import co.naes.aurora.Messenger;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 public class IncomingFilePO {
 
@@ -36,7 +38,7 @@ public class IncomingFilePO {
 
     private final int totalParts;
 
-    private boolean complete;
+    private Timestamp completed;
 
     public static IncomingFilePO get(DBUtils db, String fileId, Identifier identifier) throws AuroraException {
 
@@ -53,7 +55,7 @@ public class IncomingFilePO {
             }
 
             return new IncomingFilePO(db, res.getString(1), res.getString(2),
-                    new Identifier(res.getString(3)), res.getInt(4), res.getBoolean(5));
+                    new Identifier(res.getString(3)), res.getInt(4), res.getTimestamp(5));
 
         } catch (SQLException ex) {
 
@@ -64,9 +66,11 @@ public class IncomingFilePO {
     public static void markFilesAsComplete(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.createStatement()) {
+             var st = conn.prepareStatement("UPDATE INCOMING_FILES INC SET COMPLETED = CURRENT_TIMESTAMP(), PATH = REPLACE(PATH, ?, '') " +
+                     "WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.IDENTIFIER = PS.IDENTIFIER LIMIT 1);")) {
 
-            st.execute("UPDATE INCOMING_FILES INC SET COMPLETE = TRUE WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.IDENTIFIER = PS.IDENTIFIER LIMIT 1);");
+            st.setString(1, Messenger.TEMP_FILE_EXTENSION);
+            st.execute();
 
         } catch (SQLException ex) {
 
@@ -74,19 +78,19 @@ public class IncomingFilePO {
         }
     }
 
-    private IncomingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts, boolean complete) {
+    private IncomingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts, Timestamp completed) {
 
         this.db = db;
         this.fileId = fileId;
         this.path = path;
         this.identifier = identifier;
         this.totalParts = totalParts;
-        this.complete = complete;
+        this.completed = completed;
     }
 
     public IncomingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts) {
 
-        this(db, fileId, path, identifier, totalParts, false);
+        this(db, fileId, path, identifier, totalParts, null);
     }
 
     public void save() throws AuroraException {
@@ -98,7 +102,7 @@ public class IncomingFilePO {
             st.setString(2, path);
             st.setString(3, identifier.serialise());
             st.setInt(4, totalParts);
-            st.setBoolean(5, complete);
+            st.setTimestamp(5, completed);
 
             st.execute();
 
@@ -111,7 +115,7 @@ public class IncomingFilePO {
     public void refreshCompleteStatus() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("SELECT COMPLETE FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
+             var st = conn.prepareStatement("SELECT COMPLETED FROM INCOMING_FILES WHERE FILE_ID = ? AND IDENTIFIER = ?")) {
 
             st.setString(1, fileId);
             st.setString(2, identifier.serialise());
@@ -121,7 +125,7 @@ public class IncomingFilePO {
                 throw new AuroraException("File not found in DB");
             }
 
-            complete = res.getBoolean(1);
+            completed = res.getTimestamp(1);
 
         } catch (SQLException ex) {
 
@@ -151,6 +155,6 @@ public class IncomingFilePO {
 
     public boolean isComplete() {
 
-        return complete;
+        return completed != null;
     }
 }

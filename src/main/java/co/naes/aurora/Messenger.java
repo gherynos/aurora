@@ -67,6 +67,8 @@ public class Messenger implements IncomingMessageHandler  {
 
     protected static final int MAX_PARTS_TO_SEND_PER_FILE = 5;
 
+    public static final String TEMP_FILE_EXTENSION = ".temp";
+
     public interface StatusHandler {  // NOPMD
 
         void self(Messenger messenger);
@@ -278,7 +280,7 @@ public class Messenger implements IncomingMessageHandler  {
         if (incomingFile == null) {
 
             incomingFile = new IncomingFilePO(db, part.getId().getFileId(),
-                    incomingTempPath + File.separator + part.getId().getFileId() + ".temp" ,
+                    incomingTempPath + File.separator + part.getId().getFileId() + TEMP_FILE_EXTENSION,
                     sender.getIdentifier(), part.getTotal());
             incomingFile.save();
 
@@ -325,8 +327,8 @@ public class Messenger implements IncomingMessageHandler  {
                 String newPath = String.format("%s%s%s",
                         db.getProperties().get(DBUtils.INCOMING_DIRECTORY), File.separator, part.getId().getFileId());
                 Files.move(
-                        Paths.get(String.format("%s%s%s.temp", incomingTempPath, File.separator, part.getId().getFileId())),
-                        Paths.get(newPath)
+                        Paths.get(String.format("%s%s%s%s", incomingTempPath, File.separator, part.getId().getFileId(),
+                                TEMP_FILE_EXTENSION)), Paths.get(newPath)
                 );
 
                 logger.fine(String.format("File %s complete", part.getId().getFileId()));
@@ -352,6 +354,8 @@ public class Messenger implements IncomingMessageHandler  {
         logger.fine(String.format("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId()));
         handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier());
         new PartToSendPO(db, partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier()).delete();
+
+        OutgoingFilePO.markFilesAsComplete(db);
 
         // message processed successfully
         return true;

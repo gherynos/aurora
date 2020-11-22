@@ -28,7 +28,9 @@
             <children>
               <component id="83dac" class="javax.swing.JTable" binding="incomingTable">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <fillsViewportHeight value="true"/>
+                </properties>
               </component>
             </children>
           </scrollpane>
@@ -51,7 +53,9 @@
             <children>
               <component id="b04c3" class="javax.swing.JTable" binding="outgoingTable">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <fillsViewportHeight value="true"/>
+                </properties>
               </component>
             </children>
           </scrollpane>
@@ -72,6 +76,7 @@
             <constraints/>
             <properties>
               <borderPainted value="false"/>
+              <focusable value="false"/>
               <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Send and Receive"/>
             </properties>
@@ -80,6 +85,7 @@
             <constraints/>
             <properties>
               <borderPainted value="false"/>
+              <focusable value="false"/>
               <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Settings"/>
             </properties>
@@ -88,6 +94,7 @@
             <constraints/>
             <properties>
               <borderPainted value="false"/>
+              <focusable value="false"/>
               <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Send Keys"/>
             </properties>
@@ -96,6 +103,7 @@
             <constraints/>
             <properties>
               <borderPainted value="false"/>
+              <focusable value="false"/>
               <margin top="5" left="5" bottom="5" right="5"/>
               <text value="Add file"/>
             </properties>

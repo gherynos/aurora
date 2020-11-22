@@ -21,8 +21,10 @@ package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
+import co.naes.aurora.Messenger;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +40,8 @@ public class OutgoingFilePO {
 
     private final int totalParts;
 
+    private final Timestamp completed;
+
     public static List<OutgoingFilePO> getPending(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
@@ -48,7 +52,7 @@ public class OutgoingFilePO {
             while (res.next()) {
 
                 out.add(new OutgoingFilePO(db, res.getString(1),  // NOPMD
-                        res.getString(2), new Identifier(res.getString(3)), res.getInt(4)));
+                        res.getString(2), new Identifier(res.getString(3)), res.getInt(4), res.getTimestamp(5)));
             }
 
             return out;
@@ -59,24 +63,46 @@ public class OutgoingFilePO {
         }
     }
 
-    public OutgoingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts) {
+    public static void markFilesAsComplete(DBUtils db) throws AuroraException {
+
+        try (var conn = db.getConnection();
+             var st = conn.prepareStatement("UPDATE OUTGOING_FILES OUT SET COMPLETED = CURRENT_TIMESTAMP(), PATH = REPLACE(PATH, ?, '') " +
+                     "WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_SEND PS WHERE OUT.FILE_ID = PS.FILE_ID AND OUT.IDENTIFIER = PS.IDENTIFIER LIMIT 1);")) {
+
+            st.setString(1, Messenger.TEMP_FILE_EXTENSION);
+            st.execute();
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while marking files as complete on the DB: " + ex.getMessage(), ex);
+        }
+    }
+
+    public OutgoingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts, Timestamp completed) {
 
         this.db = db;
         this.fileId = fileId;
         this.path = path;
         this.identifier = identifier;
         this.totalParts = totalParts;
+        this.completed = completed;
+    }
+
+    public OutgoingFilePO(DBUtils db, String fileId, String path, Identifier identifier, int totalParts) {
+
+        this(db, fileId, path, identifier, totalParts, null);
     }
 
     public void save() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?, ?)")) {
+             var st = conn.prepareStatement("INSERT INTO OUTGOING_FILES VALUES(?, ?, ?, ?, ?)")) {
 
             st.setString(1, fileId);
             st.setString(2, path);
             st.setString(3, identifier.serialise());
             st.setInt(4, totalParts);
+            st.setTimestamp(5, completed);
 
             st.execute();
 
@@ -104,5 +130,10 @@ public class OutgoingFilePO {
     public int getTotalParts() {
 
         return totalParts;
+    }
+
+    public Timestamp getCompleted() {
+
+        return completed;
     }
 }

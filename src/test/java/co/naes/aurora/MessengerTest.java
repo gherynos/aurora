@@ -5,6 +5,8 @@ import co.naes.aurora.db.PartToSendPO;
 import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.db.StatusUtils;
 import co.naes.aurora.parts.Splitter;
+import co.naes.aurora.ui.ReceivedFile;
+import co.naes.aurora.ui.SentFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,6 +133,22 @@ class MessengerTest {
         assertEquals(0, t2.getConfs().size());
         assertEquals(0, t2.getKeys().size());
 
+        assertEquals(0, StatusUtils.getReceivedFiles(db1).size());
+        List<ReceivedFile> received = StatusUtils.getReceivedFiles(db2);
+        assertEquals(1, received.size());
+        assertEquals(i1, received.get(0).asRow()[1]);
+        assertEquals("sample.bin", received.get(0).asRow()[2]);
+        assertEquals(tempDirUser2.toString() + File.separator + "incoming/sample.bin",
+                received.get(0).asRow()[3]);
+
+        assertEquals(0, StatusUtils.getSentFiles(db2).size());
+        List<SentFile> sent = StatusUtils.getSentFiles(db1);
+        assertEquals(1, sent.size());
+        assertEquals(i2, sent.get(0).asRow()[1]);
+        assertEquals("sample.bin", sent.get(0).asRow()[2]);
+        assertEquals(tempDirUser1.toString() + File.separator + "sample.bin",
+                sent.get(0).asRow()[3]);
+
         FileInputStream fin = new FileInputStream(tempDirUser2.resolve("sample.bin").toFile());
         byte[] data = new byte[fin.available()];
         fin.read(data);
@@ -199,6 +218,9 @@ class MessengerTest {
                 StatusUtils.getOutgoingFiles(db1).get(0).asRow());
 
         assertEquals(3, t2.getParts().size());
+
+        assertEquals(0, StatusUtils.getReceivedFiles(db1).size());
+        assertEquals(0, StatusUtils.getSentFiles(db2).size());
 
         m2.receive();
 

@@ -23,6 +23,8 @@ import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
 import co.naes.aurora.ui.IncomingFile;
 import co.naes.aurora.ui.OutgoingFile;
+import co.naes.aurora.ui.ReceivedFile;
+import co.naes.aurora.ui.SentFile;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -74,6 +76,50 @@ public final class StatusUtils {
         } catch (SQLException ex) {
 
             throw new AuroraException("Error while loading outgoing files: " + ex.getMessage(), ex);
+        }
+    }
+
+    public static List<ReceivedFile> getReceivedFiles(DBUtils db) throws AuroraException {
+
+        try (var conn = db.getConnection();
+             var st = conn.createStatement()) {
+
+            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM INCOMING_FILES WHERE COMPLETED IS NOT NULL");
+
+            List<ReceivedFile> out = new ArrayList<>();
+            while (res.next()) {
+
+                out.add(new ReceivedFile(res.getString(1), res.getString(2),  // NOPMD
+                        new Identifier(res.getString(3)), res.getTimestamp(4)));
+            }
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading received files: " + ex.getMessage(), ex);
+        }
+    }
+
+    public static List<SentFile> getSentFiles(DBUtils db) throws AuroraException {
+
+        try (var conn = db.getConnection();
+             var st = conn.createStatement()) {
+
+            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM OUTGOING_FILES WHERE COMPLETED IS NOT NULL");
+
+            List<SentFile> out = new ArrayList<>();
+            while (res.next()) {
+
+                out.add(new SentFile(res.getString(1), res.getString(2),  // NOPMD
+                        new Identifier(res.getString(3)), res.getTimestamp(4)));
+            }
+
+            return out;
+
+        } catch (SQLException ex) {
+
+            throw new AuroraException("Error while loading sent files: " + ex.getMessage(), ex);
         }
     }
 
