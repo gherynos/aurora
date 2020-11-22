@@ -32,6 +32,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,6 +87,8 @@ public class Settings extends JFrame {  // NOPMD
     private JTextField urlTextField;
     private JTextField codeTextField;
     private JButton authoriseButton;
+    private JButton openInBrowserButton;
+    private JButton stepsButton;
 
     private final DBUtils db;
     private final Properties main;
@@ -234,43 +238,52 @@ public class Settings extends JFrame {  // NOPMD
         smtpPasswordField = new JPasswordField();
         panel6.add(smtpPasswordField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel8 = new JPanel();
-        panel8.setLayout(new GridLayoutManager(7, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel8.setLayout(new GridLayoutManager(8, 2, new Insets(10, 10, 10, 10), -1, -1));
         tabbedPane.addTab("GMail", panel8);
         final JLabel label15 = new JLabel();
         label15.setText("Client ID:");
-        panel8.add(label15, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel8.add(label15, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer3 = new Spacer();
-        panel8.add(spacer3, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel8.add(spacer3, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         clientIdTextField = new JTextField();
-        panel8.add(clientIdTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel8.add(clientIdTextField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label16 = new JLabel();
         label16.setText("Client Secret:");
-        panel8.add(label16, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel8.add(label16, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         clientSecretPasswordField = new JPasswordField();
-        panel8.add(clientSecretPasswordField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel8.add(clientSecretPasswordField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel9 = new JPanel();
         panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel8.add(panel9, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel8.add(panel9, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         getUrlButton = new JButton();
         getUrlButton.setText("Get URL");
         panel9.add(getUrlButton);
-        final JLabel label17 = new JLabel();
-        label17.setText("Open in browser:");
-        panel8.add(label17, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         urlTextField = new JTextField();
         urlTextField.setEditable(false);
-        panel8.add(urlTextField, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label18 = new JLabel();
-        label18.setText("Received code:");
-        panel8.add(label18, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel8.add(urlTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label17 = new JLabel();
+        label17.setText("Received code:");
+        panel8.add(label17, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         codeTextField = new JTextField();
-        panel8.add(codeTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel8.add(codeTextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel10 = new JPanel();
         panel10.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel8.add(panel10, new GridConstraints(5, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel8.add(panel10, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         authoriseButton = new JButton();
         authoriseButton.setText("Authorise");
         panel10.add(authoriseButton);
+        openInBrowserButton = new JButton();
+        openInBrowserButton.setText("Open in browser:");
+        panel8.add(openInBrowserButton, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel8.add(panel11, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label18 = new JLabel();
+        label18.setText("The steps to obtain the values below can be found here:");
+        panel11.add(label18);
+        stepsButton = new JButton();
+        stepsButton.setText("Steps");
+        panel11.add(stepsButton);
         label1.setLabelFor(nameTextField);
         label2.setLabelFor(emailTextField);
         label4.setLabelFor(imapHostTextField);
@@ -302,7 +315,7 @@ public class Settings extends JFrame {  // NOPMD
         void settingsClosed(boolean saved);
     }
 
-    public Settings(DBUtils db, Component relativeTo, SettingsStatusHandler statusHandler) {
+    public Settings(DBUtils db, Properties projectProperties, Component relativeTo, SettingsStatusHandler statusHandler) {
 
         super("Settings");
 
@@ -377,6 +390,29 @@ public class Settings extends JFrame {  // NOPMD
             }
         });
 
+        addGMailActionListeners(URI.create(projectProperties.getProperty("stepsURL")));
+
+        setVisible(true);
+    }
+
+    private void addGMailActionListeners(URI stepsURL) {
+
+        stepsButton.addActionListener(e -> {
+
+            try {
+
+                Desktop desktop = Desktop.getDesktop();
+                desktop.browse(stepsURL);
+
+            } catch (IOException ex) {
+
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                JOptionPane.showMessageDialog(this, "Unable to open URL in browser:\n" + stepsURL,
+                        "Browser error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         getUrlButton.addActionListener(e -> {
 
             String res = checkGMailFields();
@@ -398,6 +434,30 @@ public class Settings extends JFrame {  // NOPMD
             }
         });
 
+        openInBrowserButton.addActionListener(e -> {
+
+            if (urlTextField.getText().isEmpty()) {
+
+                JOptionPane.showMessageDialog(this, "Please get the URL first", "URL error",
+                        JOptionPane.ERROR_MESSAGE);
+
+            } else {
+
+                try {
+
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.browse(URI.create(urlTextField.getText()));
+
+                } catch (IOException ex) {
+
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                    JOptionPane.showMessageDialog(this, "Unable to open URL in browser",
+                            "Browser error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         authoriseButton.addActionListener(e -> {
 
             if (codeTextField.getText().isEmpty()) {
@@ -414,6 +474,9 @@ public class Settings extends JFrame {  // NOPMD
 
                     authoriseButton.setEnabled(false);
 
+                    JOptionPane.showMessageDialog(this, "Authorisation successful",
+                            "Authorise", JOptionPane.INFORMATION_MESSAGE);
+
                 } catch (AuroraException ex) {
 
                     logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -423,8 +486,6 @@ public class Settings extends JFrame {  // NOPMD
                 }
             }
         });
-
-        setVisible(true);
     }
 
     private void populate() {

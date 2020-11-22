@@ -48,6 +48,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,9 +78,9 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
     private SendKeys sendKeys;
 
-    public MainFrame(String version) {
+    public MainFrame(Properties projectProperties) {
 
-        super("Aurora " + version);
+        super("Aurora " + projectProperties.getProperty("version"));
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
@@ -152,7 +153,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             if (settings == null) {
 
-                settings = new Settings(messenger.getDBUtils(), mainPanel, (boolean saved) -> settings = null);
+                settings = new Settings(messenger.getDBUtils(), projectProperties, mainPanel, (boolean saved) -> settings = null);
 
             } else {
 

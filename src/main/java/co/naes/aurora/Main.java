@@ -46,9 +46,11 @@ public class Main {  // NOPMD
 
     private Main(String cf) {
 
+        Properties projectProperties = new Properties();
         try {
 
             LogManager.getLogManager().readConfiguration(this.getClass().getResourceAsStream("/logging.properties"));
+            projectProperties.load(Main.class.getResourceAsStream("/project.properties"));
 
         } catch (IOException ex) {
 
@@ -102,37 +104,34 @@ public class Main {  // NOPMD
                 db.getProperties().containsKey(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN)) {
 
             // normal flow
-            showApplication(db);
+            showApplication(db, projectProperties);
 
         } else {
 
             // connection settings need to be entered before creating the other components
             final DBUtils fdb = db;
-            new Settings(db, null, saved -> {
+            new Settings(db, projectProperties, null, saved -> {
 
                 if (!saved) {
 
                     System.exit(-1);
                 }
 
-                showApplication(fdb);
+                showApplication(fdb, projectProperties);
             });
         }
     }
 
-    private void showApplication(DBUtils db) {
+    private void showApplication(DBUtils db, Properties projectProperties) {
 
         try {
 
-            Properties p = new Properties();
-            p.load(Main.class.getResourceAsStream("/project.properties"));
-
             AuroraSession session = new AuroraSession(db);
-            AuroraTransport transport = new MailTransport(db, p.getProperty("repository"));
-            var mainFrame = new MainFrame(p.getProperty("version"));
+            AuroraTransport transport = new MailTransport(db, projectProperties.getProperty("repository"));
+            var mainFrame = new MainFrame(projectProperties);
             new Messenger(transport, session, confFolder, mainFrame);
 
-        } catch (AuroraException | IOException ex) {
+        } catch (AuroraException ex) {
 
             JOptionPane.showMessageDialog(null, ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
