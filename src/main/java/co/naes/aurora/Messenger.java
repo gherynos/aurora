@@ -331,6 +331,10 @@ public class Messenger implements IncomingMessageHandler  {
                                 TEMP_FILE_EXTENSION)), Paths.get(newPath)
                 );
 
+                // update DB path
+                incomingFile.setPath(newPath);
+                incomingFile.save();
+
                 logger.fine(String.format("File %s complete", part.getId().getFileId()));
                 handler.fileComplete(part.getId().getFileId(), sender.getIdentifier(), newPath);
 

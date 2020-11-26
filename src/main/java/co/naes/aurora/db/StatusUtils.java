@@ -21,10 +21,10 @@ package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
-import co.naes.aurora.ui.IncomingFile;
-import co.naes.aurora.ui.OutgoingFile;
-import co.naes.aurora.ui.ReceivedFile;
-import co.naes.aurora.ui.SentFile;
+import co.naes.aurora.ui.vo.IncomingFileVO;
+import co.naes.aurora.ui.vo.OutgoingFileVO;
+import co.naes.aurora.ui.vo.ReceivedFileVO;
+import co.naes.aurora.ui.vo.SentFileVO;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,17 +32,17 @@ import java.util.List;
 
 public final class StatusUtils {
 
-    public static List<IncomingFile> getIncomingFiles(DBUtils db) throws AuroraException {
+    public static List<IncomingFileVO> getIncomingFiles(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             var res = st.executeQuery("SELECT INC.FILE_ID, INC.IDENTIFIER, INC.TOTAL_PARTS, COUNT(P.SEQUENCE) FROM INCOMING_FILES INC, PARTS_TO_RECEIVE P WHERE P.FILE_ID = INC.FILE_ID GROUP BY P.FILE_ID");
 
-            List<IncomingFile> out = new ArrayList<>();
+            List<IncomingFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new IncomingFile(res.getString(1),  // NOPMD
+                out.add(new IncomingFileVO(res.getString(1),  // NOPMD
                         new Identifier(res.getString(2)), res.getInt(4), res.getInt(3)));
             }
 
@@ -54,19 +54,19 @@ public final class StatusUtils {
         }
     }
 
-    public static List<OutgoingFile> getOutgoingFiles(DBUtils db) throws AuroraException {
+    public static List<OutgoingFileVO> getOutgoingFiles(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
             var res = st.executeQuery("SELECT OF.FILE_ID, OF.IDENTIFIER, OF.TOTAL_PARTS, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=TRUE GROUP BY FILE_ID) AS SENT, (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND WHERE FILE_ID=OF.FILE_ID AND SENT_ONCE=FALSE GROUP BY FILE_ID) AS TO_SEND FROM OUTGOING_FILES OF");
 
-            List<OutgoingFile> out = new ArrayList<>();
+            List<OutgoingFileVO> out = new ArrayList<>();
             while (res.next()) {
 
                 if (res.getObject(4) != null || res.getObject(5) != null) {
 
-                    out.add(new OutgoingFile(res.getString(1), new Identifier(res.getString(2)),  // NOPMD
+                    out.add(new OutgoingFileVO(res.getString(1), new Identifier(res.getString(2)),  // NOPMD
                             res.getInt(4), res.getInt(5), res.getInt(3)));
                 }
             }
@@ -79,17 +79,17 @@ public final class StatusUtils {
         }
     }
 
-    public static List<ReceivedFile> getReceivedFiles(DBUtils db) throws AuroraException {
+    public static List<ReceivedFileVO> getReceivedFiles(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM INCOMING_FILES WHERE COMPLETED IS NOT NULL");
+            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM INCOMING_FILES WHERE COMPLETED IS NOT NULL ORDER BY COMPLETED, IDENTIFIER, FILE_ID");
 
-            List<ReceivedFile> out = new ArrayList<>();
+            List<ReceivedFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new ReceivedFile(res.getString(1), res.getString(2),  // NOPMD
+                out.add(new ReceivedFileVO(res.getString(1), res.getString(2),  // NOPMD
                         new Identifier(res.getString(3)), res.getTimestamp(4)));
             }
 
@@ -101,17 +101,17 @@ public final class StatusUtils {
         }
     }
 
-    public static List<SentFile> getSentFiles(DBUtils db) throws AuroraException {
+    public static List<SentFileVO> getSentFiles(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
              var st = conn.createStatement()) {
 
-            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM OUTGOING_FILES WHERE COMPLETED IS NOT NULL");
+            var res = st.executeQuery("SELECT FILE_ID, PATH, IDENTIFIER, COMPLETED FROM OUTGOING_FILES WHERE COMPLETED IS NOT NULL ORDER BY COMPLETED, IDENTIFIER, FILE_ID");
 
-            List<SentFile> out = new ArrayList<>();
+            List<SentFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new SentFile(res.getString(1), res.getString(2),  // NOPMD
+                out.add(new SentFileVO(res.getString(1), res.getString(2),  // NOPMD
                         new Identifier(res.getString(3)), res.getTimestamp(4)));
             }
 

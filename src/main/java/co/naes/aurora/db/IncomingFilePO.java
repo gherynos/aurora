@@ -21,7 +21,6 @@ package co.naes.aurora.db;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
-import co.naes.aurora.Messenger;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -32,7 +31,7 @@ public class IncomingFilePO {
 
     private final String fileId;
 
-    private final String path;
+    private String path;
 
     private final Identifier identifier;
 
@@ -66,11 +65,10 @@ public class IncomingFilePO {
     public static void markFilesAsComplete(DBUtils db) throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("UPDATE INCOMING_FILES INC SET COMPLETED = CURRENT_TIMESTAMP(), PATH = REPLACE(PATH, ?, '') " +
-                     "WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.IDENTIFIER = PS.IDENTIFIER LIMIT 1);")) {
+             var st = conn.createStatement()) {
 
-            st.setString(1, Messenger.TEMP_FILE_EXTENSION);
-            st.execute();
+            st.execute("UPDATE INCOMING_FILES INC SET COMPLETED = CURRENT_TIMESTAMP() " +
+                    "WHERE NOT EXISTS (SELECT SEQUENCE FROM PARTS_TO_RECEIVE PS WHERE INC.FILE_ID = PS.FILE_ID AND INC.IDENTIFIER = PS.IDENTIFIER LIMIT 1);");
 
         } catch (SQLException ex) {
 
@@ -96,7 +94,7 @@ public class IncomingFilePO {
     public void save() throws AuroraException {
 
         try (var conn = db.getConnection();
-             var st = conn.prepareStatement("INSERT INTO INCOMING_FILES VALUES(?, ?, ?, ?, ?)")) {
+             var st = conn.prepareStatement("MERGE INTO INCOMING_FILES VALUES(?, ?, ?, ?, ?)")) {
 
             st.setString(1, fileId);
             st.setString(2, path);
@@ -141,6 +139,11 @@ public class IncomingFilePO {
     public String getPath() {
 
         return path;
+    }
+
+    public void setPath(String path) {
+
+        this.path = path;
     }
 
     public Identifier getIdentifier() {

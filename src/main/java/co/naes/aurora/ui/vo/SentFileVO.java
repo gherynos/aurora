@@ -17,33 +17,32 @@
  * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package co.naes.aurora.ui;
+package co.naes.aurora.ui.vo;
 
 import co.naes.aurora.Identifier;
 
-public class OutgoingFile {
+import java.sql.Timestamp;
+
+public class SentFileVO {
 
     private final String fileId;
 
+    private final String path;
+
     private final Identifier recipient;
 
-    private final int sent;
+    private final Timestamp completed;
 
-    private final int toSend;
-
-    private final int total;
-
-    public OutgoingFile(String fileId, Identifier recipient, int sent, int toSend, int total) {
+    public SentFileVO(String fileId, String path, Identifier recipient, Timestamp completed) {
 
         this.fileId = fileId;
+        this.path = path;
         this.recipient = recipient;
-        this.sent = sent;
-        this.toSend = toSend;
-        this.total = total;
+        this.completed = completed;
     }
 
     public Object[] asRow() {
 
-        return new Object[]{fileId, recipient, total - (sent + toSend), toSend, total};
+        return new Object[]{completed, recipient, fileId, path};
     }
 }

@@ -17,11 +17,11 @@
  * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package co.naes.aurora.ui;
+package co.naes.aurora.ui.vo;
 
 import co.naes.aurora.Identifier;
 
-public class IncomingFile {
+public class IncomingFileVO {
 
     private final String fileId;
 
@@ -31,7 +31,7 @@ public class IncomingFile {
 
     private final int total;
 
-    public IncomingFile(String fileId, Identifier sender, int missing, int total) {
+    public IncomingFileVO(String fileId, Identifier sender, int missing, int total) {
 
         this.fileId = fileId;
         this.sender = sender;

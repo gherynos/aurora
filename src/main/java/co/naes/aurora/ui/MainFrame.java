@@ -30,8 +30,12 @@ import co.naes.aurora.ui.icons.FileIcon;
 import co.naes.aurora.ui.icons.KeyIcon;
 import co.naes.aurora.ui.icons.RefreshIcon;
 import co.naes.aurora.ui.icons.SettingsIcon;
+import co.naes.aurora.ui.vo.IncomingFileVO;
+import co.naes.aurora.ui.vo.OutgoingFileVO;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -66,6 +70,8 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     private JButton settingsButton;
     private JButton sendKeysButton;
     private JButton addFileButton;
+    private JButton receivedButton;
+    private JButton sentButton;
 
     private final DefaultTableModel incomingModel;
     private final DefaultTableModel outgoingModel;
@@ -75,6 +81,10 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
     private final StatusModal statusModal;
 
     private Settings settings;
+
+    private CompletedItems receivedFiles;
+
+    private CompletedItems sentFiles;
 
     private SendKeys sendKeys;
 
@@ -88,7 +98,6 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         pack();
         setLocationRelativeTo(null);
         loadButtonIcons();
-        setVisible(true);
 
         statusModal = new StatusModal(this, "Aurora");
 
@@ -129,7 +138,38 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         outgoingTable.setModel(outgoingModel);
 
         // buttons actions
-        final JFrame me = this;
+        addToolBarActionListeners(projectProperties);
+        addItemsActionListeners();
+
+        setVisible(true);
+    }
+
+    private JFrame self() {
+
+        return this;
+    }
+
+    private void loadButtonIcons() {
+
+        sendAndReceiveButton.setIcon(new RefreshIcon());
+        sendAndReceiveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        sendAndReceiveButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        settingsButton.setIcon(new SettingsIcon());
+        settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        sendKeysButton.setIcon(new KeyIcon());
+        sendKeysButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        sendKeysButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        addFileButton.setIcon(new FileIcon());
+        addFileButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
+    }
+
+    private void addToolBarActionListeners(Properties projectProperties) {
+
         sendAndReceiveButton.addActionListener(e -> new Thread(() -> {
 
             sendAndReceiveButton.setEnabled(false);
@@ -149,6 +189,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
             sendAndReceiveButton.setEnabled(true);
 
         }).start());
+
         settingsButton.addActionListener(e -> {
 
             if (settings == null) {
@@ -160,6 +201,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                 settings.requestFocus();
             }
         });
+
         sendKeysButton.addActionListener(e -> {
 
             if (sendKeys == null) {
@@ -186,7 +228,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                             } finally {
 
                                 statusModal.hide();
-                                statusModal.setRelativeTo(me);
+                                statusModal.setRelativeTo(self());
                             }
 
                         }).start();
@@ -204,6 +246,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
                 sendKeys.requestFocus();
             }
         });
+
         addFileButton.addActionListener(e -> {
 
             try {
@@ -234,23 +277,51 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         });
     }
 
-    private void loadButtonIcons() {
+    private void addItemsActionListeners() {
 
-        sendAndReceiveButton.setIcon(new RefreshIcon());
-        sendAndReceiveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        sendAndReceiveButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        receivedButton.addActionListener(e -> {
 
-        settingsButton.setIcon(new SettingsIcon());
-        settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
+            try {
 
-        sendKeysButton.setIcon(new KeyIcon());
-        sendKeysButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        sendKeysButton.setHorizontalTextPosition(SwingConstants.CENTER);
+                if (receivedFiles == null) {
 
-        addFileButton.setIcon(new FileIcon());
-        addFileButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
+                    receivedFiles = new CompletedItems(this, () -> receivedFiles = null);
+
+                } else {
+
+                    receivedFiles.requestFocus();
+                }
+                receivedFiles.displayReceivedFiles(StatusUtils.getReceivedFiles(messenger.getDBUtils()));
+
+            } catch (AuroraException ex) {
+
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                showError("Unable to load received files");
+            }
+        });
+
+        sentButton.addActionListener(e -> {
+
+            try {
+
+                if (sentFiles == null) {
+
+                    sentFiles = new CompletedItems(this, () -> sentFiles = null);
+
+                } else {
+
+                    sentFiles.requestFocus();
+                }
+                sentFiles.displaySentFiles(StatusUtils.getSentFiles(messenger.getDBUtils()));
+
+            } catch (AuroraException ex) {
+
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+
+                showError("Unable to load sent files");
+            }
+        });
     }
 
     private void updateTables() {
@@ -258,14 +329,14 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         try {
 
             incomingModel.setRowCount(0);
-            for (IncomingFile iFile : StatusUtils.getIncomingFiles(messenger.getDBUtils())) {
+            for (IncomingFileVO iFile : StatusUtils.getIncomingFiles(messenger.getDBUtils())) {
 
                 incomingModel.addRow(iFile.asRow());
             }
             incomingModel.fireTableDataChanged();
 
             outgoingModel.setRowCount(0);
-            for (OutgoingFile oFile : StatusUtils.getOutgoingFiles(messenger.getDBUtils())) {
+            for (OutgoingFileVO oFile : StatusUtils.getOutgoingFiles(messenger.getDBUtils())) {
 
                 outgoingModel.addRow(oFile.asRow());
             }
@@ -431,7 +502,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         mainPanel.setMinimumSize(new Dimension(677, 586));
         mainPanel.setPreferredSize(new Dimension(677, 586));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 10), -1, -1));
+        panel1.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
         mainPanel.add(panel1, new GridConstraints(1, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         panel1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Incoming files", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JScrollPane scrollPane1 = new JScrollPane();
@@ -440,14 +511,30 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         incomingTable.setFillsViewportHeight(true);
         scrollPane1.setViewportView(incomingTable);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 10), -1, -1));
-        mainPanel.add(panel2, new GridConstraints(2, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outgoing files", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        receivedButton = new JButton();
+        receivedButton.setText("Received files");
+        panel2.add(receivedButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel2.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
+        mainPanel.add(panel3, new GridConstraints(2, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outgoing files", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel2.add(scrollPane2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel3.add(scrollPane2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         outgoingTable = new JTable();
         outgoingTable.setFillsViewportHeight(true);
         scrollPane2.setViewportView(outgoingTable);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.add(panel4, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        sentButton = new JButton();
+        sentButton.setText("Sent files");
+        panel4.add(sentButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel4.add(spacer2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JToolBar toolBar1 = new JToolBar();
         toolBar1.setFloatable(false);
         mainPanel.add(toolBar1, new GridConstraints(0, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 20), null, 0, false));
@@ -475,14 +562,14 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         addFileButton.setMargin(new Insets(5, 5, 5, 5));
         addFileButton.setText("Add file");
         toolBar1.add(addFileButton);
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(1, 1, new Insets(8, 8, 8, 8), -1, -1));
-        mainPanel.add(panel3, new GridConstraints(3, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        panel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new GridLayoutManager(1, 1, new Insets(8, 8, 8, 8), -1, -1));
+        mainPanel.add(panel5, new GridConstraints(3, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel5.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         statusLabel = new JLabel();
         statusLabel.setForeground(new Color(-10000537));
         statusLabel.setText(" ");
-        panel3.add(statusLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel5.add(statusLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

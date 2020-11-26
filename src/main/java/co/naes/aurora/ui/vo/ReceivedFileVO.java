@@ -17,13 +17,13 @@
  * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package co.naes.aurora.ui;
+package co.naes.aurora.ui.vo;
 
 import co.naes.aurora.Identifier;
 
 import java.sql.Timestamp;
 
-public class ReceivedFile {
+public class ReceivedFileVO {
 
     private final String fileId;
 
@@ -33,7 +33,7 @@ public class ReceivedFile {
 
     private final Timestamp completed;
 
-    public ReceivedFile(String fileId, String path, Identifier sender, Timestamp completed) {
+    public ReceivedFileVO(String fileId, String path, Identifier sender, Timestamp completed) {
 
         this.fileId = fileId;
         this.path = path;

@@ -5,8 +5,8 @@ import co.naes.aurora.db.PartToSendPO;
 import co.naes.aurora.db.PublicKeysUtils;
 import co.naes.aurora.db.StatusUtils;
 import co.naes.aurora.parts.Splitter;
-import co.naes.aurora.ui.ReceivedFile;
-import co.naes.aurora.ui.SentFile;
+import co.naes.aurora.ui.vo.ReceivedFileVO;
+import co.naes.aurora.ui.vo.SentFileVO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -134,15 +134,15 @@ class MessengerTest {
         assertEquals(0, t2.getKeys().size());
 
         assertEquals(0, StatusUtils.getReceivedFiles(db1).size());
-        List<ReceivedFile> received = StatusUtils.getReceivedFiles(db2);
+        List<ReceivedFileVO> received = StatusUtils.getReceivedFiles(db2);
         assertEquals(1, received.size());
         assertEquals(i1, received.get(0).asRow()[1]);
         assertEquals("sample.bin", received.get(0).asRow()[2]);
-        assertEquals(tempDirUser2.toString() + File.separator + "incoming/sample.bin",
+        assertEquals(tempDirUser2.toString() + File.separator + "sample.bin",
                 received.get(0).asRow()[3]);
 
         assertEquals(0, StatusUtils.getSentFiles(db2).size());
-        List<SentFile> sent = StatusUtils.getSentFiles(db1);
+        List<SentFileVO> sent = StatusUtils.getSentFiles(db1);
         assertEquals(1, sent.size());
         assertEquals(i2, sent.get(0).asRow()[1]);
         assertEquals("sample.bin", sent.get(0).asRow()[2]);

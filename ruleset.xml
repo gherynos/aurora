@@ -20,17 +20,17 @@
     </rule>
     <rule ref="category/java/codestyle.xml/AvoidDollarSigns">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
     <rule ref="category/java/codestyle.xml/MethodNamingConventions">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
     <rule ref="category/java/codestyle.xml/UseUnderscoresInNumericLiterals">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
 
@@ -46,12 +46,12 @@
     </rule>
     <rule ref="category/java/design.xml/NcssCount">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
     <rule ref="category/java/design.xml/ExcessiveMethodLength">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
 
@@ -61,7 +61,7 @@
     </rule>
     <rule ref="category/java/errorprone.xml/NonStaticInitializer">
         <properties>
-            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings')]" />
+            <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
 
