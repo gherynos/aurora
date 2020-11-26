@@ -90,7 +90,7 @@ public class Main {  // NOPMD
 
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
 
-                JOptionPane.showMessageDialog(null, "Unable to unlock DB: wrong password?",
+                JOptionPane.showMessageDialog(null, "Unable load the DB: wrong version or password?",
                         "Error", JOptionPane.ERROR_MESSAGE);
                 System.exit(-1);
             }

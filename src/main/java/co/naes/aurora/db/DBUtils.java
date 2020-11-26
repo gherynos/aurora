@@ -29,6 +29,8 @@ import java.util.Properties;
 
 public final class DBUtils {
 
+    public static final int DB_VERSION = 1;
+
     public static final String SESSION_EMAIL_ADDRESS = "aurora.session.email";
     public static final String SESSION_PUBLIC_KEY = "aurora.session.publickey";
     public static final String SESSION_SECRET_KEY = "aurora.session.secretkey";
@@ -70,8 +72,15 @@ public final class DBUtils {
         try (var conn = getConnection();
              var st = conn.createStatement()) {
 
-            var rs = conn.getMetaData().getTables("", "", "PROPERTIES", null);
+            var rs = conn.getMetaData().getTables("", "", "DB_VERSION", null);
             if (rs.next()) {
+
+                // check DB version
+                var ver = st.executeQuery("SELECT VALUE FROM DB_VERSION");
+                if (!ver.next() || ver.getInt(1) != DB_VERSION) {
+
+                    throw new AuroraException("Wrong DB version!");
+                }
 
                 // load properties
                 var props = st.executeQuery("SELECT * FROM PROPERTIES");
@@ -90,6 +99,7 @@ public final class DBUtils {
             } else {
 
                 // create tables
+                st.execute("CREATE TABLE DB_VERSION (VALUE INTEGER PRIMARY KEY);");
                 st.execute("CREATE TABLE PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE MAIL_PROPERTIES (NAME VARCHAR PRIMARY KEY, VALUE VARCHAR);");
                 st.execute("CREATE TABLE PUBLIC_KEYS (IDENTIFIER VARCHAR PRIMARY KEY, ENCRYPTION VARCHAR, SIGNATURE VARCHAR);");
@@ -97,6 +107,8 @@ public final class DBUtils {
                 st.execute("CREATE TABLE PARTS_TO_SEND (SEQUENCE INT, FILE_ID VARCHAR, IDENTIFIER VARCHAR, SENT_ONCE BOOL, COUNTER INT, CONSTRAINT PK PRIMARY KEY (SEQUENCE, FILE_ID, IDENTIFIER), CONSTRAINT FK_PS_FILE FOREIGN KEY(FILE_ID) REFERENCES OUTGOING_FILES(FILE_ID), CONSTRAINT FK_PS_IDENTIFIER FOREIGN KEY(IDENTIFIER) REFERENCES OUTGOING_FILES(IDENTIFIER));");
                 st.execute("CREATE TABLE INCOMING_FILES (FILE_ID VARCHAR, PATH VARCHAR, IDENTIFIER VARCHAR, TOTAL_PARTS INT, COMPLETED TIMESTAMP, CONSTRAINT PK_IF PRIMARY KEY (FILE_ID, IDENTIFIER), CONSTRAINT FK_INC_IDENTIFIER FOREIGN KEY(IDENTIFIER) REFERENCES PUBLIC_KEYS(IDENTIFIER));");
                 st.execute("CREATE TABLE PARTS_TO_RECEIVE (SEQUENCE INT, FILE_ID VARCHAR, IDENTIFIER VARCHAR, CONSTRAINT PK_PR PRIMARY KEY (SEQUENCE, FILE_ID, IDENTIFIER), CONSTRAINT FK_PR_FILE FOREIGN KEY(FILE_ID) REFERENCES INCOMING_FILES(FILE_ID), CONSTRAINT FK_PR_IDENTIFIER FOREIGN KEY(IDENTIFIER) REFERENCES INCOMING_FILES(IDENTIFIER));");
+
+                st.execute(String.format("INSERT INTO DB_VERSION (VALUE) VALUES(%d)", DB_VERSION));
             }
 
         } catch (SQLException ex) {
