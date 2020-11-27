@@ -27,4 +27,6 @@ jobs:
           java-version: 11
           server-id: github-gherynos-libsaltpack-jni
       - name: Build with Maven
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: mvn -B package --file pom.xml
