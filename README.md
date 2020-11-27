@@ -1,6 +1,7 @@
 # Aurora
 
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+![Java CI with Maven](https://github.com/gherynos/aurora/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 A simple software to send and receive big files in chunks using IMAP, SMTP and asymmetrical encryption.
 
