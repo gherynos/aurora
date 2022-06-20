@@ -5,6 +5,4 @@ hs_err*
 
 libsaltpack-jni*
 
-pmd.cache
-
 .DS_Store

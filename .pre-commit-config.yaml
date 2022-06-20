@@ -4,8 +4,8 @@ default_language_version:
   python: python3.7
 exclude: (CMakeFiles|cmake_modules|docs|target)\/
 repos:
-  - repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
@@ -18,8 +18,8 @@ repos:
         args:
           - --autofix
       - id: detect-private-key
-  - repo: git://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.7
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.2.0
     hooks:
       - id: forbid-tabs
         exclude_types:
@@ -31,17 +31,18 @@ repos:
           - css
           - svg
         exclude: binary|\.bin$
-  - repo: git://github.com/igorshubovych/markdownlint-cli
-    rev: v0.22.0
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.31.1
     hooks:
       - id: markdownlint
-  - repo: git://github.com/adrienverge/yamllint
-    rev: v1.20.0
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.26.3
     hooks:
       - id: yamllint
-  - repo: https://github.com/gherynos/pre-commit-java
-    rev: v0.1.0
+  - repo: local
     hooks:
       - id: pmd
-        exclude: /test/
-        args: ["-R", "ruleset.xml", "-cache", "pmd.cache"]
+        name: pmd
+        language: system
+        entry: mvn pmd:check
+        pass_filenames: false
