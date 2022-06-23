@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -83,7 +83,7 @@ public class PartToSendPO {
             var res = st.executeQuery();
             while (res.next()) {
 
-                out.add(new PartToSendPO(db, res.getInt(1), res.getString(2),  // NOPMD
+                out.add(new PartToSendPO(db, res.getInt(1), res.getString(2),
                         new Identifier(res.getString(3)), res.getBoolean(4), res.getInt(5)));
             }
 

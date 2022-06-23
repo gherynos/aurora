@@ -6,3 +6,6 @@ hs_err*
 libsaltpack-jni*
 
 .DS_Store
+
+pmd.cache
+.vscode

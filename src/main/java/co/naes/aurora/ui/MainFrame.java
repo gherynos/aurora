@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -21,6 +21,7 @@ package co.naes.aurora.ui;
 
 import co.naes.aurora.AuroraException;
 import co.naes.aurora.Identifier;
+import co.naes.aurora.LogUtils;
 import co.naes.aurora.Messenger;
 import co.naes.aurora.PublicKeys;
 import co.naes.aurora.db.PublicKeysUtils;
@@ -53,12 +54,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MainFrame extends JFrame implements Messenger.StatusHandler {  // NOPMD
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private static final int MAX_STATUS_LENGTH = 100;
 
@@ -168,7 +167,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
-    private void addToolBarActionListeners(Properties projectProperties) {
+    private void addToolBarActionListeners(Properties projectProperties) {  // NOPMD
 
         sendAndReceiveButton.addActionListener(e -> new Thread(() -> {
 
@@ -221,7 +220,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
                             } catch (AuroraException ex) {
 
-                                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                                logUtils.logError(ex);
 
                                 showError("Unable to send keys to recipient");
 
@@ -270,7 +269,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 showError("Unable to load recipients");
             }
@@ -295,7 +294,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 showError("Unable to load received files");
             }
@@ -317,7 +316,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 showError("Unable to load sent files");
             }
@@ -344,7 +343,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
         } catch (AuroraException ex) {
 
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            logUtils.logError(ex);
 
             showError("Unable to load files status");
         }

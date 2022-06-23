@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -51,7 +51,7 @@ public class OutgoingFilePO {
             var res = st.executeQuery("SELECT OF.* FROM OUTGOING_FILES OF WHERE (SELECT COUNT(SEQUENCE) FROM PARTS_TO_SEND PS WHERE PS.FILE_ID = OF.FILE_ID AND PS.IDENTIFIER = OF.IDENTIFIER) > 0;");
             while (res.next()) {
 
-                out.add(new OutgoingFilePO(db, res.getString(1),  // NOPMD
+                out.add(new OutgoingFilePO(db, res.getString(1),
                         res.getString(2), new Identifier(res.getString(3)), res.getInt(4), res.getTimestamp(5)));
             }
 

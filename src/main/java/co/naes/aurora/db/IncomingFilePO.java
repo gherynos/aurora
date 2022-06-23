@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *

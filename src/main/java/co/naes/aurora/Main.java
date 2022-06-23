@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -34,13 +34,11 @@ import javax.swing.UIManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {  // NOPMD
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private final String confFolder;
 
@@ -57,14 +55,7 @@ public class Main {  // NOPMD
             ex.printStackTrace();  // NOPMD
         }
 
-        if (cf == null) {
-
-            confFolder = String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
-
-        } else {
-
-            confFolder = cf;
-        }
+        confFolder = cf != null ? cf : String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
 
         // ask for db password
         boolean dbExists = DBUtils.exists(confFolder);
@@ -88,7 +79,7 @@ public class Main {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 JOptionPane.showMessageDialog(null, "Unable load the DB: wrong version or password?",
                         "Error", JOptionPane.ERROR_MESSAGE);

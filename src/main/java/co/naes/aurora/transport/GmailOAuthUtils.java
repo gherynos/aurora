@@ -1,6 +1,26 @@
+/*
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
+ *
+ * This file is part of Aurora.
+ *
+ * Aurora is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Aurora is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package co.naes.aurora.transport;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.LogUtils;
 import co.naes.aurora.db.DBUtils;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
@@ -23,13 +43,12 @@ import org.dmfs.rfc3986.uris.LazyUri;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import static org.dmfs.oauth2.client.utils.Parameters.STATE;
 
 public class GmailOAuthUtils {
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
 
@@ -111,7 +130,7 @@ public class GmailOAuthUtils {
             long exp = Long.parseLong(main.getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION));
             if (exp <= System.currentTimeMillis()) {
 
-                logger.finer("Refreshing Gmail access token");
+                logUtils.logFine("Refreshing Gmail access token");
 
                 OAuth2AccessToken token = new OAuthToken(
                         main.getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN),

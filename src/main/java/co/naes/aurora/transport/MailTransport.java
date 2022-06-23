@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -20,6 +20,7 @@
 package co.naes.aurora.transport;  // NOPMD
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.LogUtils;
 import co.naes.aurora.db.DBUtils;
 import co.naes.aurora.msg.key.InKeyMessage;
 import co.naes.aurora.msg.InMessage;
@@ -49,11 +50,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.Properties;
 import java.util.Random;
-import java.util.logging.Logger;
 
 public class MailTransport implements AuroraTransport {
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private static final String HEADER = "X-Aurora-Type";
     private static final String HEADER_KEY = "Key";
@@ -250,7 +250,7 @@ public class MailTransport implements AuroraTransport {
                     String[] header = message.getHeader(HEADER);
                     if (header == null) {
 
-                        logger.finer(String.format("Discarded message %d", message.getMessageNumber()));
+                        logUtils.logFine(String.format("Discarded message %d", message.getMessageNumber()));
 
                     } else {
 
@@ -261,12 +261,12 @@ public class MailTransport implements AuroraTransport {
                         if (start == -1 || end == -1) {
 
                             // unable to parse message content
-                            logger.warning(String.format("Unable to parse message content '%s'", content));
+                            logUtils.logWarning(String.format("Unable to parse message content '%s'", content));
                             continue;
                         }
 
                         content = content.substring(start, end + 38);
-                        if (header[0].equals(HEADER_KEY)) {
+                        if (HEADER_KEY.equals(header[0])) {
 
                             InternetAddress from = (InternetAddress) message.getFrom()[0];
                             String sender = String.format("%s - %s", from.getPersonal(), from.getAddress());
@@ -288,7 +288,7 @@ public class MailTransport implements AuroraTransport {
                             } catch (InvalidParameterException | SecurityException | ReflectiveOperationException ex) {
 
                                 // unknown identifier
-                                logger.warning(String.format("Unknow message identifier '%s'", header[0]));
+                                logUtils.logWarning(String.format("Unknow message identifier '%s'", header[0]));
                             }
                         }
                     }

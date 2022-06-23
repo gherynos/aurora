@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -42,7 +42,7 @@ public final class StatusUtils {
             List<IncomingFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new IncomingFileVO(res.getString(1),  // NOPMD
+                out.add(new IncomingFileVO(res.getString(1),
                         new Identifier(res.getString(2)), res.getInt(4), res.getInt(3)));
             }
 
@@ -89,7 +89,7 @@ public final class StatusUtils {
             List<ReceivedFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new ReceivedFileVO(res.getString(1), res.getString(2),  // NOPMD
+                out.add(new ReceivedFileVO(res.getString(1), res.getString(2),
                         new Identifier(res.getString(3)), res.getTimestamp(4)));
             }
 
@@ -111,7 +111,7 @@ public final class StatusUtils {
             List<SentFileVO> out = new ArrayList<>();
             while (res.next()) {
 
-                out.add(new SentFileVO(res.getString(1), res.getString(2),  // NOPMD
+                out.add(new SentFileVO(res.getString(1), res.getString(2),
                         new Identifier(res.getString(3)), res.getTimestamp(4)));
             }
 

@@ -56,7 +56,7 @@
     </rule>
 
     <rule ref="category/java/errorprone.xml">
-        <exclude name="DoNotCallSystemExit" />
+        <exclude name="DoNotTerminateVM" />
         <exclude name="BeanMembersShouldSerialize" />
     </rule>
     <rule ref="category/java/errorprone.xml/NonStaticInitializer">
@@ -68,6 +68,8 @@
     <rule ref="category/java/multithreading.xml">
         <exclude name="DoNotUseThreads" />
     </rule>
-    <rule ref="category/java/performance.xml" />
+    <rule ref="category/java/performance.xml">
+        <exclude name="AvoidInstantiatingObjectsInLoops" />
+    </rule>
     <rule ref="category/java/security.xml" />
 </ruleset>

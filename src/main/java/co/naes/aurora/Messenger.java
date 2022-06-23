@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -48,12 +48,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Messenger implements IncomingMessageHandler  {
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private final AuroraTransport transport;
 
@@ -147,7 +145,7 @@ public class Messenger implements IncomingMessageHandler  {
             if (ex.getCause() instanceof JdbcSQLIntegrityConstraintViolationException) {
 
                 // file already added
-                logger.fine(String.format("File '%s' for recipient '%s' already added", fileId, recipient.getIdentifier()));
+                logUtils.logFine("File '%s' for recipient '%s' already added", fileId, recipient.getIdentifier());
                 return false;
 
             } else {
@@ -159,7 +157,7 @@ public class Messenger implements IncomingMessageHandler  {
 
     public void sendKeys(Identifier recipientIdentifier) throws AuroraException {
 
-        logger.fine("Sending key message...");
+        logUtils.logFine("Sending key message...");
 
         OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, transport.requiresArmoredMessages());
         transport.sendKeyMessage(km);
@@ -169,7 +167,7 @@ public class Messenger implements IncomingMessageHandler  {
 
     public void send() {
 
-        logger.fine("Sending messages...");
+        logUtils.logFine("Sending messages...");
 
         try {
 
@@ -193,7 +191,7 @@ public class Messenger implements IncomingMessageHandler  {
                     try {
 
                         // send part message
-                        logger.fine(String.format("Sending part %d for %s", partToSend.getSequenceNumber(), pendingFile.getFileId()));
+                        logUtils.logFine("Sending part %d for %s", partToSend.getSequenceNumber(), pendingFile.getFileId());
                         handler.sendingPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
                         PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()),   // NOPMD
                                 transport.requiresArmoredMessages());
@@ -202,7 +200,7 @@ public class Messenger implements IncomingMessageHandler  {
 
                     } catch (AuroraException ex) {
 
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
+                        logUtils.logError(ex);
                         handler.unableToSendPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
                     }
                 }
@@ -214,14 +212,14 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            logUtils.logError(ex);
             handler.errorsWhileSendingMessages(ex.getMessage());
         }
     }
 
     public void receive() {
 
-        logger.fine("Receiving messages...");
+        logUtils.logFine("Receiving messages...");
 
         try {
 
@@ -230,7 +228,7 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            logUtils.logError(ex);
             handler.errorsWhileReceivingMessages(ex.getMessage());
         }
     }
@@ -257,13 +255,13 @@ public class Messenger implements IncomingMessageHandler  {
             } else {
 
                 // unknown message type
-                logger.warning(String.format("Unknown message type '%s'", message.getClass()));
+                logUtils.logWarning("Unknown message type '%s'", message.getClass());
                 return false;
             }
 
         } catch (AuroraException ex) {
 
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            logUtils.logError(ex);
             handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
         }
 
@@ -292,7 +290,7 @@ public class Messenger implements IncomingMessageHandler  {
             if (incomingFile.isComplete()) {
 
                 // part discarded
-                logger.fine(String.format("Discarded part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId()));
+                logUtils.logFine("Discarded part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId());
                 handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
 
                 // send confirmation regardless
@@ -304,7 +302,7 @@ public class Messenger implements IncomingMessageHandler  {
         }
 
         // store part in temporary file
-        logger.fine(String.format("Processing part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId()));
+        logUtils.logFine("Processing part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId());
         handler.processingPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
         Joiner joiner = new Joiner(incomingFile.getPath());
         joiner.putPart(part);
@@ -335,12 +333,12 @@ public class Messenger implements IncomingMessageHandler  {
                 incomingFile.setPath(newPath);
                 incomingFile.save();
 
-                logger.fine(String.format("File %s complete", part.getId().getFileId()));
+                logUtils.logFine("File %s complete", part.getId().getFileId());
                 handler.fileComplete(part.getId().getFileId(), sender.getIdentifier(), newPath);
 
             } catch (IOException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
                 handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
             }
         }
@@ -355,7 +353,7 @@ public class Messenger implements IncomingMessageHandler  {
         PartId partId = message.getData();
         PublicKeys sender = PublicKeysUtils.get(db, message.getSender().getPublicKey());
 
-        logger.fine(String.format("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId()));
+        logUtils.logFine("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId());
         handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier());
         new PartToSendPO(db, partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier()).delete();
 

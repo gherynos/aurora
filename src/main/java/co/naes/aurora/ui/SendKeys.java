@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -21,6 +21,8 @@ package co.naes.aurora.ui;
 
 import co.naes.aurora.ConstellationsHelper;
 import co.naes.aurora.Identifier;
+import co.naes.aurora.LogUtils;
+
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -29,13 +31,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Logger;
 
 public class SendKeys extends JFrame {
 
     private static final long serialVersionUID = 2387592834719231L;
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private JPanel mainPanel;
     private JTextField emailTextField;

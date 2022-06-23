@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -108,7 +108,7 @@ public final class PublicKeysUtils {
             var res = st.executeQuery("SELECT IDENTIFIER FROM PUBLIC_KEYS");
             while (res.next()) {
 
-                out.add(new Identifier(res.getString(1)));  // NOPMD
+                out.add(new Identifier(res.getString(1)));
             }
 
             return out;

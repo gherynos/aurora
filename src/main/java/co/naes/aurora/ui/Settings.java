@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  Luca Zanconato (<luca.zanconato@naes.co>)
+ * Copyright (C) 2020-2022  Luca Zanconato (<github.com/gherynos>)
  *
  * This file is part of Aurora.
  *
@@ -20,6 +20,7 @@
 package co.naes.aurora.ui;
 
 import co.naes.aurora.AuroraException;
+import co.naes.aurora.LogUtils;
 import co.naes.aurora.db.DBUtils;
 import co.naes.aurora.transport.GmailOAuthUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -35,12 +36,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Settings extends JFrame {  // NOPMD
 
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private static final String IMAP_HOST = "mail.imap.host";
     private static final String IMAP_PORT = "mail.imap.port";
@@ -395,7 +394,7 @@ public class Settings extends JFrame {  // NOPMD
         setVisible(true);
     }
 
-    private void addGMailActionListeners(URI stepsURL) {
+    private void addGMailActionListeners(URI stepsURL) {  // NOPMD
 
         stepsButton.addActionListener(e -> {
 
@@ -406,7 +405,7 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (IOException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 JOptionPane.showMessageDialog(this, "Unable to open URL in browser:\n" + stepsURL,
                         "Browser error", JOptionPane.ERROR_MESSAGE);
@@ -450,7 +449,7 @@ public class Settings extends JFrame {  // NOPMD
 
                 } catch (IOException ex) {
 
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+                    logUtils.logError(ex);
 
                     JOptionPane.showMessageDialog(this, "Unable to open URL in browser",
                             "Browser error", JOptionPane.ERROR_MESSAGE);
@@ -479,7 +478,7 @@ public class Settings extends JFrame {  // NOPMD
 
                 } catch (AuroraException ex) {
 
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+                    logUtils.logError(ex);
 
                     JOptionPane.showMessageDialog(this, "Unable to authorise access to GMail",
                             "GMail error", JOptionPane.ERROR_MESSAGE);
@@ -661,7 +660,7 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 JOptionPane.showMessageDialog(this, "Unable to save settings",
                         "Save error", JOptionPane.ERROR_MESSAGE);
@@ -707,7 +706,7 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                logUtils.logError(ex);
 
                 JOptionPane.showMessageDialog(this, "Unable to save settings",
                         "Error", JOptionPane.ERROR_MESSAGE);

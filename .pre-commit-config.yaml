@@ -39,10 +39,9 @@ repos:
     rev: v1.26.3
     hooks:
       - id: yamllint
-  - repo: local
+  - repo: https://github.com/gherynos/pre-commit-java
+    rev: v0.2.0
     hooks:
       - id: pmd
-        name: pmd
-        language: system
-        entry: mvn pmd:check
-        pass_filenames: false
+        exclude: /test/
+        args: ["-R", "ruleset.xml", "--cache", "pmd.cache"]
