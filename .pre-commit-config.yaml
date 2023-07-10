@@ -1,11 +1,9 @@
 ---
 # yamllint disable rule:line-length
-default_language_version:
-  python: python3.7
 exclude: (CMakeFiles|cmake_modules|docs|target)\/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
@@ -19,7 +17,7 @@ repos:
           - --autofix
       - id: detect-private-key
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.2.0
+    rev: v1.5.1
     hooks:
       - id: forbid-tabs
         exclude_types:
@@ -32,15 +30,15 @@ repos:
           - svg
         exclude: binary|\.bin$
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.31.1
+    rev: v0.35.0
     hooks:
       - id: markdownlint
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.3
+    rev: v1.32.0
     hooks:
       - id: yamllint
   - repo: https://github.com/gherynos/pre-commit-java
-    rev: v0.2.0
+    rev: v0.2.9
     hooks:
       - id: pmd
         exclude: /test/
