@@ -19,6 +19,7 @@
 
 package net.nharyes.aurora.transport;
 
+import fi.iki.elonen.NanoHTTPD;
 import net.nharyes.aurora.AuroraException;
 import net.nharyes.aurora.LogUtils;
 import net.nharyes.aurora.db.DBUtils;
@@ -46,11 +47,12 @@ import java.util.Properties;
 
 import static org.dmfs.oauth2.client.utils.Parameters.STATE;
 
-public class GmailOAuthUtils {
+public class GmailOAuthUtils extends NanoHTTPD {
 
     protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
-    private static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+    private static final int REDIRECT_PORT = 8080;
+    private static final String REDIRECT_URI = "http://localhost:" + REDIRECT_PORT;
 
     private static final BasicScope SCOPE = new BasicScope("https://mail.google.com");
 
@@ -64,7 +66,20 @@ public class GmailOAuthUtils {
 
     private final Properties main;
 
+    private GmailOAuthUtilsUI ui;
+
+    public interface GmailOAuthUtilsUI {
+
+        void openInBrowser(URI uri);
+
+        void authCompleted();
+
+        void authError(Exception ex);
+    }
+
     public GmailOAuthUtils(DBUtils db) {
+
+        super(REDIRECT_PORT);
 
         this.db = db;
         main = db.getProperties();
@@ -82,7 +97,7 @@ public class GmailOAuthUtils {
                 new LazyUri(new Precoded(REDIRECT_URI)));
     }
 
-    public String getAuthorisationUrl(String clientId, String clientSecret) {
+    public void authorise(GmailOAuthUtilsUI ui, String clientId, String clientSecret) throws IOException {
 
         main.setProperty(DBUtils.OAUTH_GMAIL_CLIENT_ID, clientId);
         main.setProperty(DBUtils.OAUTH_GMAIL_CLIENT_SECRET, clientSecret);
@@ -93,34 +108,64 @@ public class GmailOAuthUtils {
         state = new TextParameter(STATE, new XwfueParameterList(
                 new LazyUri(new Precoded(authorizationUrl.toString())).query().value())).toString();
 
-        return authorizationUrl.toString();
+        start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+
+        this.ui = ui;
+        ui.openInBrowser(authorizationUrl);
     }
 
-    public void authorise(String code) throws AuroraException {
+    @Override
+    public Response serve(IHTTPSession session) {
 
-        if (grant == null) {
+        if ("/".equals(session.getUri())) {
 
-            throw new AuroraException("Please get the authorisation URL first.");
+            try {
+
+                String url = String.format("%s?state=%s&code=%s", REDIRECT_URI, state, session.getParameters().get("code").get(0));
+
+                OAuth2AccessToken token = grant.withRedirect(
+                        new LazyUri(new Precoded(url))).accessToken(executor);
+
+                main.setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, token.accessToken().toString());
+                main.setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, token.refreshToken().toString());
+                main.setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
+                        Long.toString(token.expirationDate().getTimestamp()));
+
+                db.saveProperties();
+                ui.authCompleted();
+                stopServer();
+                return newFixedLengthResponse("Authorisation successful, this window can be closed now.\n");
+
+            } catch (ProtocolException | ProtocolError | IOException | AuroraException ex) {
+
+                ui.authError(ex);
+                stopServer();
+                return newFixedLengthResponse("Error during authorisation.\n");
+            }
         }
 
-        try {
+        return newFixedLengthResponse("");
+    }
 
-            String url = String.format("http://localhost?state=%s&code=%s", state, code);
+    private void stopServer() {
 
-            OAuth2AccessToken token = grant.withRedirect(
-                    new LazyUri(new Precoded(url))).accessToken(executor);
+        new Thread(() -> {
 
-            main.setProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN, token.accessToken().toString());
-            main.setProperty(DBUtils.OAUTH_GMAIL_REFRESH_TOKEN, token.refreshToken().toString());
-            main.setProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION,
-                    Long.toString(token.expirationDate().getTimestamp()));
+            synchronized (this) {
 
-            db.saveProperties();
+                try {
 
-        } catch (ProtocolException | ProtocolError | IOException ex) {
+                    this.wait(2000);
 
-            throw new AuroraException("Unable to authorise access to Gmail", ex);
-        }
+                } catch (InterruptedException ex) {
+
+                }
+
+                stop();
+                ui = null;  // NOPMD
+            }
+
+        }).start();
     }
 
     public String getAccessToken() throws AuroraException {

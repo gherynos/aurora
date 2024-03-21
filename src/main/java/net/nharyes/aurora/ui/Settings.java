@@ -82,11 +82,7 @@ public class Settings extends JFrame {  // NOPMD
     private JTabbedPane tabbedPane;
     private JTextField clientIdTextField;
     private JPasswordField clientSecretPasswordField;
-    private JButton getUrlButton;
-    private JTextField urlTextField;
-    private JTextField codeTextField;
     private JButton authoriseButton;
-    private JButton openInBrowserButton;
     private JButton stepsButton;
 
     private final DBUtils db;
@@ -94,6 +90,7 @@ public class Settings extends JFrame {  // NOPMD
     private final Properties mail;
 
     private GmailOAuthUtils gmailOAuthUtils;
+    private GmailOAuthUtils.GmailOAuthUtilsUI gmailOAuthUtilsUI;
     private boolean authorised;
 
     {
@@ -237,52 +234,35 @@ public class Settings extends JFrame {  // NOPMD
         smtpPasswordField = new JPasswordField();
         panel6.add(smtpPasswordField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel8 = new JPanel();
-        panel8.setLayout(new GridLayoutManager(8, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel8.setLayout(new GridLayoutManager(5, 2, new Insets(10, 10, 10, 10), -1, -1));
         tabbedPane.addTab("GMail", panel8);
         final JLabel label15 = new JLabel();
         label15.setText("Client ID:");
         panel8.add(label15, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer3 = new Spacer();
-        panel8.add(spacer3, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel8.add(spacer3, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         clientIdTextField = new JTextField();
         panel8.add(clientIdTextField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label16 = new JLabel();
         label16.setText("Client Secret:");
         panel8.add(label16, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        clientSecretPasswordField = new JPasswordField();
-        panel8.add(clientSecretPasswordField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel9 = new JPanel();
         panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel8.add(panel9, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        getUrlButton = new JButton();
-        getUrlButton.setText("Get URL");
-        panel9.add(getUrlButton);
-        urlTextField = new JTextField();
-        urlTextField.setEditable(false);
-        panel8.add(urlTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label17 = new JLabel();
-        label17.setText("Received code:");
-        panel8.add(label17, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        codeTextField = new JTextField();
-        panel8.add(codeTextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JPanel panel10 = new JPanel();
-        panel10.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel8.add(panel10, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         authoriseButton = new JButton();
         authoriseButton.setText("Authorise");
-        panel10.add(authoriseButton);
-        openInBrowserButton = new JButton();
-        openInBrowserButton.setText("Open in browser:");
-        panel8.add(openInBrowserButton, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JPanel panel11 = new JPanel();
-        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel8.add(panel11, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JLabel label18 = new JLabel();
-        label18.setText("The steps to obtain the values below can be found here:");
-        panel11.add(label18);
+        panel9.add(authoriseButton);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel8.add(panel10, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final JLabel label17 = new JLabel();
+        label17.setText("The steps to obtain the values below can be found here:");
+        panel10.add(label17);
         stepsButton = new JButton();
         stepsButton.setText("Steps");
-        panel11.add(stepsButton);
+        panel10.add(stepsButton);
+        clientSecretPasswordField = new JPasswordField();
+        panel8.add(clientSecretPasswordField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         label1.setLabelFor(nameTextField);
         label2.setLabelFor(emailTextField);
         label4.setLabelFor(imapHostTextField);
@@ -412,7 +392,7 @@ public class Settings extends JFrame {  // NOPMD
             }
         });
 
-        getUrlButton.addActionListener(e -> {
+        authoriseButton.addActionListener(e -> {
 
             String res = checkGMailFields();
             if (res == null) {
@@ -420,12 +400,55 @@ public class Settings extends JFrame {  // NOPMD
                 if (gmailOAuthUtils == null) {
 
                     gmailOAuthUtils = new GmailOAuthUtils(db);
+                    Settings me = this;
+                    gmailOAuthUtilsUI = new GmailOAuthUtils.GmailOAuthUtilsUI() {
+
+                        @Override
+                        public void openInBrowser(URI uri) {
+
+                            try {
+
+                                Desktop desktop = Desktop.getDesktop();
+                                desktop.browse(uri);
+
+                            } catch (IOException ex) {
+
+                                logUtils.logError(ex);
+
+                                JOptionPane.showMessageDialog(me, "Unable to open URL in browser",
+                                        "Browser error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+
+                        @Override
+                        public void authCompleted() {
+
+                            authorised = true;
+                            authoriseButton.setEnabled(false);
+                        }
+
+                        @Override
+                        public void authError(Exception ex) {
+
+                            logUtils.logError(ex);
+
+                            JOptionPane.showMessageDialog(me, "Unable to authorise access to GMail",
+                                    "GMail error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    };
                 }
 
-                String url = gmailOAuthUtils.getAuthorisationUrl(clientIdTextField.getText(),
-                        new String(clientSecretPasswordField.getPassword()));
+                try {
 
-                urlTextField.setText(url);
+                    gmailOAuthUtils.authorise(gmailOAuthUtilsUI, clientIdTextField.getText(), new String(clientSecretPasswordField.getPassword()));
+
+                } catch (IOException ex) {
+
+                    logUtils.logError(ex);
+
+                    JOptionPane.showMessageDialog(this, "Unable to authorise access to GMail",
+                            "GMail error", JOptionPane.ERROR_MESSAGE);
+                }
 
             } else {
 
@@ -433,58 +456,11 @@ public class Settings extends JFrame {  // NOPMD
             }
         });
 
-        openInBrowserButton.addActionListener(e -> {
+        // no need to force re-authorisation if the token is present
+        if (main.getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN) != null) {
 
-            if (urlTextField.getText().isEmpty()) {
-
-                JOptionPane.showMessageDialog(this, "Please get the URL first", "URL error",
-                        JOptionPane.ERROR_MESSAGE);
-
-            } else {
-
-                try {
-
-                    Desktop desktop = Desktop.getDesktop();
-                    desktop.browse(URI.create(urlTextField.getText()));
-
-                } catch (IOException ex) {
-
-                    logUtils.logError(ex);
-
-                    JOptionPane.showMessageDialog(this, "Unable to open URL in browser",
-                            "Browser error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        authoriseButton.addActionListener(e -> {
-
-            if (codeTextField.getText().isEmpty()) {
-
-                JOptionPane.showMessageDialog(this, "Please insert the code", "Code error",
-                        JOptionPane.ERROR_MESSAGE);
-
-            } else {
-
-                try {
-
-                    gmailOAuthUtils.authorise(codeTextField.getText());
-                    authorised = true;
-
-                    authoriseButton.setEnabled(false);
-
-                    JOptionPane.showMessageDialog(this, "Authorisation successful",
-                            "Authorise", JOptionPane.INFORMATION_MESSAGE);
-
-                } catch (AuroraException ex) {
-
-                    logUtils.logError(ex);
-
-                    JOptionPane.showMessageDialog(this, "Unable to authorise access to GMail",
-                            "GMail error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+            authorised = true;
+        }
     }
 
     private void populate() {
