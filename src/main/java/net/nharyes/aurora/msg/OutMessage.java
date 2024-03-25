@@ -81,10 +81,9 @@ public abstract class OutMessage<T> extends CiphertextMessage {
             if (armored) {
 
                 op.setApp(APP);
-                op.setLettersInWords(15);
-                op.setWordsInPhrase(5);
+                op.setLettersInWords(999);
+                op.setWordsInPhrase(1);
             }
-
 
             try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
 

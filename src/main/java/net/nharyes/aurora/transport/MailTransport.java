@@ -30,7 +30,9 @@ import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
 
+import javax.activation.DataHandler;
 import javax.mail.Authenticator;
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -42,11 +44,14 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.search.SubjectTerm;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.Properties;
 import java.util.Random;
@@ -57,6 +62,9 @@ public class MailTransport implements AuroraTransport {
 
     private static final String HEADER = "X-Aurora-Type";
     private static final String HEADER_KEY = "Key";
+
+    private static final String AURORA_MIME_TYPE = "text/plain";
+    private static final String AURORA_FILE_NAME = "data.aurora";
 
     private IncomingMessageHandler messageHandler;
 
@@ -134,13 +142,7 @@ public class MailTransport implements AuroraTransport {
         this.messageHandler = messageHandler;
     }
 
-    @Override
-    public void sendKeyMessage(OutKeyMessage key) throws AuroraException {
-
-        if (!key.isArmored()) {
-
-            throw new AuroraException("Please provide an armored key");
-        }
+    private void sendMessage(String recipient, String subject, byte[] data, String header) throws AuroraException {
 
         Message message;
         try {
@@ -149,54 +151,24 @@ public class MailTransport implements AuroraTransport {
             message = new MimeMessage(getSession(false));
             message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
                     main.getProperty(DBUtils.ACCOUNT_NAME)));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(key.getRecipientIdentifier().getEmail()));
-            message.setSubject(String.format("Aurora key %s", getRandomString()));
-            message.setHeader(HEADER, HEADER_KEY);
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+            message.setHeader(HEADER, header);
 
             // Content
-            String content = String.format("This is an Aurora key.\nPlease check %s for more info.\n\n%s\n",
-                    repository, new String(key.getCiphertext(), StandardCharsets.UTF_8));
-            message.setContent(content, "text/plain");
+            BodyPart messageBodyPart = new MimeBodyPart();
+            String content = String.format("This is an Aurora message.\nPlease check %s for more info.\n", repository);
+            messageBodyPart.setText(content);
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(messageBodyPart);
 
-        } catch (MessagingException | UnsupportedEncodingException ex) {
-
-            throw new AuroraException("Error while creating key message: " + ex.getMessage(), ex);
-        }
-
-        try {
-
-            Transport.send(message);
-
-        } catch (MessagingException ex) {
-
-            throw new AuroraException("Error while sending key message: " + ex.getMessage(), ex);
-        }
-    }
-
-    @Override
-    public void sendMessage(OutMessage<?> msg) throws AuroraException {
-
-        if (!msg.isArmored()) {
-
-            throw new AuroraException("Please provide an armored message");
-        }
-
-        Message message;
-        try {
-
-            // Create message
-            message = new MimeMessage(getSession(false));
-            message.setFrom(new InternetAddress(main.getProperty(DBUtils.SESSION_EMAIL_ADDRESS),
-                    main.getProperty(DBUtils.ACCOUNT_NAME)));
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(msg.getRecipient().getIdentifier().getEmail()));
-            message.setSubject(String.format("Aurora message %s", getRandomString()));
-            message.setHeader(HEADER, OutMessage.getIdentifier(msg.getClass()));
-
-            // Content
-            String content = String.format("This is an Aurora message.\nPlease check %s for more info.\n\n%s\n",
-                    repository, new String(msg.getCiphertext(), StandardCharsets.UTF_8));
-            message.setContent(content, "text/plain");
+            // attachment
+            BodyPart messageAttachmentPart = new MimeBodyPart();
+            messageAttachmentPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, AURORA_MIME_TYPE)));
+            messageAttachmentPart.setFileName(AURORA_FILE_NAME);
+            messageAttachmentPart.setHeader("Content-Transfer-Encoding", "7bit");
+            multipart.addBodyPart(messageAttachmentPart);
+            message.setContent(multipart);
 
         } catch (MessagingException | UnsupportedEncodingException ex) {
 
@@ -213,7 +185,23 @@ public class MailTransport implements AuroraTransport {
         }
     }
 
-    private String getMessageContent(Message message) throws MessagingException, IOException {
+    @Override
+    public void sendKeyMessage(OutKeyMessage key) throws AuroraException {
+
+        sendMessage(key.getRecipientIdentifier().getEmail(),
+                String.format("Aurora key %s", getRandomString()), key.getCiphertext(),
+                HEADER_KEY);
+    }
+
+    @Override
+    public void sendMessage(OutMessage<?> msg) throws AuroraException {
+
+        sendMessage(msg.getRecipient().getIdentifier().getEmail(),
+                String.format("Aurora message %s", getRandomString()), msg.getCiphertext(),
+                OutMessage.getIdentifier(msg.getClass()));
+    }
+
+    private byte[] getMessageContent(Message message) throws MessagingException, IOException {
 
         Object content = message.getContent();
 
@@ -222,14 +210,19 @@ public class MailTransport implements AuroraTransport {
             for (int i = 0; i < multipart.getCount(); i++) {
 
                 Part part = multipart.getBodyPart(i);
-                if (part.isMimeType("text/plain")) {
+                if (part.isMimeType(AURORA_MIME_TYPE) && AURORA_FILE_NAME.equals(part.getFileName())) {
 
-                    return part.getContent().toString();
+                    try (var in = part.getInputStream();
+                         ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
+
+                        in.transferTo(bout);
+                        return bout.toByteArray();
+                    }
                 }
             }
         }
 
-        return content.toString();
+        throw new MessagingException("Aurora attachment not found");
     }
 
     @Override
@@ -253,23 +246,11 @@ public class MailTransport implements AuroraTransport {
 
                     } else {
 
-                        String content = getMessageContent(message);
-
-                        int start = content.indexOf(InMessage.ARMOR_BEGIN);
-                        int end = content.indexOf(InMessage.ARMOR_END);
-                        if (start == -1 || end == -1) {
-
-                            // unable to parse message content
-                            logUtils.logWarning(String.format("Unable to parse message content '%s'", content));
-                            continue;
-                        }
-
-                        content = content.substring(start, end + 38);
                         if (HEADER_KEY.equals(header[0])) {
 
                             InternetAddress from = (InternetAddress) message.getFrom()[0];
                             String sender = String.format("%s - %s", from.getPersonal(), from.getAddress());
-                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(content.getBytes(), sender));  // NOPMD
+                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(getMessageContent(message), sender));  // NOPMD
 
                             // mark message for deletion
                             message.setFlag(Flags.Flag.DELETED, res);
@@ -279,7 +260,7 @@ public class MailTransport implements AuroraTransport {
                             try {
 
                                 var constructor = InMessage.getClass(header[0]).getConstructor(byte[].class);
-                                boolean res = messageHandler.messageReceived(constructor.newInstance((Object) content.getBytes()));
+                                boolean res = messageHandler.messageReceived(constructor.newInstance((Object) getMessageContent(message)));
 
                                 // mark message for deletion
                                 message.setFlag(Flags.Flag.DELETED, res);
