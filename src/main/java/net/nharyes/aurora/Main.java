@@ -25,6 +25,8 @@ import net.nharyes.aurora.transport.MailTransport;
 import net.nharyes.aurora.ui.MainFrame;
 import net.nharyes.aurora.ui.RequestFocusListener;
 import net.nharyes.aurora.ui.Settings;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -34,11 +36,10 @@ import javax.swing.UIManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.LogManager;
 
 public class Main {  // NOPMD
 
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     private final String confFolder;
 
@@ -47,7 +48,6 @@ public class Main {  // NOPMD
         Properties projectProperties = new Properties();
         try {
 
-            LogManager.getLogManager().readConfiguration(this.getClass().getResourceAsStream("/logging.properties"));
             projectProperties.load(Main.class.getResourceAsStream("/project.properties"));
 
         } catch (IOException ex) {
@@ -79,7 +79,7 @@ public class Main {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logUtils.logError(ex);
+                LOGGER.error(ex.getMessage(), ex);  // NOPMD
 
                 JOptionPane.showMessageDialog(null, "Unable load the DB: wrong version or password?",
                         "Error", JOptionPane.ERROR_MESSAGE);

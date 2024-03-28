@@ -54,6 +54,11 @@
             <property name="violationSuppressXPath" value="./ancestor::ClassOrInterfaceDeclaration[matches(@Image, 'AddFile|KeysReceived|MainFrame|SendKeys|Settings|CompletedItems')]" />
         </properties>
     </rule>
+    <rule ref="category/java/design.xml/CognitiveComplexity">
+        <properties>
+            <property name="reportLevel" value="20" />
+        </properties>
+    </rule>
 
     <rule ref="category/java/errorprone.xml">
         <exclude name="DoNotTerminateVM" />

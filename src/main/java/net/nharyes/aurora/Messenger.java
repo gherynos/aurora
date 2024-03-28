@@ -40,6 +40,8 @@ import net.nharyes.aurora.parts.PartId;
 import net.nharyes.aurora.parts.Splitter;
 import net.nharyes.aurora.transport.AuroraTransport;
 import net.nharyes.aurora.transport.IncomingMessageHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 
 import java.io.File;
@@ -51,7 +53,7 @@ import java.util.List;
 
 public class Messenger implements IncomingMessageHandler  {
 
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     private final AuroraTransport transport;
 
@@ -145,7 +147,10 @@ public class Messenger implements IncomingMessageHandler  {
             if (ex.getCause() instanceof JdbcSQLIntegrityConstraintViolationException) {
 
                 // file already added
-                logUtils.logFine("File '%s' for recipient '%s' already added", fileId, recipient.getIdentifier());
+                if (LOGGER.isDebugEnabled()) {
+
+                    LOGGER.debug("File {} for recipient {} already added", fileId, recipient.getIdentifier());
+                }
                 return false;
 
             } else {
@@ -157,7 +162,10 @@ public class Messenger implements IncomingMessageHandler  {
 
     public void sendKeys(Identifier recipientIdentifier) throws AuroraException {
 
-        logUtils.logFine("Sending key message...");
+        if (LOGGER.isDebugEnabled()) {
+
+            LOGGER.debug("Sending key message...");
+        }
 
         OutKeyMessage km = new OutKeyMessage(session, recipientIdentifier, transport.requiresArmoredMessages());
         transport.sendKeyMessage(km);
@@ -165,9 +173,12 @@ public class Messenger implements IncomingMessageHandler  {
         handler.keyMessageSent(km.getPassword());
     }
 
-    public void send() {
+    public void send() {  // NOPMD
 
-        logUtils.logFine("Sending messages...");
+        if (LOGGER.isDebugEnabled()) {
+
+            LOGGER.debug("Sending messages...");
+        }
 
         try {
 
@@ -191,7 +202,10 @@ public class Messenger implements IncomingMessageHandler  {
                     try {
 
                         // send part message
-                        logUtils.logFine("Sending part %d for %s", partToSend.getSequenceNumber(), pendingFile.getFileId());
+                        if (LOGGER.isDebugEnabled()) {
+
+                            LOGGER.debug("Sending part {} for {}", partToSend.getSequenceNumber(), pendingFile.getFileId());
+                        }
                         handler.sendingPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
                         PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()),   // NOPMD
                                 transport.requiresArmoredMessages());
@@ -200,7 +214,10 @@ public class Messenger implements IncomingMessageHandler  {
 
                     } catch (AuroraException ex) {
 
-                        logUtils.logError(ex);
+                        if (LOGGER.isErrorEnabled()) {
+
+                            LOGGER.error(ex.getMessage(), ex);
+                        }
                         handler.unableToSendPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
                     }
                 }
@@ -212,14 +229,20 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            logUtils.logError(ex);
+            if (LOGGER.isErrorEnabled()) {
+
+                LOGGER.error(ex.getMessage(), ex);
+            }
             handler.errorsWhileSendingMessages(ex.getMessage());
         }
     }
 
     public void receive() {
 
-        logUtils.logFine("Receiving messages...");
+        if (LOGGER.isDebugEnabled()) {
+
+            LOGGER.debug("Receiving messages...");
+        }
 
         try {
 
@@ -228,7 +251,10 @@ public class Messenger implements IncomingMessageHandler  {
 
         } catch (AuroraException ex) {
 
-            logUtils.logError(ex);
+            if (LOGGER.isErrorEnabled()) {
+
+                LOGGER.error(ex.getMessage(), ex);
+            }
             handler.errorsWhileReceivingMessages(ex.getMessage());
         }
     }
@@ -255,13 +281,19 @@ public class Messenger implements IncomingMessageHandler  {
             } else {
 
                 // unknown message type
-                logUtils.logWarning("Unknown message type '%s'", message.getClass());
+                if (LOGGER.isDebugEnabled()) {
+
+                    LOGGER.debug("Unknown message type {}", message.getClass());
+                }
                 return false;
             }
 
         } catch (AuroraException ex) {
 
-            logUtils.logError(ex);
+            if (LOGGER.isErrorEnabled()) {
+
+                LOGGER.error(ex.getMessage(), ex);
+            }
             handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
         }
 
@@ -290,7 +322,10 @@ public class Messenger implements IncomingMessageHandler  {
             if (incomingFile.isComplete()) {
 
                 // part discarded
-                logUtils.logFine("Discarded part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId());
+                if (LOGGER.isDebugEnabled()) {
+
+                    LOGGER.debug("Discarded part {} of {}", part.getId().getSequenceNumber(), part.getId().getFileId());
+                }
                 handler.discardedPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
 
                 // send confirmation regardless
@@ -302,7 +337,10 @@ public class Messenger implements IncomingMessageHandler  {
         }
 
         // store part in temporary file
-        logUtils.logFine("Processing part %d of %s", part.getId().getSequenceNumber(), part.getId().getFileId());
+        if (LOGGER.isDebugEnabled()) {
+
+            LOGGER.debug("Processing part {} of {}", part.getId().getSequenceNumber(), part.getId().getFileId());
+        }
         handler.processingPart(part.getId().getSequenceNumber(), part.getId().getFileId(), sender.getIdentifier());
         Joiner joiner = new Joiner(incomingFile.getPath());
         joiner.putPart(part);
@@ -333,12 +371,18 @@ public class Messenger implements IncomingMessageHandler  {
                 incomingFile.setPath(newPath);
                 incomingFile.save();
 
-                logUtils.logFine("File %s complete", part.getId().getFileId());
+                if (LOGGER.isDebugEnabled()) {
+
+                    LOGGER.debug("File {} complete", part.getId().getFileId());
+                }
                 handler.fileComplete(part.getId().getFileId(), sender.getIdentifier(), newPath);
 
             } catch (IOException ex) {
 
-                logUtils.logError(ex);
+                if (LOGGER.isErrorEnabled()) {
+
+                    LOGGER.error(ex.getMessage(), ex);
+                }
                 handler.errorsWhileProcessingReceivedMessage(ex.getMessage());
             }
         }
@@ -353,7 +397,10 @@ public class Messenger implements IncomingMessageHandler  {
         PartId partId = message.getData();
         PublicKeys sender = PublicKeysUtils.get(db, message.getSender().getPublicKey());
 
-        logUtils.logFine("Processing confirmation %d of %s", partId.getSequenceNumber(), partId.getFileId());
+        if (LOGGER.isDebugEnabled()) {
+
+            LOGGER.debug("Processing confirmation {} of {}", partId.getSequenceNumber(), partId.getFileId());
+        }
         handler.processingConfirmation(partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier());
         new PartToSendPO(db, partId.getSequenceNumber(), partId.getFileId(), sender.getIdentifier()).delete();
 

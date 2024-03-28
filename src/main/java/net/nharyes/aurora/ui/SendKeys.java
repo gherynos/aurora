@@ -21,7 +21,6 @@ package net.nharyes.aurora.ui;
 
 import net.nharyes.aurora.ConstellationsHelper;
 import net.nharyes.aurora.Identifier;
-import net.nharyes.aurora.LogUtils;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -35,8 +34,6 @@ import java.awt.event.WindowEvent;
 public class SendKeys extends JFrame {
 
     private static final long serialVersionUID = 2387592834719231L;
-
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
 
     private JPanel mainPanel;
     private JTextField emailTextField;

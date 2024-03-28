@@ -20,7 +20,6 @@
 package net.nharyes.aurora.transport;  // NOPMD
 
 import net.nharyes.aurora.AuroraException;
-import net.nharyes.aurora.LogUtils;
 import net.nharyes.aurora.db.DBUtils;
 import net.nharyes.aurora.msg.key.InKeyMessage;
 import net.nharyes.aurora.msg.InMessage;
@@ -29,6 +28,8 @@ import net.nharyes.aurora.msg.OutMessage;
 import net.nharyes.libsaltpack.Constants;
 import net.nharyes.libsaltpack.SaltpackException;
 import net.nharyes.libsaltpack.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.activation.DataHandler;
 import javax.mail.Authenticator;
@@ -58,7 +59,7 @@ import java.util.Random;
 
 public class MailTransport implements AuroraTransport {
 
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     private static final String HEADER = "X-Aurora-Type";
     private static final String HEADER_KEY = "Key";
@@ -242,7 +243,10 @@ public class MailTransport implements AuroraTransport {
                     String[] header = message.getHeader(HEADER);
                     if (header == null) {
 
-                        logUtils.logFine(String.format("Discarded message %d", message.getMessageNumber()));
+                        if (LOGGER.isWarnEnabled()) {
+
+                            LOGGER.warn("Discarded message {}", message.getMessageNumber());
+                        }
 
                     } else {
 
@@ -268,7 +272,10 @@ public class MailTransport implements AuroraTransport {
                             } catch (InvalidParameterException | SecurityException | ReflectiveOperationException ex) {
 
                                 // unknown identifier
-                                logUtils.logWarning(String.format("Unknow message identifier '%s'", header[0]));
+                                if (LOGGER.isWarnEnabled()) {
+
+                                    LOGGER.warn("Unknow message identifier {}}", header[0]);
+                                }
                             }
                         }
                     }

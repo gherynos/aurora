@@ -7,12 +7,14 @@ import net.nharyes.aurora.db.StatusUtils;
 import net.nharyes.aurora.parts.Splitter;
 import net.nharyes.aurora.ui.vo.ReceivedFileVO;
 import net.nharyes.aurora.ui.vo.SentFileVO;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -462,7 +462,7 @@ class MessengerTest {
     @Test
     void exceptions() throws Exception {
 
-        Logger.getLogger("net.nharyes.aurora").setLevel(Level.OFF);
+        Configurator.setLevel("net.nharyes.aurora", Level.OFF);
 
         exchangeKeys();
 

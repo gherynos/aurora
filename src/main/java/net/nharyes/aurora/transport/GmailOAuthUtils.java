@@ -21,8 +21,9 @@ package net.nharyes.aurora.transport;
 
 import fi.iki.elonen.NanoHTTPD;
 import net.nharyes.aurora.AuroraException;
-import net.nharyes.aurora.LogUtils;
 import net.nharyes.aurora.db.DBUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
 import org.dmfs.httpessentials.httpurlconnection.HttpUrlConnectionExecutor;
@@ -49,7 +50,7 @@ import static org.dmfs.oauth2.client.utils.Parameters.STATE;
 
 public class GmailOAuthUtils extends NanoHTTPD {
 
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     private static final int REDIRECT_PORT = 8080;
     private static final String REDIRECT_URI = "http://localhost:" + REDIRECT_PORT;
@@ -175,7 +176,10 @@ public class GmailOAuthUtils extends NanoHTTPD {
             long exp = Long.parseLong(main.getProperty(DBUtils.OAUTH_GMAIL_TOKEN_EXPIRATION));
             if (exp <= System.currentTimeMillis()) {
 
-                logUtils.logFine("Refreshing Gmail access token");
+                if (LOGGER.isDebugEnabled()) {
+
+                    LOGGER.debug("Refreshing Gmail access token");
+                }
 
                 OAuth2AccessToken token = new OAuthToken(
                         main.getProperty(DBUtils.OAUTH_GMAIL_ACCESS_TOKEN),

@@ -20,12 +20,13 @@
 package net.nharyes.aurora.ui;
 
 import net.nharyes.aurora.AuroraException;
-import net.nharyes.aurora.LogUtils;
 import net.nharyes.aurora.db.DBUtils;
 import net.nharyes.aurora.transport.GmailOAuthUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -39,7 +40,7 @@ import java.util.Properties;
 
 public class Settings extends JFrame {  // NOPMD
 
-    protected final LogUtils logUtils = LogUtils.getLogUtils(getClass().getName());
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     private static final String IMAP_HOST = "mail.imap.host";
     private static final String IMAP_PORT = "mail.imap.port";
@@ -385,7 +386,10 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (IOException ex) {
 
-                logUtils.logError(ex);
+                if (LOGGER.isErrorEnabled()) {
+
+                    LOGGER.error(ex.getMessage(), ex);
+                }
 
                 JOptionPane.showMessageDialog(this, "Unable to open URL in browser:\n" + stepsURL,
                         "Browser error", JOptionPane.ERROR_MESSAGE);
@@ -413,7 +417,10 @@ public class Settings extends JFrame {  // NOPMD
 
                             } catch (IOException ex) {
 
-                                logUtils.logError(ex);
+                                if (LOGGER.isErrorEnabled()) {
+
+                                    LOGGER.error(ex.getMessage(), ex);
+                                }
 
                                 JOptionPane.showMessageDialog(me, "Unable to open URL in browser",
                                         "Browser error", JOptionPane.ERROR_MESSAGE);
@@ -430,7 +437,10 @@ public class Settings extends JFrame {  // NOPMD
                         @Override
                         public void authError(Exception ex) {
 
-                            logUtils.logError(ex);
+                            if (LOGGER.isErrorEnabled()) {
+
+                                LOGGER.error(ex.getMessage(), ex);
+                            }
 
                             JOptionPane.showMessageDialog(me, "Unable to authorise access to GMail",
                                     "GMail error", JOptionPane.ERROR_MESSAGE);
@@ -444,7 +454,10 @@ public class Settings extends JFrame {  // NOPMD
 
                 } catch (IOException ex) {
 
-                    logUtils.logError(ex);
+                    if (LOGGER.isErrorEnabled()) {
+
+                        LOGGER.error(ex.getMessage(), ex);
+                    }
 
                     JOptionPane.showMessageDialog(this, "Unable to authorise access to GMail",
                             "GMail error", JOptionPane.ERROR_MESSAGE);
@@ -636,7 +649,10 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logUtils.logError(ex);
+                if (LOGGER.isErrorEnabled()) {
+
+                    LOGGER.error(ex.getMessage(), ex);
+                }
 
                 JOptionPane.showMessageDialog(this, "Unable to save settings",
                         "Save error", JOptionPane.ERROR_MESSAGE);
@@ -682,7 +698,10 @@ public class Settings extends JFrame {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                logUtils.logError(ex);
+                if (LOGGER.isErrorEnabled()) {
+
+                    LOGGER.error(ex.getMessage(), ex);
+                }
 
                 JOptionPane.showMessageDialog(this, "Unable to save settings",
                         "Error", JOptionPane.ERROR_MESSAGE);
