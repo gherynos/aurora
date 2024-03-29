@@ -53,6 +53,8 @@ class MessengerTest {
     @BeforeEach
     void setUp() throws Exception {
 
+        Configurator.setLevel("net.nharyes.aurora", Level.DEBUG);
+
         tempDirUser1 = Files.createTempDirectory("user1");
         tempDirUser2 = Files.createTempDirectory("user2");
 

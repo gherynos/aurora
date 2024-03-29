@@ -48,7 +48,7 @@ public class OutKeyMessage extends KeyMessage {
             this.recipientIdentifier = recipientIdentifier;
 
             // generate random password
-            password = ConstellationsHelper.getRandom(6);
+            password = ConstellationsHelper.getRandom(3);
 
             // derive key from password
             byte[][][] symmetricKeys = {deriveKeyFromPassword(password)};

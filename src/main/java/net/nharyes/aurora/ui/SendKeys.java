@@ -43,9 +43,6 @@ public class SendKeys extends JFrame {
     private JTextField block1TextField;
     private JTextField block2TextField;
     private JTextField block3TextField;
-    private JTextField block4TextField;
-    private JTextField block5TextField;
-    private JTextField block6TextField;
 
     private String[] password;
 
@@ -86,7 +83,7 @@ public class SendKeys extends JFrame {
         keysReceivedButton.setText("Keys received by recipient");
         panel2.add(keysReceivedButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(6, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel3.setLayout(new GridLayoutManager(3, 2, new Insets(10, 10, 10, 10), -1, -1));
         mainPanel.add(panel3, new GridConstraints(2, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("Block 1:");
@@ -106,24 +103,6 @@ public class SendKeys extends JFrame {
         block3TextField = new JTextField();
         block3TextField.setEditable(false);
         panel3.add(block3TextField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label5 = new JLabel();
-        label5.setText("Block 4:");
-        panel3.add(label5, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        block4TextField = new JTextField();
-        block4TextField.setEditable(false);
-        panel3.add(block4TextField, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label6 = new JLabel();
-        label6.setText("Block 5:");
-        panel3.add(label6, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        block5TextField = new JTextField();
-        block5TextField.setEditable(false);
-        panel3.add(block5TextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label7 = new JLabel();
-        label7.setText("Block 6:");
-        panel3.add(label7, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        block6TextField = new JTextField();
-        block6TextField.setEditable(false);
-        panel3.add(block6TextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         mainPanel.add(panel4, new GridConstraints(4, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -188,9 +167,6 @@ public class SendKeys extends JFrame {
             block1TextField.setText(password[0]);
             block2TextField.setText(password[1]);
             block3TextField.setText(password[2]);
-            block4TextField.setText(password[3]);
-            block5TextField.setText(password[4]);
-            block6TextField.setText(password[5]);
         });
 
         closeButton.addActionListener(e -> {
