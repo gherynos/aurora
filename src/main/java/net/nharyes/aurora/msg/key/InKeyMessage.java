@@ -59,7 +59,7 @@ public class InKeyMessage extends KeyMessage {
             byte[][] key = deriveKeyFromPassword(password);
 
             // decrypt message
-            ByteArrayInputStream in = new ByteArrayInputStream(ciphertext);
+            ByteArrayInputStream in = new ByteArrayInputStream(this.ciphertext);
             InputParameters ip = new InputParameters(in);
             ip.setArmored(isArmored());
 
@@ -73,7 +73,7 @@ public class InKeyMessage extends KeyMessage {
             dec.destroy();
 
             // unpack key
-            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msg.toByteArray());  // NOPMD
+            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msg.toByteArray());
             Identifier identifier = new Identifier(unpacker.unpackString());
             Value v = unpacker.unpackValue();
             byte[] publicKey = v.asBinaryValue().asByteArray();

@@ -21,7 +21,8 @@ package net.nharyes.aurora.msg;
 
 import java.util.Arrays;
 
-abstract class CiphertextMessage {  // NOPMD
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
+abstract class CiphertextMessage {
 
     public static final String APP = "AURORA";
     public static final String ARMOR_BEGIN = String.format("BEGIN %s SALTPACK ENCRYPTED MESSAGE.", APP);

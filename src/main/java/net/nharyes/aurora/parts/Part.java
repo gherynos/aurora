@@ -21,7 +21,8 @@ package net.nharyes.aurora.parts;
 
 import java.security.InvalidParameterException;
 
-public class Part {  // NOPMD
+@SuppressWarnings("PMD.ShortClassName")
+public class Part {
 
     private final PartId id;
 

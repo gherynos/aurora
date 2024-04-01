@@ -46,8 +46,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
-import static org.dmfs.oauth2.client.utils.Parameters.STATE;
-
 public class GmailOAuthUtils extends NanoHTTPD {
 
     protected static final Logger LOGGER = LogManager.getLogger();
@@ -106,7 +104,7 @@ public class GmailOAuthUtils extends NanoHTTPD {
         grant = new AuthorizationCodeGrant(getClient(), SCOPE);
 
         URI authorizationUrl = grant.authorizationUrl();
-        state = new TextParameter(STATE, new XwfueParameterList(
+        state = new TextParameter(org.dmfs.oauth2.client.utils.Parameters.STATE, new XwfueParameterList(
                 new LazyUri(new Precoded(authorizationUrl.toString())).query().value())).toString();
 
         start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
@@ -116,6 +114,7 @@ public class GmailOAuthUtils extends NanoHTTPD {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     public Response serve(IHTTPSession session) {
 
         if ("/".equals(session.getUri())) {
@@ -158,7 +157,7 @@ public class GmailOAuthUtils extends NanoHTTPD {
 
                     this.wait(2000);
 
-                } catch (InterruptedException ex) {
+                } catch (InterruptedException ex) {  // NOPMD
 
                 }
 

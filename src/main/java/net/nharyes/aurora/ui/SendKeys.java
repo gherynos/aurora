@@ -31,7 +31,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class SendKeys extends JFrame {
+public final class SendKeys extends JFrame {
 
     private static final long serialVersionUID = 2387592834719231L;
 
@@ -134,7 +134,7 @@ public class SendKeys extends JFrame {
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(relativeTo);
         addWindowListener(new WindowAdapter() {

@@ -38,9 +38,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
-public class Settings extends JFrame {  // NOPMD
+@SuppressWarnings("PMD.CouplingBetweenObjects")
+public final class Settings extends JFrame {
 
-    protected static final Logger LOGGER = LogManager.getLogger();
+    private static final long serialVersionUID = 2349845739845727L;
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private static final String IMAP_HOST = "mail.imap.host";
     private static final String IMAP_PORT = "mail.imap.port";
@@ -315,7 +318,7 @@ public class Settings extends JFrame {  // NOPMD
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(relativeTo);
         addWindowListener(new WindowAdapter() {
@@ -375,7 +378,8 @@ public class Settings extends JFrame {  // NOPMD
         setVisible(true);
     }
 
-    private void addGMailActionListeners(URI stepsURL) {  // NOPMD
+    @SuppressWarnings("PMD.CognitiveComplexity")
+    private void addGMailActionListeners(URI stepsURL) {
 
         stepsButton.addActionListener(e -> {
 
@@ -484,7 +488,7 @@ public class Settings extends JFrame {  // NOPMD
         incomingTextField.setText(main.getProperty(DBUtils.INCOMING_DIRECTORY,
                 String.format("%s%cDownloads", System.getProperty("user.home"), File.separatorChar)));
 
-        switch (main.getProperty(DBUtils.MAIL_MODE, DBUtils.MAIL_MODE_GENERIC)) {  // NOPMD
+        switch (main.getProperty(DBUtils.MAIL_MODE, DBUtils.MAIL_MODE_GENERIC)) {
 
             case DBUtils.MAIL_MODE_GENERIC: {
 
@@ -519,10 +523,14 @@ public class Settings extends JFrame {  // NOPMD
 
             }
             break;
+
+            default:
+                LOGGER.warn("Unknown mail mode");
         }
     }
 
-    private String checkMainFields() {  // NOPMD
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    private String checkMainFields() {
 
         // Account
         if (nameTextField.getText().isEmpty()) {
@@ -538,12 +546,13 @@ public class Settings extends JFrame {  // NOPMD
         return null;
     }
 
-    private String checkGenericFields() {  // NOPMD
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    private String checkGenericFields() {
 
         // IMAP
         if (!imapHostTextField.getText().contains(".")) {
 
-            return "Please insert a vaild IMAP host";
+            return "Please insert a valid IMAP host";
         }
 
         try {
@@ -593,7 +602,8 @@ public class Settings extends JFrame {  // NOPMD
         return null;
     }
 
-    private String checkGMailFields() {  // NOPMD
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    private String checkGMailFields() {
 
         if (clientIdTextField.getText().isEmpty()) {
 

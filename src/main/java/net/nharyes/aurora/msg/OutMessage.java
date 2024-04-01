@@ -64,6 +64,7 @@ public abstract class OutMessage<T> extends CiphertextMessage {
         return MAP.get(clazz);
     }
 
+    @SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
     public OutMessage(AuroraSession session, PublicKeys recipient, T data, boolean armored) throws AuroraException {
 
         super();

@@ -57,7 +57,7 @@ public class PartToReceivePO {
 
             conn.commit();
 
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {  // NOPMD
 
             throw new AuroraException("Error while adding parts to receive to the DB: " + ex.getMessage(), ex);
         }

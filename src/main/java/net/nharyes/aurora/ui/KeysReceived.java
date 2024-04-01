@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class KeysReceived extends JDialog {
+public final class KeysReceived extends JDialog {
 
     private static final long serialVersionUID = 12682350203945L;
 
@@ -51,7 +51,7 @@ public class KeysReceived extends JDialog {
         $$$setupUI$$$();
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(owner);
 
         unlockButton.addActionListener(e -> {

@@ -33,7 +33,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 
-public class CompletedItems extends JFrame {  // NOPMD
+public final class CompletedItems extends JFrame {
+
+    private static final long serialVersionUID = 2918479353919231245L;
 
     private JPanel mainPanel;
     private JTable itemsTable;
@@ -52,7 +54,7 @@ public class CompletedItems extends JFrame {  // NOPMD
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(relativeTo);
         addWindowListener(new WindowAdapter() {

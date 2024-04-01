@@ -76,7 +76,8 @@ public class Splitter {
         return totalParts;
     }
 
-    public Part getPart(int sequenceNumber) throws AuroraException {  // NOPMD
+    @SuppressWarnings("PMD.CyclomaticComplexity")
+    public Part getPart(int sequenceNumber) throws AuroraException {
 
         if (sequenceNumber > totalParts - 1 || sequenceNumber < 0) {
 
@@ -103,7 +104,7 @@ public class Splitter {
 
             return new Part(new PartId(fileId, sequenceNumber), totalParts, channel.size(), data.array());
 
-        } catch (IOException ex) {
+        } catch (IOException ex) {  // NOPMD
 
             throw new AuroraException("Unable to read part from file: " + ex.getMessage(), ex);
         }

@@ -30,7 +30,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.List;
 
-public class AddFile extends JDialog {
+public final class AddFile extends JDialog {
 
     private static final long serialVersionUID = 142871230210913L;
 
@@ -57,7 +57,7 @@ public class AddFile extends JDialog {
         $$$setupUI$$$();
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(owner);
 
         browseButton.addActionListener(e -> {

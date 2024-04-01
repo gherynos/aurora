@@ -68,7 +68,7 @@ public final class PublicKeysUtils {
             return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
                     Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), new Identifier(id));
 
-        } catch (SQLException | SaltpackException ex) {
+        } catch (SQLException | SaltpackException ex) {  // NOPMD
 
             throw new AuroraException("Error while loading keys from the DB: " + ex.getMessage(), ex);
         }
@@ -93,7 +93,7 @@ public final class PublicKeysUtils {
             return new PublicKeys(Utils.baseXdecode(encryption, Constants.ALPHABET_BASE62),
                     Utils.baseXdecode(signature, Constants.ALPHABET_BASE62), new Identifier(id));
 
-        } catch (SQLException | SaltpackException ex) {
+        } catch (SQLException | SaltpackException ex) {  // NOPMD
 
             throw new AuroraException("Error while loading keys from the DB: " + ex.getMessage(), ex);
         }

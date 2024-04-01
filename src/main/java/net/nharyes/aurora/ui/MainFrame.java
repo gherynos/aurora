@@ -56,9 +56,10 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.util.Properties;
 
-public class MainFrame extends JFrame implements Messenger.StatusHandler {  // NOPMD
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.MissingSerialVersionUID"})
+public final class MainFrame extends JFrame implements Messenger.StatusHandler {
 
-    protected static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private static final int MAX_STATUS_LENGTH = 100;
 
@@ -94,7 +95,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
 
         setContentPane(mainPanel);
         setMinimumSize(new Dimension(mainPanel.getMinimumSize().width, mainPanel.getMinimumSize().height + 22));
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
         loadButtonIcons();
@@ -168,7 +169,8 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         addFileButton.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
-    private void addToolBarActionListeners(Properties projectProperties) {  // NOPMD
+    @SuppressWarnings({"PMD.NullAssignment", "PMD.CognitiveComplexity"})
+    private void addToolBarActionListeners(Properties projectProperties) {
 
         sendAndReceiveButton.addActionListener(e -> new Thread(() -> {
 
@@ -283,6 +285,7 @@ public class MainFrame extends JFrame implements Messenger.StatusHandler {  // N
         });
     }
 
+    @SuppressWarnings("PMD.NullAssignment")
     private void addItemsActionListeners() {
 
         receivedButton.addActionListener(e -> {

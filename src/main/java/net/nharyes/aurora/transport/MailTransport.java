@@ -17,7 +17,7 @@
  * along with Aurora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.nharyes.aurora.transport;  // NOPMD
+package net.nharyes.aurora.transport;
 
 import net.nharyes.aurora.AuroraException;
 import net.nharyes.aurora.db.DBUtils;
@@ -57,6 +57,7 @@ import java.security.InvalidParameterException;
 import java.util.Properties;
 import java.util.Random;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 public class MailTransport implements AuroraTransport {
 
     protected static final Logger LOGGER = LogManager.getLogger();
@@ -113,10 +114,10 @@ public class MailTransport implements AuroraTransport {
             gmailOAuthUtils = new GmailOAuthUtils(db);
         }
 
-        String iPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_INCOMING_PASSWORD);  // NOPMD
-        String oPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_OUTGOING_PASSWORD);  // NOPMD
+        String iPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_INCOMING_PASSWORD);
+        String oPassword = isGMail ? gmailOAuthUtils.getAccessToken() : main.getProperty(DBUtils.MAIL_OUTGOING_PASSWORD);
 
-        Authenticator auth = new Authenticator() {  // NOPMD
+        Authenticator auth = new Authenticator() {
 
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -227,7 +228,8 @@ public class MailTransport implements AuroraTransport {
     }
 
     @Override
-    public void checkForMessages() throws AuroraException {  // NOPMD
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    public void checkForMessages() throws AuroraException {
 
         try (Store store = getSession(true).getStore()) {
 
@@ -254,7 +256,7 @@ public class MailTransport implements AuroraTransport {
 
                             InternetAddress from = (InternetAddress) message.getFrom()[0];
                             String sender = String.format("%s - %s", from.getPersonal(), from.getAddress());
-                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(getMessageContent(message), sender));  // NOPMD
+                            boolean res = messageHandler.keyMessageReceived(new InKeyMessage(getMessageContent(message), sender));
 
                             // mark message for deletion
                             message.setFlag(Flags.Flag.DELETED, res);
@@ -286,7 +288,7 @@ public class MailTransport implements AuroraTransport {
                 throw new AuroraException("Unable to fetch messages: " + ex.getMessage(), ex);
             }
 
-        } catch (MessagingException ex) {
+        } catch (MessagingException ex) {  // NOPMD
 
             throw new AuroraException("Unable to connect to the server: " + ex.getMessage(), ex);
         }

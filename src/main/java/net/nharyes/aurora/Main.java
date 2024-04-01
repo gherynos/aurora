@@ -37,7 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Main {  // NOPMD
+@SuppressWarnings({"PMD.ShortClassName", "PMD.ClassWithOnlyPrivateConstructorsShouldBeFinal", "PMD.GuardLogStatement"})
+public class Main {
 
     protected static final Logger LOGGER = LogManager.getLogger();
 
@@ -52,7 +53,7 @@ public class Main {  // NOPMD
 
         } catch (IOException ex) {
 
-            ex.printStackTrace();  // NOPMD
+            LOGGER.error(ex.getMessage(), ex);
         }
 
         confFolder = cf != null ? cf : String.format("%s%c.aurora", System.getProperty("user.home"), File.separatorChar);
@@ -79,7 +80,7 @@ public class Main {  // NOPMD
 
             } catch (AuroraException ex) {
 
-                LOGGER.error(ex.getMessage(), ex);  // NOPMD
+                LOGGER.error(ex.getMessage(), ex);
 
                 JOptionPane.showMessageDialog(null, "Unable load the DB: wrong version or password?",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -141,6 +142,6 @@ public class Main {  // NOPMD
             /* not an issue if unable to change the look and feel */
         }
 
-        new Main(args.length > 0 ? args[0] : null);  // NOPMD
+        new Main(args.length > 0 ? args[0] : null);
     }
 }

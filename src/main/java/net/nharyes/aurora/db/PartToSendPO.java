@@ -66,7 +66,7 @@ public class PartToSendPO {
 
             conn.commit();
 
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {  // NOPMD
 
             throw new AuroraException("Error while adding part to send to the DB: " + ex.getMessage(), ex);
         }
@@ -119,7 +119,7 @@ public class PartToSendPO {
 
             conn.commit();
 
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {  // NOPMD
 
             throw new AuroraException("Error while updating part on the DB: " + ex.getMessage(), ex);
         }

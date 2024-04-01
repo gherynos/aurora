@@ -81,7 +81,7 @@ public abstract class InMessage<T> extends CiphertextMessage {
         try {
 
             // decrypt message
-            ByteArrayInputStream in = new ByteArrayInputStream(ciphertext);
+            ByteArrayInputStream in = new ByteArrayInputStream(this.ciphertext);
             InputParameters ip = new InputParameters(in);
             ip.setArmored(isArmored());
 
@@ -95,7 +95,7 @@ public abstract class InMessage<T> extends CiphertextMessage {
             dec.destroy();
 
             // unpack data
-            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(out.toByteArray());  // NOPMD
+            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(out.toByteArray());
             data = unpackData(unpacker);
             unpacker.close();
 

@@ -51,6 +51,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class Messenger implements IncomingMessageHandler  {
 
     protected static final Logger LOGGER = LogManager.getLogger();
@@ -69,7 +70,8 @@ public class Messenger implements IncomingMessageHandler  {
 
     public static final String TEMP_FILE_EXTENSION = ".temp";
 
-    public interface StatusHandler {  // NOPMD
+    @SuppressWarnings("PMD.TooManyMethods")
+    public interface StatusHandler {
 
         void self(Messenger messenger);
 
@@ -173,7 +175,8 @@ public class Messenger implements IncomingMessageHandler  {
         handler.keyMessageSent(km.getPassword());
     }
 
-    public void send() {  // NOPMD
+    @SuppressWarnings("PMD.CyclomaticComplexity")
+    public void send() {
 
         if (LOGGER.isDebugEnabled()) {
 
@@ -195,8 +198,8 @@ public class Messenger implements IncomingMessageHandler  {
                 }
 
                 // send parts
-                Splitter sp = new Splitter(pendingFile.getFileId(), pendingFile.getPath());  // NOPMD
-                List<Integer> sent = new ArrayList<>();  // NOPMD
+                Splitter sp = new Splitter(pendingFile.getFileId(), pendingFile.getPath());
+                List<Integer> sent = new ArrayList<>();
                 for (PartToSendPO partToSend : partsToSend) {
 
                     try {
@@ -207,7 +210,7 @@ public class Messenger implements IncomingMessageHandler  {
                             LOGGER.debug("Sending part {} for {}", partToSend.getSequenceNumber(), pendingFile.getFileId());
                         }
                         handler.sendingPart(partToSend.getSequenceNumber(), partToSend.getFileId(), partToSend.getIdentifier());
-                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()),   // NOPMD
+                        PartOutMessage msg = new PartOutMessage(session, recipient, sp.getPart(partToSend.getSequenceNumber()),
                                 transport.requiresArmoredMessages());
                         transport.sendMessage(msg);
                         sent.add(partToSend.getSequenceNumber());

@@ -66,7 +66,7 @@ public final class StatusUtils {
 
                 if (res.getObject(4) != null || res.getObject(5) != null) {
 
-                    out.add(new OutgoingFileVO(res.getString(1), new Identifier(res.getString(2)),  // NOPMD
+                    out.add(new OutgoingFileVO(res.getString(1), new Identifier(res.getString(2)),
                             res.getInt(4), res.getInt(5), res.getInt(3)));
                 }
             }

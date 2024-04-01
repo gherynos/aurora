@@ -125,7 +125,7 @@ public class IncomingFilePO {
 
             completed = res.getTimestamp(1);
 
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {  // NOPMD
 
             throw new AuroraException("Error while checking file in the DB: " + ex.getMessage(), ex);
         }

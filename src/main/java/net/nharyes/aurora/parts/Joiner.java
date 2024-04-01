@@ -60,7 +60,7 @@ public class Joiner {
                 throw new AuroraException("Some bytes were not written...");
             }
 
-        } catch (IOException ex) {
+        } catch (IOException ex) {  // NOPMD
 
             throw new AuroraException("Unable to write part to file: " + ex.getMessage(), ex);
         }
