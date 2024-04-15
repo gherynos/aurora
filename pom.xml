@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.nharyes</groupId>
+    <groupId>com.gherynos</groupId>
     <artifactId>aurora</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -48,9 +48,9 @@
         </dependency>
 
         <dependency>
-            <groupId>net.nharyes</groupId>
+            <groupId>com.gherynos</groupId>
             <artifactId>libsaltpack-jni</artifactId>
-            <version>0.4.4</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -168,7 +168,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>net.nharyes.aurora.Main</mainClass>
+                            <mainClass>com.gherynos.aurora.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
